@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="OrderingAssistSystem_StaffApp.OTPPage"
+             Title="OTPPage">
+    <StackLayout Padding="20" VerticalOptions="CenterAndExpand">
+        <Label Text="Enter OTP sent to your phone"/>
+        <Entry Placeholder="OTP" x:Name="OtpEntry" Keyboard="Numeric"/>
+        <Button Text="Verify OTP" Clicked="OnVerifyOtpClicked"/>
+    </StackLayout>
+</ContentPage>
