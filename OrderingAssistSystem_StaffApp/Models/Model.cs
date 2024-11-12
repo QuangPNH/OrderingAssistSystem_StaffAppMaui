@@ -1,6 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc.RazorPages;
-
-namespace AzzanOrder.ManagerOwner.Models
+﻿
+namespace OrderingAssistSystem_StaffApp.Models
 {
     public class Model
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace AzzanOrder.ManagerOwner.Models
+namespace OrderingAssistSystem_StaffApp.Models
 {
     public partial class Bank
     {
