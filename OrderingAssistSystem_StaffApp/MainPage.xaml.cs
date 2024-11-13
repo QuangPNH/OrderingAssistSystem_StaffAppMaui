@@ -21,19 +21,42 @@ namespace OrderingAssistSystem_StaffApp
 
         public MainPage()
         {
-            _client = new HttpClient(
-                new HttpClientHandler
+
+            _client = new HttpClient(new HttpClientHandler
                 {
                     ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => true
-                }
-                );  // Avoid custom handler if possible
+                });
+
             _serializerOptions = new JsonSerializerOptions
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                 WriteIndented = true
             };
 
+
+
             InitializeComponent();
+
+
+            AuthorizeLogin authorizeLogin = new AuthorizeLogin();
+
+            var loginStatus = authorizeLogin.CheckLogin();
+            if (loginStatus.Equals("staff"))
+            {
+                DisplayAlert("Status","staff", "OK");
+            }
+            else if (loginStatus.Equals("bartender"))
+            {
+                DisplayAlert("Status", "bartender", "OK");
+            }
+            else if (loginStatus.Equals("employee expired"))
+            {
+                DisplayAlert("Status", "The owner's subscription has been over for over a week. Contact for more info.", "OK");
+            }
+            else
+            {
+                DisplayAlert("Status", "Nothing much really", "OK");
+            }
         }
 
 
@@ -73,6 +96,8 @@ namespace OrderingAssistSystem_StaffApp
             {
                 await DisplayAlert("Error", $"Failed to retrieve employee. Exception: {ex.Message}", "OK");
             }
+
+
 
 
 
