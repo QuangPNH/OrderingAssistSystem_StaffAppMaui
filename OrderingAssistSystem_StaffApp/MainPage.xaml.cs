@@ -1,23 +1,39 @@
-﻿
+﻿using Microsoft.Maui.Storage;
+using Newtonsoft.Json;
+using OrderingAssistSystem_StaffApp.Models;
 using Twilio;
 using Twilio.Rest.Api.V2010.Account;
 using Twilio.Types;
+using OrderingAssistSystem_StaffApp.Models;
+using Twilio.TwiML.Voice;
+using System.Text.Json;
+using Config = OrderingAssistSystem_StaffApp.Models.Config;
 
 
 namespace OrderingAssistSystem_StaffApp
 {
     public partial class MainPage : ContentPage
     {
-        private readonly string _apiUrl = "https://localhost:7183/api/";
+        HttpClient _client;
+        JsonSerializerOptions _serializerOptions;
+
 
         public MainPage()
         {
             InitializeComponent();
+            _client = new HttpClient();
+            _serializerOptions = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                WriteIndented = true
+            };
         }
 
         private async void OnSendOtpClicked(object sender, EventArgs e)
         {
-            var phoneNumber = PhoneNumberEntry.Text;
+            Config config = new Config();
+            var phoneNumber = PhoneNumberEntry.Text?.Replace("\0", "").Trim();
+            string placeholder = "";
 
             if (string.IsNullOrWhiteSpace(phoneNumber))
             {
@@ -25,32 +41,68 @@ namespace OrderingAssistSystem_StaffApp
                 return;
             }
 
-            string otp = new Random().Next(000000, 999999).ToString();
+            Employee emp = null;
 
-            otp = "123456"; // For testing only, remove this line in production
 
-            //Save otp to session
-
-            // Send OTP via Twilio
-            var accountSid = "ACd5083d30edb839433981a766a0c2e2fd";
-            var authToken = "";
-            TwilioClient.Init(accountSid, authToken);
-            var messageOptions = new CreateMessageOptions(new PhoneNumber("+84388536414"))
+            Uri uri = new Uri(string.Format(config._apiUrl, string.Empty));
+            try
             {
-                From = new PhoneNumber("+19096555985"),
-                Body = "Your OTP is " + otp
-            };
-            MessageResource.Create(messageOptions);
-
-            if (true)
+                HttpResponseMessage response = await _client.GetAsync(uri);
+                if (response.IsSuccessStatusCode)
                 {
-                    await Navigation.PushAsync(new OTPPage(phoneNumber));
+                    string content = await response.Content.ReadAsStringAsync();
+                    emp = Newtonsoft.Json.JsonSerializer.Deserialize<Employee>(content, _serializerOptions);
                 }
-                else
-                {
-                    await DisplayAlert("Error", "Failed to send OTP. Try again.", "OK");
-                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(@"\tERROR {0}", ex.Message);
+            }
 
+
+            /*using (HttpClient client = new HttpClient(new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => true
+            }))
+            {
+                try
+                {
+                    HttpResponseMessage res = await client.GetAsync(config._apiUrl + "Employee/Staff/Phone/" + phoneNumber);
+                    string data = await res.Content.ReadAsStringAsync();
+                    placeholder = data;
+                    emp = JsonConvert.DeserializeObject<Employee>(data);
+
+                    if (!res.IsSuccessStatusCode)
+                    {
+                        await DisplayAlert("Error", $"Failed to send OTP. Error code: {(int)res.StatusCode}", "OK");
+                        return;
+                    }
+                }
+                catch (Exception ee)
+                {
+                    await DisplayAlert("Error", $"Failed to send OTP. Exception: {ee.Message}", "OK");
+                    return;
+                }
+            }*/
+
+            if (emp == null)
+            {
+                await DisplayAlert("Error", "Failed to send OTP. Try again.\n" + placeholder + phoneNumber, "OK");
+            }
+            else
+            {
+                string otp = new Random().Next(000000, 999999).ToString();
+
+                otp = "123456"; // For testing only, remove this line in production
+
+                Preferences.Set("otp", otp);
+
+                // Redirect to the OTP input page
+                var empJson = JsonConvert.SerializeObject(emp);
+                Preferences.Set("TempLoginInfo", empJson);
+
+                await Navigation.PushAsync(new OTPPage(phoneNumber));
+            }
         }
     }
 

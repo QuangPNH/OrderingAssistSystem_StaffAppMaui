@@ -15,6 +15,8 @@ namespace OrderingAssistSystem_StaffApp
                     fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
                 });
 
+            builder.Services.AddHttpClient("api", httpClient => httpClient.BaseAddress = new Uri("https://localhost:7183/api/"));
+
 #if DEBUG
     		builder.Logging.AddDebug();
 #endif
