@@ -7,7 +7,6 @@ using Twilio.Types;
 using OrderingAssistSystem_StaffApp.Models;
 using System.Text.Json;
 
-
 namespace OrderingAssistSystem_StaffApp
 {
     public partial class MainPage : ContentPage
@@ -37,13 +36,23 @@ namespace OrderingAssistSystem_StaffApp
 
             InitializeComponent();
 
+            Authoriz();
 
-            AuthorizeLogin authorizeLogin = new AuthorizeLogin();
 
-            var loginStatus = authorizeLogin.CheckLogin();
+        }
+
+
+
+        public async Task Authoriz()
+        {
+            DisplayAlert("Status", Preferences.Get("LoginInfo", string.Empty), "OK");
+
+            AuthorizeLogin authorizeLogin = new AuthorizeLogin(_client, _serializerOptions);
+
+            var loginStatus = await authorizeLogin.CheckLogin();
             if (loginStatus.Equals("staff"))
             {
-                DisplayAlert("Status","staff", "OK");
+                DisplayAlert("Status", "staff", "OK");
             }
             else if (loginStatus.Equals("bartender"))
             {
@@ -52,6 +61,10 @@ namespace OrderingAssistSystem_StaffApp
             else if (loginStatus.Equals("employee expired"))
             {
                 DisplayAlert("Status", "The owner's subscription has been over for over a week. Contact for more info.", "OK");
+            }
+            else if(loginStatus.Equals("null"))
+            {
+                DisplayAlert("Status", Preferences.Get("LoginInfo", string.Empty) +  "null", "OK");
             }
             else
             {

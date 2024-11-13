@@ -5,7 +5,6 @@ namespace OrderingAssistSystem_StaffApp;
 
 public partial class OTPPage : ContentPage
 {
-    private readonly string _apiUrl = "https://localhost:7183/api/";
     private readonly string _phoneNumber;
 
 

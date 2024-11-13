@@ -1,13 +1,27 @@
 ﻿using Newtonsoft.Json;
+using System.Text.Json;
+using Twilio.TwiML.Voice;
+using Twilio.Types;
 
 namespace OrderingAssistSystem_StaffApp.Models
 {
     public class AuthorizeLogin
     {
         private readonly string _apiUrl = "https://localhost:7183/api/";
+        private readonly HttpClient _client;
+        private readonly JsonSerializerOptions _serializerOptions;
+
+        public AuthorizeLogin(HttpClient client, JsonSerializerOptions serializerOptions)
+        {
+            this._client = client;
+            this._serializerOptions = serializerOptions;
+        }
 
         public async Task<string> CheckLogin()
         {
+
+            Config config = new Config();
+
             string loginInfoJson = Preferences.Get("LoginInfo", string.Empty);
             Employee emp = JsonConvert.DeserializeObject<Employee>(loginInfoJson);
 
@@ -17,35 +31,38 @@ namespace OrderingAssistSystem_StaffApp.Models
             {
                 return "null";
             }
-            using (HttpClient client = new HttpClient())
+
+            try
             {
-                try
+                var uri = new Uri($"{config.BaseAddress}Employee/Staff/Phone/{emp.Phone}");
+                HttpResponseMessage response = await _client.GetAsync(uri);
+
+                if (response.IsSuccessStatusCode)
                 {
-                    HttpResponseMessage res = await client.GetAsync(_apiUrl + "Employee/Staff/Phone/" + emp.Phone);
-                    if (res.IsSuccessStatusCode)
+                    string data = await response.Content.ReadAsStringAsync();
+                    emp = JsonConvert.DeserializeObject<Employee>(data);
+                    if (emp.Phone != null)
                     {
-                        string data = await res.Content.ReadAsStringAsync();
-                        emp = JsonConvert.DeserializeObject<Employee>(data);
-                        if (emp.Phone != null)
+                        if (emp.Role.RoleName.ToLower() == "staff")
                         {
-                            if (emp.Role.RoleName.ToLower() == "staff")
-                            {
-                                return "staff";
-                            }else if (emp.Role.RoleName.ToLower() == "bartender")
-                            {
-                                return "bartender";
-                            }
+                            return "staff";
                         }
-                        if (emp.Owner.SubscribeEndDate < DateTime.Now.AddDays(7))
+                        else if (emp.Role.RoleName.ToLower() == "bartender")
                         {
-                            return "employee expired";
+                            return "bartender";
                         }
                     }
-                    else { return "null"; }
+                    if (emp.Owner.SubscribeEndDate < DateTime.Now.AddDays(7))
+                    {
+                        return "employee expired";
+                    }
                 }
-                catch (HttpRequestException e) { }
+                else { return "null"; }
             }
-
+            catch (Exception ex)
+            {
+                
+            }
 
             return "null";
         }
