@@ -5,29 +5,39 @@ using Twilio;
 using Twilio.Rest.Api.V2010.Account;
 using Twilio.Types;
 using OrderingAssistSystem_StaffApp.Models;
-using Twilio.TwiML.Voice;
 using System.Text.Json;
-using Config = OrderingAssistSystem_StaffApp.Models.Config;
 
 
 namespace OrderingAssistSystem_StaffApp
 {
     public partial class MainPage : ContentPage
     {
-        HttpClient _client;
-        JsonSerializerOptions _serializerOptions;
+
+
+        private readonly HttpClient _client;
+        private readonly JsonSerializerOptions _serializerOptions;
+
 
 
         public MainPage()
         {
-            InitializeComponent();
-            _client = new HttpClient();
+            _client = new HttpClient(
+                new HttpClientHandler
+                {
+                    ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => true
+                }
+                );  // Avoid custom handler if possible
             _serializerOptions = new JsonSerializerOptions
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                 WriteIndented = true
             };
+
+            InitializeComponent();
         }
+
+
+
 
         private async void OnSendOtpClicked(object sender, EventArgs e)
         {
@@ -41,23 +51,29 @@ namespace OrderingAssistSystem_StaffApp
                 return;
             }
 
-            Employee emp = null;
+            Employee? emp = null;
 
 
-            Uri uri = new Uri(string.Format(config._apiUrl, string.Empty));
             try
             {
+                var uri = new Uri($"{config.BaseAddress}Employee/Staff/Phone/{phoneNumber}");
                 HttpResponseMessage response = await _client.GetAsync(uri);
+
                 if (response.IsSuccessStatusCode)
                 {
                     string content = await response.Content.ReadAsStringAsync();
-                    emp = Newtonsoft.Json.JsonSerializer.Deserialize<Employee>(content, _serializerOptions);
+                    emp = System.Text.Json.JsonSerializer.Deserialize<Employee>(content, _serializerOptions);
+                }
+                else
+                {
+                    await DisplayAlert("Error", $"Failed to retrieve employee. Error code: {(int)response.StatusCode}", "OK");
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine(@"\tERROR {0}", ex.Message);
+                await DisplayAlert("Error", $"Failed to retrieve employee. Exception: {ex.Message}", "OK");
             }
+
 
 
             /*using (HttpClient client = new HttpClient(new HttpClientHandler
@@ -67,10 +83,11 @@ namespace OrderingAssistSystem_StaffApp
             {
                 try
                 {
-                    HttpResponseMessage res = await client.GetAsync(config._apiUrl + "Employee/Staff/Phone/" + phoneNumber);
+                    HttpResponseMessage res = await client.GetAsync(config.BaseAddress + "Employee/Staff/Phone/" + phoneNumber);
                     string data = await res.Content.ReadAsStringAsync();
+                    int something = (int)res.StatusCode;
                     placeholder = data;
-                    emp = JsonConvert.DeserializeObject<Employee>(data);
+                    emp = JsonConvert.DeserializeObject<Employee?>(data);
 
                     if (!res.IsSuccessStatusCode)
                     {
@@ -84,6 +101,8 @@ namespace OrderingAssistSystem_StaffApp
                     return;
                 }
             }*/
+
+
 
             if (emp == null)
             {
