@@ -52,11 +52,11 @@ namespace OrderingAssistSystem_StaffApp
             var loginStatus = await authorizeLogin.CheckLogin();
             if (loginStatus.Equals("staff"))
             {
-                DisplayAlert("Status", "staff", "OK");
+                await Navigation.PushAsync(new PendingOrderList());
             }
             else if (loginStatus.Equals("bartender"))
             {
-                DisplayAlert("Status", "bartender", "OK");
+                await Navigation.PushAsync(new PendingOrderList());
             }
             else if (loginStatus.Equals("employee expired"))
             {

@@ -30,7 +30,7 @@ public partial class OTPPage : ContentPage
             Preferences.Set("LoginInfo", Preferences.Get("TempLoginInfo", string.Empty));
             Preferences.Remove("TempLoginInfo");
             await DisplayAlert("Success", "OTP verified!", "OK");
-            //await Navigation.PushAsync(new HomePage());
+            await Navigation.PushAsync(new PendingOrderList());
         }
         else
         {
