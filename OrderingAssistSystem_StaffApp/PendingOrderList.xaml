@@ -31,56 +31,30 @@
                                Padding="10">
                                 <VerticalStackLayout>
                                     <!-- Order Details in Grid -->
-                                    <Grid ColumnDefinitions="2*,3*,3*,2*"
-                                      RowDefinitions="Auto,Auto,Auto,Auto">
-                                        <Label Text="Order ID:"
-                                           FontAttributes="Bold" />
-                                        <Label Grid.Column="1"
-                                           Text="{Binding OrderId}" />
+                                    <Grid ColumnDefinitions="2*,3*,3*,2*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+                                        <!-- Order Information -->
+                                        <Label Text="Order ID:" FontAttributes="Bold" />
+                                        <Label Grid.Column="1" Text="{Binding OrderId}" />
 
-                                        <Label Grid.Column="2"
-                                           Text="Member Name:"
-                                           FontAttributes="Bold" />
-                                        <Label Grid.Column="3"
-                                           Text="{Binding Member.MemberName}" />
+                                        <Label Grid.Column="2" Text="Member Name:" FontAttributes="Bold" />
+                                        <Label Grid.Column="3" Text="{Binding Member.MemberName}" />
 
-                                        <Label Grid.Row="1"
-                                           Text="Phone:"
-                                           FontAttributes="Bold" />
-                                        <Label Grid.Row="1"
-                                           Grid.Column="1"
-                                           Text="{Binding Member.Phone}" />
+                                        <Label Grid.Row="1" Text="Phone:" FontAttributes="Bold" />
+                                        <Label Grid.Row="1" Grid.Column="1" Text="{Binding Member.Phone}" />
 
-                                        <Label Grid.Row="1"
-                                           Grid.Column="2"
-                                           Text="Table QR:"
-                                           FontAttributes="Bold" />
-                                        <Label Grid.Row="1"
-                                           Grid.Column="3"
-                                           Text="{Binding Table.Qr}" />
+                                        <Label Grid.Row="1" Grid.Column="2" Text="Table QR:" FontAttributes="Bold" />
+                                        <Label Grid.Row="1" Grid.Column="3" Text="{Binding Table.Qr}" />
 
-                                        <Label Grid.Row="2"
-                                           Text="Status:"
-                                           FontAttributes="Bold" />
-                                        <Label Grid.Row="2"
-                                           Grid.Column="1"
-                                           Text="{Binding Status, Converter={StaticResource StatusToTextConverter}}" />
+                                        <Label Grid.Row="2" Text="Status:" FontAttributes="Bold" />
+                                        <Label Grid.Row="2" Grid.Column="1" Text="{Binding Status, Converter={StaticResource StatusToTextConverter}}" />
 
-                                        <Label Grid.Row="2"
-                                           Grid.Column="2"
-                                           Text="Cost:"
-                                           FontAttributes="Bold" />
-                                        <Label Grid.Row="2"
-                                           Grid.Column="3"
-                                           Text="{Binding Cost, StringFormat='{}{0:C}'}" />
+                                        <Label Grid.Row="2" Grid.Column="2" Text="Cost:" FontAttributes="Bold" />
+                                        <Label Grid.Row="2" Grid.Column="3" Text="{Binding Cost, StringFormat='{}{0:C}'}" />
 
-                                        <Label Grid.Row="3"
-                                           Text="Order Date:"
-                                           FontAttributes="Bold" />
-                                        <Label Grid.Row="3"
-                                           Grid.Column="1"
-                                           Text="{Binding OrderDate, StringFormat='{}{0:MM/dd/yyyy}'}" />
+                                        <Label Grid.Row="3" Text="Order Date:" FontAttributes="Bold" />
+                                        <Label Grid.Row="3" Grid.Column="1" Text="{Binding OrderDate, StringFormat='{}{0:MM/dd/yyyy}'}" />
                                     </Grid>
+
 
                                     <!-- Buttons -->
                                     <HorizontalStackLayout Spacing="10"
@@ -106,7 +80,7 @@
                                             <DataTemplate>
                                                 <StackLayout Margin="0,5">
                                                     <!-- Grid for Order Details -->
-                                                    <Grid ColumnDefinitions="2*,3*,3*,3*" RowDefinitions="Auto,Auto">
+                                                    <Grid ColumnDefinitions="2*,3*,3*,3*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
                                                         <!-- Detail ID -->
                                                         <Label Text="Detail ID: " FontAttributes="Bold" />
                                                         <Label Grid.Column="1" Text="{Binding OrderDetailId}" Padding="0,0,50,0" />
@@ -117,12 +91,25 @@
 
                                                         <!-- Quantity -->
                                                         <Label Grid.Row="1" Text="Quantity: " FontAttributes="Bold" />
-                                                        <Label Grid.Row="1" Grid.Column="1"  Text="{Binding Quantity}" Padding="0,0,50,0"  />
+                                                        <Label Grid.Row="1" Grid.Column="1" Text="{Binding Quantity}" Padding="0,0,50,0" />
 
                                                         <!-- Status -->
-                                                        <Label Grid.Row="1" Grid.Column="2"  Text="Status: " FontAttributes="Bold" />
+                                                        <Label Grid.Row="1" Grid.Column="2" Text="Status: " FontAttributes="Bold" />
                                                         <Label Grid.Row="1" Grid.Column="3" Text="{Binding Status, Converter={StaticResource DetailStatusToTextConverter}}" />
+
+                                                        <!-- Sugar -->
+                                                        <Label Grid.Row="2" Text="Sugar: " FontAttributes="Bold" />
+                                                        <Label Grid.Row="2" Grid.Column="1" Text="{Binding Sugar}" />
+
+                                                        <!-- Ice -->
+                                                        <Label Grid.Row="2" Grid.Column="2" Text="Ice: " FontAttributes="Bold" />
+                                                        <Label Grid.Row="2" Grid.Column="3" Text="{Binding Ice}" />
+
+                                                        <!-- Topping -->
+                                                        <Label Grid.Row="3" Text="Topping: " FontAttributes="Bold" />
+                                                        <Label Grid.Row="3" Grid.Column="1" Text="{Binding Topping}" />
                                                     </Grid>
+
                                                 </StackLayout>
                                             </DataTemplate>
                                         </CollectionView.ItemTemplate>
@@ -230,19 +217,36 @@
                                         <CollectionView.ItemTemplate>
                                             <DataTemplate>
                                                 <StackLayout Margin="0,5">
-                                                    <Grid ColumnDefinitions="2*,3*,3*,2*" RowDefinitions="Auto,Auto,Auto,Auto">
+                                                    <Grid ColumnDefinitions="2*,3*,3*,2*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+                                                        <!-- Queue ID -->
                                                         <Label Text="Queue ID:" FontAttributes="Bold" />
                                                         <Label Grid.Column="1" Text="{Binding QueueId}" />
 
+                                                        <!-- Item Name -->
                                                         <Label Grid.Column="2" Text="Item Name:" FontAttributes="Bold" />
                                                         <Label Grid.Column="3" Text="{Binding ItemName}" />
 
+                                                        <!-- Quantity -->
                                                         <Label Grid.Row="1" Text="Quantity:" FontAttributes="Bold" />
                                                         <Label Grid.Row="1" Grid.Column="1" Text="{Binding Quantity}" />
 
+                                                        <!-- Status -->
                                                         <Label Grid.Row="1" Grid.Column="2" Text="Status:" FontAttributes="Bold" />
                                                         <Label Grid.Row="1" Grid.Column="3" Text="{Binding Status, Converter={StaticResource DetailStatusToTextConverter}}" />
+
+                                                        <!-- Sugar -->
+                                                        <Label Grid.Row="2" Text="Sugar:" FontAttributes="Bold" />
+                                                        <Label Grid.Row="2" Grid.Column="1" Text="{Binding Sugar}" />
+
+                                                        <!-- Ice -->
+                                                        <Label Grid.Row="2" Grid.Column="2" Text="Ice:" FontAttributes="Bold" />
+                                                        <Label Grid.Row="2" Grid.Column="3" Text="{Binding Ice}" />
+
+                                                        <!-- Topping -->
+                                                        <Label Grid.Row="3" Text="Topping:" FontAttributes="Bold" />
+                                                        <Label Grid.Row="3" Grid.Column="1" Text="{Binding Topping}" />
                                                     </Grid>
+
                                                 </StackLayout>
                                             </DataTemplate>
                                         </CollectionView.ItemTemplate>
