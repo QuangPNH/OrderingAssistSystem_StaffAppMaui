@@ -5,16 +5,44 @@ using Microsoft.Maui.Controls;
 using MenuItem = OrderingAssistSystem_StaffApp.Models.MenuItem;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using CommunityToolkit.Maui.Views;
 
 
 namespace OrderingAssistSystem_StaffApp;
 
 public partial class PendingOrderList : ContentPage
 {
+	private ObservableCollection<Models.Notification> Notifications;
 	public PendingOrderList()
 	{
 		InitializeComponent();
 		BindingContext = new CombinedViewModel();
+		// Mock Notifications
+		Notifications = new ObservableCollection<Models.Notification>
+			{
+				new Models.Notification { Title = "Order", Content = "Order #1234 is ready." },
+				new Models.Notification { Title = "Reminder", Content = "Restock ingredients soon." }
+			};
+	}
+
+
+	private void OnBellIconClicked(object sender, EventArgs e)
+	{
+		// Create and display the popup
+		var popup = new NotificationPopup(Notifications);
+		this.ShowPopup(popup);
+	}
+
+	// Navigate to Pending Orders List
+	private async void OnPendingOrdersClicked(object sender, EventArgs e)
+	{
+		await Navigation.PushAsync(new PendingOrderList()); // Assuming PendingOrderList.xaml is another page
+	}
+
+	// Navigate to Menu Item List
+	private async void OnMenuItemsClicked(object sender, EventArgs e)
+	{
+		//await Navigation.PushAsync(new MenuItemList()); // Assuming MenuItemList.xaml is another page
 	}
 }
 
@@ -22,13 +50,66 @@ public class CombinedViewModel
 {
 	public PendingOrderViewModel PendingOrder { get; set; }
 	public ItemToMakeListViewModel ItemToMake { get; set; }
+	public NotificationViewModel Notifications { get; set; }
 
 	public CombinedViewModel()
 	{
 		PendingOrder = new PendingOrderViewModel();
 		ItemToMake = new ItemToMakeListViewModel();
+		Notifications = new NotificationViewModel();
 	}
 }
+
+
+
+//This is not needed anymore
+public class NotificationViewModel
+{
+	public NotificationViewModel()
+	{
+		ObservableCollection<Models.Notification> Notifications = new ObservableCollection<Models.Notification>()
+		{
+			new Models.Notification { Title = "Order", Content = "Order #1234 is ready." },
+				new Models.Notification { Title = "Reminder", Content = "Restock ingredients soon." }
+		};
+
+	}
+}
+
+public class NotificationPopup : Popup
+{
+	public NotificationPopup(ObservableCollection<Models.Notification> notifications)
+	{
+		Content = new StackLayout
+		{
+			Padding = new Thickness(20),
+			BackgroundColor = Colors.White,
+			WidthRequest = 300,
+			Children =
+				{
+					new Label { Text = "Notification History", FontAttributes = FontAttributes.Bold, FontSize = 18 },
+					new ListView
+					{
+						ItemsSource = notifications,
+						ItemTemplate = new DataTemplate(() =>
+						{
+							var textCell = new TextCell();
+							textCell.SetBinding(TextCell.TextProperty, "Title");
+							textCell.SetBinding(TextCell.DetailProperty, "Content");
+							return textCell;
+						})
+					},
+					new Button
+					{
+						Text = "Close",
+						Command = new Command(() => this.Close())
+					}
+				}
+		};
+	}
+}
+
+
 
 public class PendingOrderViewModel
 {
@@ -192,10 +273,6 @@ public class ItemToMakeListViewModel : INotifyPropertyChanged
 		};
 	}
 
-
-
-
-
 	public event PropertyChangedEventHandler PropertyChanged;
 
 	protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
@@ -203,28 +280,6 @@ public class ItemToMakeListViewModel : INotifyPropertyChanged
 		PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

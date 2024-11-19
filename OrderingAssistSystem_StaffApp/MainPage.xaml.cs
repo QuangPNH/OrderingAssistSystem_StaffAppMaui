@@ -20,7 +20,6 @@ namespace OrderingAssistSystem_StaffApp
 
         public MainPage()
         {
-
             _client = new HttpClient(new HttpClientHandler
                 {
                     ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => true
@@ -32,14 +31,22 @@ namespace OrderingAssistSystem_StaffApp
                 WriteIndented = true
             };
 
+			
 
 
-            InitializeComponent();
+			InitializeComponent();
 
-            Authoriz();
 
+			//RandomRedirect();
+			Authoriz();
 
         }
+
+
+        public void RandomRedirect()
+        {
+			Navigation.PushAsync(new PendingOrderList());
+		}
 
 
 
@@ -89,7 +96,6 @@ namespace OrderingAssistSystem_StaffApp
 
             Employee? emp = null;
 
-
             try
             {
                 var uri = new Uri($"{config.BaseAddress}Employee/Staff/Phone/{phoneNumber}");
@@ -109,10 +115,6 @@ namespace OrderingAssistSystem_StaffApp
             {
                 await DisplayAlert("Error", $"Failed to retrieve employee. Exception: {ex.Message}", "OK");
             }
-
-
-
-
 
             /*using (HttpClient client = new HttpClient(new HttpClientHandler
             {
