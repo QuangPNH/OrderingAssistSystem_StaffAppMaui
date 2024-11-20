@@ -31,11 +31,7 @@ namespace OrderingAssistSystem_StaffApp
                 WriteIndented = true
             };
 
-			
-
-
 			InitializeComponent();
-
 
 			//RandomRedirect();
 			Authoriz();
