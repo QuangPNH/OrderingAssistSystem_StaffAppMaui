@@ -187,7 +187,6 @@
                                                 </DataTemplate>
                                             </CollectionView.ItemTemplate>
                                         </CollectionView>
-
                                     </VerticalStackLayout>
                                 </Frame>
                             </StackLayout>
@@ -227,7 +226,6 @@
                                             </CollectionView.ItemTemplate>
                                         </CollectionView>
                                     </VerticalStackLayout>
-
                                 </Frame>
                             </StackLayout>
                         </DataTemplate>

@@ -33,16 +33,13 @@ namespace OrderingAssistSystem_StaffApp
 
 			InitializeComponent();
 
-			//RandomRedirect();
+			Navigation.PushAsync(new PendingOrderList());
+
 			Authoriz();
 
         }
 
 
-        public void RandomRedirect()
-        {
-			Navigation.PushAsync(new PendingOrderList());
-		}
 
 
 
@@ -55,23 +52,23 @@ namespace OrderingAssistSystem_StaffApp
             var loginStatus = await authorizeLogin.CheckLogin();
             if (loginStatus.Equals("staff"))
             {
-                await Navigation.PushAsync(new PendingOrderList());
+                 await Navigation.PushAsync(new PendingOrderList());
             }
             else if (loginStatus.Equals("bartender"))
             {
-                await Navigation.PushAsync(new PendingOrderList());
+				await Navigation.PushAsync(new PendingOrderList());
             }
             else if (loginStatus.Equals("employee expired"))
             {
-                DisplayAlert("Status", "The owner's subscription has been over for over a week. Contact for more info.", "OK");
+				await DisplayAlert("Status", "The owner's subscription has been over for over a week. Contact for more info.", "OK");
             }
             else if(loginStatus.Equals("null"))
             {
-                DisplayAlert("Status", Preferences.Get("LoginInfo", string.Empty) +  "null", "OK");
+				await DisplayAlert("Status", Preferences.Get("LoginInfo", string.Empty) +  "null", "OK");
             }
             else
             {
-                DisplayAlert("Status", "Nothing much really", "OK");
+                await DisplayAlert("Status", "Nothing much really", "OK");
             }
         }
 
@@ -111,6 +108,7 @@ namespace OrderingAssistSystem_StaffApp
             {
                 await DisplayAlert("Error", $"Failed to retrieve employee. Exception: {ex.Message}", "OK");
             }
+
 
             /*using (HttpClient client = new HttpClient(new HttpClientHandler
             {

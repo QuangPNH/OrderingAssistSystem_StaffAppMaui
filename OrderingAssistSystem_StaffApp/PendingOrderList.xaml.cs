@@ -42,7 +42,7 @@ public partial class PendingOrderList : ContentPage
 	// Navigate to Menu Item List
 	private async void OnMenuItemsClicked(object sender, EventArgs e)
 	{
-		//await Navigation.PushAsync(new MenuItemList()); // Assuming MenuItemList.xaml is another page
+		await Navigation.PushAsync(new MenuItemList()); // Assuming MenuItemList.xaml is another page
 	}
 }
 
