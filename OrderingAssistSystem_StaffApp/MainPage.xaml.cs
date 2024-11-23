@@ -33,7 +33,7 @@ namespace OrderingAssistSystem_StaffApp
 
 			InitializeComponent();
 
-			Navigation.PushAsync(new PendingOrderList());
+			//Navigation.PushAsync(new PendingOrderList());
 
 			Authoriz();
 
@@ -52,12 +52,14 @@ namespace OrderingAssistSystem_StaffApp
             var loginStatus = await authorizeLogin.CheckLogin();
             if (loginStatus.Equals("staff"))
             {
-                 await Navigation.PushAsync(new PendingOrderList());
-            }
+				//Application.Current.MainPage = new NavigationPage(new ContentPage());
+				await Navigation.PushAsync(new PendingOrderList());
+			}
             else if (loginStatus.Equals("bartender"))
             {
+				//Application.Current.MainPage = new NavigationPage(new ContentPage());
 				await Navigation.PushAsync(new PendingOrderList());
-            }
+			}
             else if (loginStatus.Equals("employee expired"))
             {
 				await DisplayAlert("Status", "The owner's subscription has been over for over a week. Contact for more info.", "OK");

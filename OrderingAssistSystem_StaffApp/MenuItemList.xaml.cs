@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using CommunityToolkit.Maui.Views;
+using Newtonsoft.Json;
 using OrderingAssistSystem_StaffApp.Models;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -9,6 +10,7 @@ namespace OrderingAssistSystem_StaffApp;
 
 public partial class MenuItemList : ContentPage
 {
+	private ObservableCollection<Models.Notification> Notifications;
 	public ObservableCollection<CartItem> CartItems { get; set; }
 	public MenuItemList()
 	{
@@ -31,6 +33,12 @@ public partial class MenuItemList : ContentPage
 			Price = 5.0,
 			Discount = 0.5
 		}
+	};
+
+		Notifications = new ObservableCollection<Models.Notification>
+	{
+		new Models.Notification { Title = "Order", Content = "Order #1234 is ready." },
+		new Models.Notification { Title = "Reminder", Content = "Restock ingredients soon." }
 	};
 
 		// Parse the attributes for example descriptions
@@ -64,6 +72,44 @@ public partial class MenuItemList : ContentPage
 	{
 		// Logic to create the order
 	}
+
+	private void OnBellIconClicked(object sender, EventArgs e)
+	{
+		// Create and display the popup
+		var popup = new NotificationPopup(Notifications);
+		this.ShowPopup(popup);
+	}
+
+    // Navigate to Pending Orders List
+    private async void OnPendingOrdersClicked(object sender, EventArgs e)
+    {
+        await Application.Current.MainPage.Navigation.PushAsync(new PendingOrderList());
+        Application.Current.MainPage = new NavigationPage(new PendingOrderList());
+        //await Navigation.PushAsync(new PendingOrderList());
+    }
+
+    // Navigate to Menu Item List
+    private async void OnMenuItemsClicked(object sender, EventArgs e)
+    {
+        await Application.Current.MainPage.Navigation.PushAsync(new MenuItemList());
+        Application.Current.MainPage = new NavigationPage(new MenuItemList());
+        //await Navigation.PushAsync(new MenuItemList());
+    }
+
+    private async void OnItemToMakeClicked(object sender, EventArgs e)
+    {
+        await Application.Current.MainPage.Navigation.PushAsync(new ItemToMake());
+        Application.Current.MainPage = new NavigationPage(new ItemToMake());
+        //await Navigation.PushAsync(new ItemToMake());
+    }
+
+    private async void OnLogOutClicked(object sender, EventArgs e)
+    {
+        Preferences.Remove("LoginInfo");
+        await Application.Current.MainPage.Navigation.PushAsync(new MainPage());
+        Application.Current.MainPage = new NavigationPage(new MainPage());
+        //await Navigation.PushAsync(new MainPage());
+    }
 }
 
 public class CartItem
@@ -126,6 +172,8 @@ public class MenuItemListViewModel : INotifyPropertyChanged
 
 	public ItemCategory SelectedCategory
 	{
+
+
 		get => _selectedCategory;
 		set
 		{
@@ -160,11 +208,16 @@ public class MenuItemListViewModel : INotifyPropertyChanged
 	private void LoadCategories()
 	{
 		// Mock data for categories
+		Categories.Add(new ItemCategory { ItemCategoryName = "None" });
 		Categories.Add(new ItemCategory { ItemCategoryName = "Beverage" });
 		Categories.Add(new ItemCategory { ItemCategoryName = "Food" });
 		Categories.Add(new ItemCategory { ItemCategoryName = "Dessert" });
-		// Add more categories as needed
+
+		// Set "None" as the default selected category
+		SelectedCategory = Categories.FirstOrDefault(c => c.ItemCategoryName == "None");
 	}
+
+
 
 	private void LoadMenuItems()
 	{
@@ -218,13 +271,14 @@ public class MenuItemListViewModel : INotifyPropertyChanged
 	{
 		var filtered = MenuItems.Where(mi =>
 			(string.IsNullOrWhiteSpace(SearchText) || mi.ItemName.ToLower().Contains(SearchText.ToLower())) &&
-			(SelectedCategory == null || mi.Category == SelectedCategory.ItemCategoryName));
+			(SelectedCategory == null || SelectedCategory.ItemCategoryName == "None" || mi.Category == SelectedCategory.ItemCategoryName));
 
 		FilteredMenuItems.Clear();
 
 		foreach (var item in filtered)
 			FilteredMenuItems.Add(item);
 	}
+
 
 	private void AddToCart(MenuItemViewModel menuItem)
 	{

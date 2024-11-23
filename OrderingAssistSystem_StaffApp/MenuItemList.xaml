@@ -16,249 +16,293 @@
         </ResourceDictionary>
     </ContentPage.Resources>
 
-    <ScrollView>
-        <StackLayout Padding="10" Spacing="10">
 
-            <!-- Button to show the cart list -->
-            <Button Text="Show Cart" 
+    <Grid RowDefinitions="Auto,*">
+        <!-- Navigation Bar -->
+        <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto" Padding="10,5" BackgroundColor="LightGray">
+            <!-- Navigation Links -->
+            <StackLayout Orientation="Horizontal" HorizontalOptions="Start" VerticalOptions="Center">
+                <Button Text="Pending"
+                    Clicked="OnPendingOrdersClicked"
+                    Style="{StaticResource PrimaryButtonStyle}"
+                    HeightRequest="40" />
+                <Button Text="To Make"
+    Clicked="OnItemToMakeClicked"
+    Style="{StaticResource PrimaryButtonStyle}"
+    HeightRequest="40" 
+    Margin="10,0,0,0" />
+                <Button Text="Menu"
+                    Clicked="OnMenuItemsClicked"
+                    Style="{StaticResource PrimaryButtonStyle}"
+                    HeightRequest="40" 
+                    Margin="10,0,0,0" />
+
+
+                <Button Text="Log Out"
+    Clicked="OnLogOutClicked"
+    Style="{StaticResource PrimaryButtonStyle}"
+    HeightRequest="40" 
+    Margin="10,0,0,0" />
+            </StackLayout>
+
+            <!-- Notification Bell Icon -->
+            <ImageButton Source="bell_icon.png"
+                     Clicked="OnBellIconClicked"
+                     HeightRequest="40"
+                     WidthRequest="40"
+                     VerticalOptions="Center"
+                     HorizontalOptions="End"
+                     BackgroundColor="Transparent"
+                     Margin="0,0,-9,0" />
+        </Grid>
+
+        <ScrollView Grid.Row="1">
+            <StackLayout Padding="10" Spacing="10">
+
+                <!-- Button to show the cart list -->
+                <Button Text="Show Cart" 
                     HorizontalOptions="Center" 
                     Clicked="ShowCartPopup" />
 
-            <!-- Cart Pop-up (Hidden initially) -->
-            <Grid x:Name="CartPopup"
+                <!-- Cart Pop-up (Hidden initially) -->
+                <Grid x:Name="CartPopup"
                   IsVisible="False"
                   BackgroundColor="#80000000" 
                   VerticalOptions="Center" 
                   HorizontalOptions="Center" 
                   ZIndex="1">
-                <Frame BackgroundColor="White"
+                    <Frame BackgroundColor="White"
                        Padding="10"
                        CornerRadius="10"
                        VerticalOptions="Center"
                        HorizontalOptions="Center"
                        WidthRequest="300">
-                    <StackLayout>
-                        <!-- Button to hide cart -->
-                        <Button Text="Close"
+                        <StackLayout>
+                            <!-- Button to hide cart -->
+                            <Button Text="Close"
                                 HorizontalOptions="End"
                                 BackgroundColor="LightGray"
                                 TextColor="Black"
                                 Clicked="HideCartPopup" />
 
-                        <!-- Field to enter member's phone number -->
-                        <Label Text="Member's Phone Number" />
-                        <Entry x:Name="PhoneNumberEntry" Placeholder="Enter phone number" />
+                            <!-- Field to enter member's phone number -->
+                            <Label Text="Member's Phone Number" />
+                            <Entry x:Name="PhoneNumberEntry" Placeholder="Enter phone number" />
 
-                        <!-- Cart Items List -->
-                        <CollectionView x:Name="CartList"
+                            <!-- Cart Items List -->
+                            <CollectionView x:Name="CartList"
                                         Margin="0,10,0,10"
                                         HeightRequest="300">
-                            <CollectionView.ItemTemplate>
-                                <DataTemplate>
-                                    <Frame Margin="5"
+                                <CollectionView.ItemTemplate>
+                                    <DataTemplate>
+                                        <Frame Margin="5"
                                            Padding="10"
                                            BorderColor="LightGray"
                                            CornerRadius="5">
-                                        <StackLayout>
-                                            <Label Text="{Binding ItemName}" FontAttributes="Bold" />
+                                            <StackLayout>
+                                                <Label Text="{Binding ItemName}" FontAttributes="Bold" />
 
-                                            <!-- Quantity -->
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="Auto" />
-                                                    <ColumnDefinition Width="*" />
-                                                </Grid.ColumnDefinitions>
-                                                <Label Text="Quantity: " VerticalOptions="Center" />
-                                                <Label Text="{Binding Quantity}" Grid.Column="1" VerticalOptions="Center" />
-                                            </Grid>
+                                                <!-- Quantity -->
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <Label Text="Quantity: " VerticalOptions="Center" />
+                                                    <Label Text="{Binding Quantity}" Grid.Column="1" VerticalOptions="Center" />
+                                                </Grid>
 
-                                            <!-- Sugar -->
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="Auto" />
-                                                    <ColumnDefinition Width="*" />
-                                                </Grid.ColumnDefinitions>
-                                                <Label Text="Sugar: " VerticalOptions="Center" />
-                                                <Label Text="{Binding Sugar}" Grid.Column="1" VerticalOptions="Center" />
-                                            </Grid>
+                                                <!-- Sugar -->
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <Label Text="Sugar: " VerticalOptions="Center" />
+                                                    <Label Text="{Binding Sugar}" Grid.Column="1" VerticalOptions="Center" />
+                                                </Grid>
 
-                                            <!-- Ice -->
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="Auto" />
-                                                    <ColumnDefinition Width="*" />
-                                                </Grid.ColumnDefinitions>
-                                                <Label Text="Ice: " VerticalOptions="Center" />
-                                                <Label Text="{Binding Ice}" Grid.Column="1" VerticalOptions="Center" />
-                                            </Grid>
+                                                <!-- Ice -->
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <Label Text="Ice: " VerticalOptions="Center" />
+                                                    <Label Text="{Binding Ice}" Grid.Column="1" VerticalOptions="Center" />
+                                                </Grid>
 
-                                            <!-- Toppings -->
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="Auto" />
-                                                    <ColumnDefinition Width="*" />
-                                                </Grid.ColumnDefinitions>
-                                                <Label Text="Toppings: " VerticalOptions="Center" />
-                                                <Label Text="{Binding Topping}" Grid.Column="1" VerticalOptions="Center" />
-                                            </Grid>
+                                                <!-- Toppings -->
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <Label Text="Toppings: " VerticalOptions="Center" />
+                                                    <Label Text="{Binding Topping}" Grid.Column="1" VerticalOptions="Center" />
+                                                </Grid>
 
-                                            <!-- Price -->
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="Auto" />
-                                                    <ColumnDefinition Width="*" />
-                                                </Grid.ColumnDefinitions>
-                                                <Label Text="Price: " VerticalOptions="Center" />
-                                                <Label Text="{Binding Price, StringFormat='{0:C}'}" Grid.Column="1" VerticalOptions="Center" />
-                                            </Grid>
+                                                <!-- Price -->
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <Label Text="Price: " VerticalOptions="Center" />
+                                                    <Label Text="{Binding Price, StringFormat='{0:C}'}" Grid.Column="1" VerticalOptions="Center" />
+                                                </Grid>
 
-                                            <!-- Discount -->
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="Auto" />
-                                                    <ColumnDefinition Width="*" />
-                                                </Grid.ColumnDefinitions>
-                                                <Label Text="Discount: " VerticalOptions="Center" />
-                                                <Label Text="{Binding Discount, StringFormat='{0:C}'}" Grid.Column="1" VerticalOptions="Center" />
-                                            </Grid>
+                                                <!-- Discount -->
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <Label Text="Discount: " VerticalOptions="Center" />
+                                                    <Label Text="{Binding Discount, StringFormat='{0:C}'}" Grid.Column="1" VerticalOptions="Center" />
+                                                </Grid>
 
-                                            <!-- Remove Button -->
-                                            <Button Text="Remove" BackgroundColor="Red" TextColor="White" Command="{Binding RemoveCommand}" />
-                                        </StackLayout>
+                                                <!-- Remove Button -->
+                                                <Button Text="Remove" BackgroundColor="Red" TextColor="White" Command="{Binding RemoveCommand}" />
+                                            </StackLayout>
 
 
-                                    </Frame>
-                                </DataTemplate>
-                            </CollectionView.ItemTemplate>
-                        </CollectionView>
+                                        </Frame>
+                                    </DataTemplate>
+                                </CollectionView.ItemTemplate>
+                            </CollectionView>
 
-                        <!-- Total Price and Create Order Button -->
-                        <StackLayout Orientation="Horizontal" HorizontalOptions="Center">
-                            <Label Text="Total: "
+                            <!-- Total Price and Create Order Button -->
+                            <StackLayout Orientation="Horizontal" HorizontalOptions="Center">
+                                <Label Text="Total: "
                                    FontAttributes="Bold"
                                    VerticalOptions="Center" />
-                            <Label x:Name="TotalPriceLabel" 
+                                <Label x:Name="TotalPriceLabel" 
                                    FontAttributes="Bold"
                                    VerticalOptions="Center" />
-                        </StackLayout>
+                            </StackLayout>
 
-                        <Button Text="Create Order"
+                            <Button Text="Create Order"
                                 BackgroundColor="DodgerBlue"
                                 TextColor="White"
                                 CornerRadius="5"
                                 Command="{Binding CreateOrderCommand}" />
-                    </StackLayout>
-                </Frame>
-            </Grid>
+                        </StackLayout>
+                    </Frame>
+                </Grid>
 
-            <!-- Search and Category Selection -->
-            <Grid ColumnDefinitions="3*,2*" RowDefinitions="Auto" Margin="0,0,0,10">
-                <SearchBar Placeholder="Search Item Name" 
+                <!-- Search and Category Selection -->
+                <Grid ColumnDefinitions="3*,2*" RowDefinitions="Auto" Margin="0,0,0,10">
+                    <SearchBar Placeholder="Search Item Name" 
                            Text="{Binding SearchText}" 
                            Grid.Column="0" />
-                <Picker Title="Category" 
-                        ItemsSource="{Binding Categories}" 
-                        SelectedItem="{Binding SelectedCategory}" 
-                        Grid.Column="1" 
-                        HorizontalOptions="End" />
-            </Grid>
+                    <Picker Title="Category" 
+        ItemsSource="{Binding Categories}" 
+        SelectedItem="{Binding SelectedCategory}" 
+        ItemDisplayBinding="{Binding ItemCategoryName}" 
+        Grid.Column="1" 
+        HorizontalOptions="End" />
 
-            <!-- Menu Items List -->
-            <CollectionView ItemsSource="{Binding FilteredMenuItems}" 
+                </Grid>
+
+                <!-- Menu Items List -->
+                <CollectionView ItemsSource="{Binding FilteredMenuItems}" 
                             SelectionMode="None">
-                <CollectionView.ItemTemplate>
-                    <DataTemplate>
-                        <Frame BorderColor="Gray" CornerRadius="10" Padding="10" Margin="0,5">
-                            <StackLayout Spacing="10">
-                                <!-- Menu Item Header -->
-                                <Grid ColumnDefinitions="3*,2*" RowDefinitions="Auto,Auto">
-                                    <Label Text="{Binding ItemName}" 
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Frame BorderColor="Gray" CornerRadius="10" Padding="10" Margin="0,5">
+                                <StackLayout Spacing="10">
+                                    <!-- Menu Item Header -->
+                                    <Grid ColumnDefinitions="3*,2*" RowDefinitions="Auto,Auto">
+                                        <Label Text="{Binding ItemName}" 
                                            FontAttributes="Bold" 
                                            FontSize="18" 
                                            Grid.Column="0" />
-                                    <Label Text="{Binding Price, StringFormat='Price: {0:C}'}" 
+                                        <Label Text="{Binding Price, StringFormat='Price: {0:C}'}" 
                                            FontAttributes="Italic" 
                                            Grid.Column="1" 
                                            HorizontalOptions="End" />
-                                </Grid>
-                                <Label Text="{Binding Category}" 
+                                    </Grid>
+                                    <Label Text="{Binding Category}" 
                                        FontAttributes="Italic" 
                                        FontSize="14" />
 
-                                <!-- Enable/Disable and Quantity -->
-                                <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto" Margin="0,5,0,0">
-                                    <!-- Enable/Disable Checkbox -->
-                                    <StackLayout Orientation="Horizontal" Grid.Column="0" VerticalOptions="Center">
-                                        <CheckBox IsChecked="{Binding IsAvailable}" />
-                                        <Label Text="Available" VerticalOptions="Center" Margin="5,0,0,0" />
-                                    </StackLayout>
+                                    <!-- Enable/Disable and Quantity -->
+                                    <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto" Margin="0,5,0,0">
+                                        <!-- Enable/Disable Checkbox -->
+                                        <StackLayout Orientation="Horizontal" Grid.Column="0" VerticalOptions="Center">
+                                            <CheckBox IsChecked="{Binding IsAvailable}" />
+                                            <Label Text="Available" VerticalOptions="Center" Margin="5,0,0,0" />
+                                        </StackLayout>
 
-                                    <!-- Quantity Entry -->
-                                    <StackLayout Orientation="Horizontal" Grid.Column="1" VerticalOptions="Center" Margin="10,0,0,0">
-                                        <Label Text="Quantity:" VerticalOptions="Center" />
-                                        <Entry Placeholder="Qty" 
+                                        <!-- Quantity Entry -->
+                                        <StackLayout Orientation="Horizontal" Grid.Column="1" VerticalOptions="Center" Margin="10,0,0,0">
+                                            <Label Text="Quantity:" VerticalOptions="Center" />
+                                            <Entry Placeholder="Qty" 
                                                Keyboard="Numeric" 
                                                Text="{Binding Quantity}" 
                                                WidthRequest="50" 
                                                Margin="5,0,0,0" />
-                                    </StackLayout>
+                                        </StackLayout>
 
-                                    <!-- Add to Cart Button -->
-                                    <Button Text="Add to Cart" 
+                                        <!-- Add to Cart Button -->
+                                        <Button Text="Add to Cart" 
                                             Command="{Binding AddToCartCommand}" 
                                             CommandParameter="{Binding .}" 
                                             Grid.Column="2" 
                                             Margin="10,0,0,0" 
                                             HeightRequest="40" />
-                                </Grid>
+                                    </Grid>
 
-                                <!-- Preferences: Sugar, Ice, Toppings -->
-                                <Grid ColumnDefinitions="Auto,*,Auto,*,Auto,*" RowDefinitions="Auto,Auto" Margin="0,10,0,0">
-                                    <!-- Sugar Options -->
-                                    <Label Text="Sugar:" FontAttributes="Bold" Grid.Row="0" Grid.Column="0" />
-                                    <Picker Grid.Row="0" Grid.Column="1" 
+                                    <!-- Preferences: Sugar, Ice, Toppings -->
+                                    <Grid ColumnDefinitions="Auto,*,Auto,*,Auto,*" RowDefinitions="Auto,Auto" Margin="0,10,0,0">
+                                        <!-- Sugar Options -->
+                                        <Label Text="Sugar:" FontAttributes="Bold" Grid.Row="0" Grid.Column="0" />
+                                        <Picker Grid.Row="0" Grid.Column="1" 
                                             SelectedItem="{Binding Sugar}" 
                                             WidthRequest="100">
-                                        <Picker.Items>
-                                            <x:String>Less</x:String>
-                                            <x:String>Normal</x:String>
-                                            <x:String>More</x:String>
-                                        </Picker.Items>
-                                    </Picker>
+                                            <Picker.Items>
+                                                <x:String>Less</x:String>
+                                                <x:String>Normal</x:String>
+                                                <x:String>More</x:String>
+                                            </Picker.Items>
+                                        </Picker>
 
-                                    <!-- Ice Options -->
-                                    <Label Text="Ice:" FontAttributes="Bold" Grid.Row="0" Grid.Column="2" />
-                                    <Picker Grid.Row="0" Grid.Column="3" 
+                                        <!-- Ice Options -->
+                                        <Label Text="Ice:" FontAttributes="Bold" Grid.Row="0" Grid.Column="2" />
+                                        <Picker Grid.Row="0" Grid.Column="3" 
                                             SelectedItem="{Binding Ice}" 
                                             WidthRequest="100">
-                                        <Picker.Items>
-                                            <x:String>Less</x:String>
-                                            <x:String>Normal</x:String>
-                                            <x:String>More</x:String>
-                                        </Picker.Items>
-                                    </Picker>
+                                            <Picker.Items>
+                                                <x:String>Less</x:String>
+                                                <x:String>Normal</x:String>
+                                                <x:String>More</x:String>
+                                            </Picker.Items>
+                                        </Picker>
 
-                                    <!-- Toppings -->
-                                    <Label Text="Toppings:" FontAttributes="Bold" Grid.Row="1" Grid.Column="0" />
-                                    <CollectionView Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="4" 
+                                        <!-- Toppings -->
+                                        <Label Text="Toppings:" FontAttributes="Bold" Grid.Row="1" Grid.Column="0" />
+                                        <CollectionView Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="4" 
                                                     ItemsSource="{Binding AvailableToppings}" 
                                                     SelectionMode="Multiple">
-                                        <CollectionView.ItemTemplate>
-                                            <DataTemplate>
-                                                <StackLayout Orientation="Horizontal" Padding="0,5,0,0">
-                                                    <CheckBox IsChecked="{Binding IsSelected}" />
-                                                    <Label Text="{Binding ItemName}" VerticalOptions="Center" Margin="5,0,0,0" />
-                                                </StackLayout>
-                                            </DataTemplate>
-                                        </CollectionView.ItemTemplate>
-                                    </CollectionView>
-                                </Grid>
+                                            <CollectionView.ItemTemplate>
+                                                <DataTemplate>
+                                                    <StackLayout Orientation="Horizontal" Padding="0,5,0,0">
+                                                        <CheckBox IsChecked="{Binding IsSelected}" />
+                                                        <Label Text="{Binding ItemName}" VerticalOptions="Center" Margin="5,0,0,0" />
+                                                    </StackLayout>
+                                                </DataTemplate>
+                                            </CollectionView.ItemTemplate>
+                                        </CollectionView>
+                                    </Grid>
 
-                            </StackLayout>
-                        </Frame>
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>
-        </StackLayout>
-    </ScrollView>
+                                </StackLayout>
+                            </Frame>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </StackLayout>
+        </ScrollView>
+
+    </Grid>
 </ContentPage>

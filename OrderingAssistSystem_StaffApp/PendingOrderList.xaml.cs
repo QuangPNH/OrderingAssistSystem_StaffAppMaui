@@ -33,17 +33,36 @@ public partial class PendingOrderList : ContentPage
 		this.ShowPopup(popup);
 	}
 
-	// Navigate to Pending Orders List
-	private async void OnPendingOrdersClicked(object sender, EventArgs e)
-	{
-		await Navigation.PushAsync(new PendingOrderList()); // Assuming PendingOrderList.xaml is another page
-	}
+    // Navigate to Pending Orders List
+    private async void OnPendingOrdersClicked(object sender, EventArgs e)
+    {
+        await Application.Current.MainPage.Navigation.PushAsync(new PendingOrderList());
+        Application.Current.MainPage = new NavigationPage(new PendingOrderList());
+        //await Navigation.PushAsync(new PendingOrderList());
+    }
 
-	// Navigate to Menu Item List
-	private async void OnMenuItemsClicked(object sender, EventArgs e)
-	{
-		await Navigation.PushAsync(new MenuItemList()); // Assuming MenuItemList.xaml is another page
-	}
+    // Navigate to Menu Item List
+    private async void OnMenuItemsClicked(object sender, EventArgs e)
+    {
+        await Application.Current.MainPage.Navigation.PushAsync(new MenuItemList());
+        Application.Current.MainPage = new NavigationPage(new MenuItemList());
+        //await Navigation.PushAsync(new MenuItemList());
+    }
+
+    private async void OnItemToMakeClicked(object sender, EventArgs e)
+    {
+        await Application.Current.MainPage.Navigation.PushAsync(new ItemToMake());
+        Application.Current.MainPage = new NavigationPage(new ItemToMake());
+        //await Navigation.PushAsync(new ItemToMake());
+    }
+
+    private async void OnLogOutClicked(object sender, EventArgs e)
+    {
+        Preferences.Remove("LoginInfo");
+        await Application.Current.MainPage.Navigation.PushAsync(new MainPage());
+        Application.Current.MainPage = new NavigationPage(new MainPage());
+        //await Navigation.PushAsync(new MainPage());
+    }
 }
 
 public class CombinedViewModel
