@@ -1,4 +1,5 @@
 using CommunityToolkit.Maui.Views;
+using OrderingAssistSystem_StaffApp.Models;
 using System.Collections.ObjectModel;
 
 namespace OrderingAssistSystem_StaffApp;
@@ -28,36 +29,55 @@ public partial class ItemToMake : ContentPage
 		this.ShowPopup(popup);
 	}
 
-	// Navigate to Pending Orders List
-	private async void OnPendingOrdersClicked(object sender, EventArgs e)
-	{
+    /*// Navigate to Pending Orders List
+    private async void OnPendingOrdersClicked(object sender, EventArgs e)
+    {
         await Application.Current.MainPage.Navigation.PushAsync(new PendingOrderList());
-        Application.Current.MainPage = new NavigationPage(new PendingOrderList());
-        //await Navigation.PushAsync(new PendingOrderList());
-	}
+    }
 
-	// Navigate to Menu Item List
-	private async void OnMenuItemsClicked(object sender, EventArgs e)
-	{
+    // Navigate to Menu Item List
+    private async void OnMenuItemsClicked(object sender, EventArgs e)
+    {
         await Application.Current.MainPage.Navigation.PushAsync(new MenuItemList());
-        Application.Current.MainPage = new NavigationPage(new MenuItemList());
-        //await Navigation.PushAsync(new MenuItemList());
-	}
+    }
 
-	private async void OnItemToMakeClicked(object sender, EventArgs e)
-	{
+    // Navigate to Items to Make
+    private async void OnItemToMakeClicked(object sender, EventArgs e)
+    {
         await Application.Current.MainPage.Navigation.PushAsync(new ItemToMake());
-        Application.Current.MainPage = new NavigationPage(new ItemToMake());
-        //await Navigation.PushAsync(new ItemToMake());
-	}
+    }*/
 
-	private async void OnLogOutClicked(object sender, EventArgs e)
-	{
-		Preferences.Remove("LoginInfo");
-        await Application.Current.MainPage.Navigation.PushAsync(new MainPage());
+    private void SwitchToPage(string pageKey, Func<Page> createPage)
+    {
+        var page = PageCache.Instance.GetOrCreatePage(pageKey, createPage);
+        Application.Current.MainPage = new NavigationPage(page);
+    }
+
+    private void OnPendingOrdersClicked(object sender, EventArgs e)
+    {
+        SwitchToPage("PendingOrders", () => new PendingOrderList());
+    }
+
+    private void OnMenuItemsClicked(object sender, EventArgs e)
+    {
+        SwitchToPage("MenuItems", () => new MenuItemList());
+    }
+
+    private void OnItemToMakeClicked(object sender, EventArgs e)
+    {
+        SwitchToPage("ItemsToMake", () => new ItemToMake());
+    }
+
+
+
+    private async void OnLogOutClicked(object sender, EventArgs e)
+    {
+        Preferences.Remove("LoginInfo");
+
+        // Reset the MainPage to the login page
         Application.Current.MainPage = new NavigationPage(new MainPage());
-        //await Navigation.PushAsync(new MainPage());
-	}
+        await Task.CompletedTask; // Ensure the method is still async.
+    }
 }
 
 

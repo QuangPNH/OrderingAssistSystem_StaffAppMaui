@@ -40,9 +40,6 @@ namespace OrderingAssistSystem_StaffApp
         }
 
 
-
-
-
         public async Task Authoriz()
         {
             DisplayAlert("Status", Preferences.Get("LoginInfo", string.Empty), "OK");
