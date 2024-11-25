@@ -10,6 +10,5 @@ namespace OrderingAssistSystem_StaffApp.Models
     {
         public readonly string _apiUrl = "https://10.0.2.2:7183/api/";
         public string BaseAddress = DeviceInfo.Platform == DevicePlatform.Android ? "https://10.0.2.2:7183/api/" : "https://localhost:7183/api/";
-
     }
 }

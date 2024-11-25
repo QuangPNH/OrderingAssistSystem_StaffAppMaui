@@ -16,8 +16,6 @@ namespace OrderingAssistSystem_StaffApp
         private readonly HttpClient _client;
         private readonly JsonSerializerOptions _serializerOptions;
 
-
-
         public MainPage()
         {
             _client = new HttpClient(new HttpClientHandler

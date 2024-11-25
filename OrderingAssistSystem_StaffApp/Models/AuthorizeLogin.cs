@@ -7,7 +7,6 @@ namespace OrderingAssistSystem_StaffApp.Models
 {
     public class AuthorizeLogin
     {
-        private readonly string _apiUrl = "https://localhost:7183/api/";
         private readonly HttpClient _client;
         private readonly JsonSerializerOptions _serializerOptions;
 
