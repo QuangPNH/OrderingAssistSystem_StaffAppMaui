@@ -52,137 +52,150 @@ FontSize="20"
 FontAttributes="Bold"
 HorizontalOptions="Center" />
 
-        <!-- Grouped Menu Items -->
-        <Label Text="Pending" FontAttributes="Bold" FontSize="18" Margin="10,0,10,5" />
-        <CollectionView ItemsSource="{Binding ItemToMake.GroupedMenuItems}">
-            <CollectionView.ItemTemplate>
-                <DataTemplate>
-                    <StackLayout Margin="0,10">
-                        <!-- Menu Item Header -->
-                        <Frame BorderColor="Gray"
+                <!-- Grouped Menu Items -->
+                <Label Text="Pending" FontAttributes="Bold" FontSize="18" Margin="10,0,10,5" />
+                <CollectionView ItemsSource="{Binding ItemToMake.GroupedMenuItems}">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <StackLayout Margin="0,10">
+                                <!-- Menu Item Header -->
+                                <Frame BorderColor="Gray"
                 CornerRadius="5"
                 Padding="10">
-                            <VerticalStackLayout>
-                                <CollectionView ItemsSource="{Binding PendingItems}">
-                                    <CollectionView.ItemTemplate>
-                                        <DataTemplate>
-                                            <StackLayout Margin="0,5">
-                                                <Grid ColumnDefinitions="2*,3*,3*,2*" RowDefinitions="Auto,Auto,Auto,Auto">
-                                                    <Label Text="Queue ID:" FontAttributes="Bold" />
-                                                    <Label Grid.Column="1" Text="{Binding QueueId}" />
+                                    <VerticalStackLayout>
+                                        <CollectionView ItemsSource="{Binding PendingItems}">
+                                            <CollectionView.ItemTemplate>
+                                                <DataTemplate>
+                                                    <StackLayout Margin="0,5">
+                                                        <Grid ColumnDefinitions="2*,3*,3*,2*" RowDefinitions="Auto,Auto,Auto,Auto">
+                                                            <Label Text="Queue ID:" FontAttributes="Bold" />
+                                                            <Label Grid.Column="1" Text="{Binding OrderDetailId}" />
 
-                                                    <Label Grid.Column="2" Text="Item Name:" FontAttributes="Bold" />
-                                                    <Label Grid.Column="3" Text="{Binding ItemName}" />
+                                                            <Label Grid.Column="2" Text="Item Name:" FontAttributes="Bold" />
+                                                            <Label Grid.Column="3" Text="{Binding MenuItem.ItemName}" />
 
-                                                    <Label Grid.Row="1" Text="Quantity:" FontAttributes="Bold" />
-                                                    <Label Grid.Row="1" Grid.Column="1" Text="{Binding Quantity}" />
+                                                            <Label Grid.Row="1" Text="Quantity:" FontAttributes="Bold" />
+                                                            <Label Grid.Row="1" Grid.Column="1" Text="{Binding Quantity}" />
+                                                            <!-- Sugar -->
+                                                            <Label Grid.Row="2" Text="Sugar:" FontAttributes="Bold" />
+                                                            <Label Grid.Row="2" Grid.Column="1" Text="{Binding Sugar}" />
 
-                                                    <Label Grid.Row="1" Grid.Column="2" Text="Status:" FontAttributes="Bold" />
-                                                    <Label Grid.Row="1" Grid.Column="3" Text="{Binding Status, Converter={StaticResource DetailStatusToTextConverter}}" />
-                                                </Grid>
-                                                <Button Text="Start Item" Style="{StaticResource PrimaryButtonStyle}" Margin="0,10,0,0" />
-                                            </StackLayout>
-                                        </DataTemplate>
-                                    </CollectionView.ItemTemplate>
-                                </CollectionView>
-                            </VerticalStackLayout>
-                        </Frame>
-                    </StackLayout>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
+                                                            <!-- Ice -->
+                                                            <Label Grid.Row="2" Grid.Column="2" Text="Ice:" FontAttributes="Bold" />
+                                                            <Label Grid.Row="2" Grid.Column="3" Text="{Binding Ice}" />
 
-        <Label Text="Processing" FontAttributes="Bold"  FontSize="18"  Margin="10,20,10,5" />
-        <CollectionView ItemsSource="{Binding ItemToMake.GroupedMenuItems}">
-            <CollectionView.ItemTemplate>
-                <DataTemplate>
-                    <StackLayout Margin="0,10">
-                        <!-- Menu Item Header -->
-                        <Frame BorderColor="Gray" CornerRadius="5" Padding="10">
-                            <VerticalStackLayout>
-                                <CollectionView ItemsSource="{Binding ProcessingItems}">
-                                    <CollectionView.ItemTemplate>
-                                        <DataTemplate>
-                                            <StackLayout Margin="0,5">
-                                                <Grid ColumnDefinitions="2*,3*,3*,2*" RowDefinitions="Auto,Auto,Auto,Auto">
-                                                    <Label Text="Queue ID:" FontAttributes="Bold" />
-                                                    <Label Grid.Column="1" Text="{Binding QueueId}" />
+                                                            <!-- Topping -->
+                                                            <Label Grid.Row="3" Text="Topping:" FontAttributes="Bold" />
+                                                            <Label Grid.Row="3" Grid.Column="1" Text="{Binding Topping}" />
+                                                        </Grid>
+                                                        <Button Text="Start Item" Style="{StaticResource PrimaryButtonStyle}" Margin="0,10,0,0" />
+                                                    </StackLayout>
+                                                </DataTemplate>
+                                            </CollectionView.ItemTemplate>
+                                        </CollectionView>
+                                    </VerticalStackLayout>
+                                </Frame>
+                            </StackLayout>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
 
-                                                    <Label Grid.Column="2" Text="Item Name:" FontAttributes="Bold" />
-                                                    <Label Grid.Column="3" Text="{Binding ItemName}" />
+                <Label Text="Processing" FontAttributes="Bold"  FontSize="18"  Margin="10,20,10,5" />
+                <CollectionView ItemsSource="{Binding ItemToMake.GroupedMenuItems}">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <StackLayout Margin="0,10">
+                                <!-- Menu Item Header -->
+                                <Frame BorderColor="Gray" CornerRadius="5" Padding="10">
+                                    <VerticalStackLayout>
+                                        <CollectionView ItemsSource="{Binding ProcessingItems}">
+                                            <CollectionView.ItemTemplate>
+                                                <DataTemplate>
+                                                    <StackLayout Margin="0,5">
+                                                        <Grid ColumnDefinitions="2*,3*,3*,2*" RowDefinitions="Auto,Auto,Auto,Auto">
+                                                            <Label Text="Queue ID:" FontAttributes="Bold" />
+                                                            <Label Grid.Column="1" Text="{Binding QueueId}" />
 
-                                                    <Label Grid.Row="1" Text="Quantity:" FontAttributes="Bold" />
-                                                    <Label Grid.Row="1" Grid.Column="1" Text="{Binding Quantity}" />
+                                                            <Label Grid.Column="2" Text="Item Name:" FontAttributes="Bold" />
+                                                            <Label Grid.Column="3" Text="{Binding MenuItem.ItemName}" />
 
-                                                    <Label Grid.Row="1" Grid.Column="2" Text="Status:" FontAttributes="Bold" />
-                                                    <Label Grid.Row="1" Grid.Column="3" Text="{Binding Status, Converter={StaticResource DetailStatusToTextConverter}}" />
-                                                </Grid>
+                                                            <Label Grid.Row="1" Text="Quantity:" FontAttributes="Bold" />
+                                                            <Label Grid.Row="1" Grid.Column="1" Text="{Binding Quantity}" />
+
+                                                            <!-- Sugar -->
+                                                            <Label Grid.Row="2" Text="Sugar:" FontAttributes="Bold" />
+                                                            <Label Grid.Row="2" Grid.Column="1" Text="{Binding Sugar}" />
+
+                                                            <!-- Ice -->
+                                                            <Label Grid.Row="2" Grid.Column="2" Text="Ice:" FontAttributes="Bold" />
+                                                            <Label Grid.Row="2" Grid.Column="3" Text="{Binding Ice}" />
+
+                                                            <!-- Topping -->
+                                                            <Label Grid.Row="3" Text="Topping:" FontAttributes="Bold" />
+                                                            <Label Grid.Row="3" Grid.Column="1" Text="{Binding Topping}" />
+                                                        </Grid>
 
                                                         <Button Text="Finish Item" Style="{StaticResource PrimaryButtonStyle}" Margin="0,10,0,0" />
-                                            </StackLayout>
-                                        </DataTemplate>
-                                    </CollectionView.ItemTemplate>
-                                </CollectionView>
-                            </VerticalStackLayout>
-                        </Frame>
-                    </StackLayout>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
+                                                    </StackLayout>
+                                                </DataTemplate>
+                                            </CollectionView.ItemTemplate>
+                                        </CollectionView>
+                                    </VerticalStackLayout>
+                                </Frame>
+                            </StackLayout>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
 
-        <Label Text="Done" FontAttributes="Bold"  FontSize="18"  Margin="10,20,10,5" />
-        <CollectionView ItemsSource="{Binding ItemToMake.GroupedMenuItems}">
-            <CollectionView.ItemTemplate>
-                <DataTemplate>
-                    <StackLayout Margin="0,10">
-                        <!-- Menu Item Header -->
-                        <Frame BorderColor="Gray" CornerRadius="5" Padding="10">
-                            <VerticalStackLayout>
-                                <CollectionView ItemsSource="{Binding DoneItems}">
-                                    <CollectionView.ItemTemplate>
-                                        <DataTemplate>
-                                            <StackLayout Margin="0,5">
-                                                <Grid ColumnDefinitions="2*,3*,3*,2*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto">
-                                                    <!-- Queue ID -->
-                                                    <Label Text="Queue ID:" FontAttributes="Bold" />
-                                                    <Label Grid.Column="1" Text="{Binding QueueId}" />
+                <Label Text="Done" FontAttributes="Bold"  FontSize="18"  Margin="10,20,10,5" />
+                <CollectionView ItemsSource="{Binding ItemToMake.GroupedMenuItems}">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <StackLayout Margin="0,10">
+                                <!-- Menu Item Header -->
+                                <Frame BorderColor="Gray" CornerRadius="5" Padding="10">
+                                    <VerticalStackLayout>
+                                        <CollectionView ItemsSource="{Binding DoneItems}">
+                                            <CollectionView.ItemTemplate>
+                                                <DataTemplate>
+                                                    <StackLayout Margin="0,5">
+                                                        <Grid ColumnDefinitions="2*,3*,3*,2*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+                                                            <!-- Queue ID -->
+                                                            <Label Text="Queue ID:" FontAttributes="Bold" />
+                                                            <Label Grid.Column="1" Text="{Binding QueueId}" />
 
-                                                    <!-- Item Name -->
-                                                    <Label Grid.Column="2" Text="Item Name:" FontAttributes="Bold" />
-                                                    <Label Grid.Column="3" Text="{Binding ItemName}" />
+                                                            <!-- Item Name -->
+                                                            <Label Grid.Column="2" Text="Item Name:" FontAttributes="Bold" />
+                                                            <Label Grid.Column="3" Text="{Binding ItemName}" />
 
-                                                    <!-- Quantity -->
-                                                    <Label Grid.Row="1" Text="Quantity:" FontAttributes="Bold" />
-                                                    <Label Grid.Row="1" Grid.Column="1" Text="{Binding Quantity}" />
+                                                            <!-- Quantity -->
+                                                            <Label Grid.Row="1" Text="Quantity:" FontAttributes="Bold" />
+                                                            <Label Grid.Row="1" Grid.Column="1" Text="{Binding Quantity}" />
 
-                                                    <!-- Status -->
-                                                    <Label Grid.Row="1" Grid.Column="2" Text="Status:" FontAttributes="Bold" />
-                                                    <Label Grid.Row="1" Grid.Column="3" Text="{Binding Status, Converter={StaticResource DetailStatusToTextConverter}}" />
+                                                            <!-- Sugar -->
+                                                            <Label Grid.Row="2" Text="Sugar:" FontAttributes="Bold" />
+                                                            <Label Grid.Row="2" Grid.Column="1" Text="{Binding Sugar}" />
 
-                                                    <!-- Sugar -->
-                                                    <Label Grid.Row="2" Text="Sugar:" FontAttributes="Bold" />
-                                                    <Label Grid.Row="2" Grid.Column="1" Text="{Binding Sugar}" />
+                                                            <!-- Ice -->
+                                                            <Label Grid.Row="2" Grid.Column="2" Text="Ice:" FontAttributes="Bold" />
+                                                            <Label Grid.Row="2" Grid.Column="3" Text="{Binding Ice}" />
 
-                                                    <!-- Ice -->
-                                                    <Label Grid.Row="2" Grid.Column="2" Text="Ice:" FontAttributes="Bold" />
-                                                    <Label Grid.Row="2" Grid.Column="3" Text="{Binding Ice}" />
+                                                            <!-- Topping -->
+                                                            <Label Grid.Row="3" Text="Topping:" FontAttributes="Bold" />
+                                                            <Label Grid.Row="3" Grid.Column="1" Text="{Binding Topping}" />
+                                                        </Grid>
 
-                                                    <!-- Topping -->
-                                                    <Label Grid.Row="3" Text="Topping:" FontAttributes="Bold" />
-                                                    <Label Grid.Row="3" Grid.Column="1" Text="{Binding Topping}" />
-                                                </Grid>
+                                                    </StackLayout>
+                                                </DataTemplate>
+                                            </CollectionView.ItemTemplate>
+                                        </CollectionView>
+                                    </VerticalStackLayout>
 
-                                            </StackLayout>
-                                        </DataTemplate>
-                                    </CollectionView.ItemTemplate>
-                                </CollectionView>
-                            </VerticalStackLayout>
-
-                        </Frame>
-                    </StackLayout>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
+                                </Frame>
+                            </StackLayout>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
 
             </StackLayout>
         </ScrollView>

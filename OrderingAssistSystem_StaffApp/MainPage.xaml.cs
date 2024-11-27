@@ -23,12 +23,6 @@ namespace OrderingAssistSystem_StaffApp
                     ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => true
                 });
 
-            _serializerOptions = new JsonSerializerOptions
-            {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                WriteIndented = true
-            };
-
 			InitializeComponent();
 
 			//Navigation.PushAsync(new PendingOrderList());
@@ -40,9 +34,9 @@ namespace OrderingAssistSystem_StaffApp
 
         public async Task Authoriz()
         {
-            DisplayAlert("Status", Preferences.Get("LoginInfo", string.Empty), "OK");
+            //DisplayAlert("Status", Preferences.Get("LoginInfo", string.Empty), "OK");
 
-            AuthorizeLogin authorizeLogin = new AuthorizeLogin(_client, _serializerOptions);
+            AuthorizeLogin authorizeLogin = new AuthorizeLogin(_client);
 
             var loginStatus = await authorizeLogin.CheckLogin();
             if (loginStatus.Equals("staff"))

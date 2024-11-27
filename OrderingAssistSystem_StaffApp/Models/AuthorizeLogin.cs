@@ -8,12 +8,10 @@ namespace OrderingAssistSystem_StaffApp.Models
     public class AuthorizeLogin
     {
         private readonly HttpClient _client;
-        private readonly JsonSerializerOptions _serializerOptions;
 
-        public AuthorizeLogin(HttpClient client, JsonSerializerOptions serializerOptions)
+        public AuthorizeLogin(HttpClient client)
         {
             this._client = client;
-            this._serializerOptions = serializerOptions;
         }
 
         public async Task<string> CheckLogin()

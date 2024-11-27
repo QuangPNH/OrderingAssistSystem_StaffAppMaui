@@ -7,7 +7,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using CommunityToolkit.Maui.Views;
 using Newtonsoft.Json;
-using Twilio.TwiML.Voice;
+
 using Config = OrderingAssistSystem_StaffApp.Models.Config;
 using System.Text.Json;
 
@@ -42,7 +42,7 @@ public partial class PendingOrderList : ContentPage
     private void SwitchToPage(string pageKey, Func<Page> createPage)
     {
         var page = PageCache.Instance.GetOrCreatePage(pageKey, createPage);
-        Microsoft.Maui.Controls.Application.Current.MainPage = new NavigationPage(page);
+        Application.Current.MainPage = new NavigationPage(page);
     }
 
     private void OnPendingOrdersClicked(object sender, EventArgs e)
@@ -66,8 +66,8 @@ public partial class PendingOrderList : ContentPage
         Preferences.Remove("LoginInfo");
 
         // Reset the MainPage to the login page
-        Microsoft.Maui.Controls.Application.Current.MainPage = new NavigationPage(new MainPage());
-        await System.Threading.Tasks.Task.CompletedTask; // Ensure the method is still async.
+        Application.Current.MainPage = new NavigationPage(new MainPage());
+        await Task.CompletedTask; // Ensure the method is still async.
     }
 }
 
@@ -121,7 +121,7 @@ public class NotificationPopup : Popup
 
 
 
-public class PendingOrderViewModel
+/*public class PendingOrderViewModel
 {
     public ObservableCollection<Order> Orders { get; set; }
     Config config = new Config();
@@ -136,71 +136,42 @@ public class PendingOrderViewModel
         WriteIndented = true
     };
 
-    /*public PendingOrderViewModel()
+    public PendingOrderViewModel()
     {
-        try
+        Orders = new ObservableCollection<Order>
         {
-            var uri = new Uri($"{config.BaseAddress}Employee/");
-            HttpResponseMessage response = await _client.GetAsync(uri);
-
-            if (response.IsSuccessStatusCode)
+            new Order
             {
-                string data = await response.Content.ReadAsStringAsync();
-                emp = JsonConvert.DeserializeObject<Employee>(data);
-                if (emp.Phone != null)
+                OrderId = 1,
+                OrderDate = DateTime.Now,
+                Cost = 50.75,
+                Status = false,
+                Table = new Table { Qr = "TableQR123" },
+                Member = new Member { MemberName = "John Doe", Phone = "123456789" },
+                OrderDetails = new ObservableCollection<OrderDetail>
                 {
-                    if (emp.Role.RoleName.ToLower() == "staff")
-                    {
-                        return "staff";
-                    }
-                    else if (emp.Role.RoleName.ToLower() == "bartender")
-                    {
-                        return "bartender";
-                    }
+                    new OrderDetail { OrderDetailId = 1, MenuItem = new MenuItem { ItemName = "Pizza" }, Quantity = 2, Status = true, Description = "normal Ice, normal Sugar, Hạt Bí, Hướng Duong" },
+                    new OrderDetail { OrderDetailId = 2, MenuItem = new MenuItem { ItemName = "Pasta" }, Quantity = 1, Status = false, Description = "normal Ice, normal Sugar, Hạt Bí, Hướng Duong" },
                 }
-                if (emp.Owner.SubscribeEndDate < DateTime.Now.AddDays(7))
+            },
+            new Order
+            {
+                OrderId = 2,
+                OrderDate = DateTime.Now.AddHours(-2),
+                Cost = 30.25,
+                Status = true,
+                Table = new Table { Qr = "TableQR456" },
+                Member = new Member { MemberName = "Jane Smith", Phone = "987654321" },
+                OrderDetails = new ObservableCollection<OrderDetail>
                 {
-                    return "employee expired";
+                    new OrderDetail { OrderDetailId = 3, MenuItem = new MenuItem { ItemName = "Burger" }, Quantity = 3, Status = true, Description = "normal Ice, normal Sugar, Hạt Bí, Hướng Duong" },
+                    new OrderDetail { OrderDetailId = 4, MenuItem = new MenuItem { ItemName = "Fries" }, Quantity = 2, Status = true, Description = "normal Ice, normal Sugar, Hạt Bí, Hướng Duong" },
                 }
             }
-            else { return "null"; }
-        }
-        catch (Exception ex)
-        {
+        };
 
-        }
 
-        Orders = new ObservableCollection<Order>
-		{
-			new Order
-			{
-				OrderId = 1,
-				OrderDate = DateTime.Now,
-				Cost = 50.75,
-				Status = false,
-				Table = new Table { Qr = "TableQR123" },
-				Member = new Member { MemberName = "John Doe", Phone = "123456789" },
-				OrderDetails = new ObservableCollection<OrderDetail>
-				{
-					new OrderDetail { OrderDetailId = 1, MenuItem = new MenuItem { ItemName = "Pizza" }, Quantity = 2, Status = true, Description = "normal Ice, normal Sugar, Hạt Bí, Hướng Duong" },
-					new OrderDetail { OrderDetailId = 2, MenuItem = new MenuItem { ItemName = "Pasta" }, Quantity = 1, Status = false, Description = "normal Ice, normal Sugar, Hạt Bí, Hướng Duong" },
-				}
-			},
-			new Order
-			{
-				OrderId = 2,
-				OrderDate = DateTime.Now.AddHours(-2),
-				Cost = 30.25,
-				Status = true,
-				Table = new Table { Qr = "TableQR456" },
-				Member = new Member { MemberName = "Jane Smith", Phone = "987654321" },
-				OrderDetails = new ObservableCollection<OrderDetail>
-				{
-					new OrderDetail { OrderDetailId = 3, MenuItem = new MenuItem { ItemName = "Burger" }, Quantity = 3, Status = true, Description = "normal Ice, normal Sugar, Hạt Bí, Hướng Duong" },
-					new OrderDetail { OrderDetailId = 4, MenuItem = new MenuItem { ItemName = "Fries" }, Quantity = 2, Status = true, Description = "normal Ice, normal Sugar, Hạt Bí, Hướng Duong" },
-				}
-			}
-		};
+
 
         string[] attributes;
         foreach (Order order in Orders)
@@ -229,65 +200,87 @@ public class PendingOrderViewModel
                 orderDetail.Topping = orderDetail.Topping.Length > 2 ? orderDetail.Topping.Substring(2) : string.Empty;
             }
         }
-    }*/
+    }
+}*/
 
-    public async void Yeh()
+
+public class PendingOrderViewModel
+{
+    private readonly HttpClient _client = new HttpClient(new HttpClientHandler
+    {
+        ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => true
+    });
+    private readonly Config _config = new Config();
+    public ObservableCollection<Order> Orders { get; set; } = new ObservableCollection<Order>();
+
+    public PendingOrderViewModel()
+    {
+        LoadOrders();
+    }
+
+    private async void LoadOrders()
     {
         try
         {
-            var uri = new Uri($"{config.BaseAddress}Order/");
+            var uri = new Uri(_config.BaseAddress + "Order/");
             HttpResponseMessage response = await _client.GetAsync(uri);
 
             if (response.IsSuccessStatusCode)
             {
                 string data = await response.Content.ReadAsStringAsync();
                 var orders = JsonConvert.DeserializeObject<List<Order>>(data);
-                Orders = orders != null ? new ObservableCollection<Order>(orders) : new ObservableCollection<Order>();
+
+                Orders.Clear();
+                if (orders != null)
+                {
+                    foreach (var order in orders)
+                    {
+                        Orders.Add(order);
+                        foreach (var orderDetail in order.OrderDetails)
+                        {
+                            ParseOrderDetails(orderDetail);
+                        }
+                    }
+                }
             }
         }
         catch (Exception ex)
         {
-
+            // Handle exceptions
+            Console.WriteLine($"Error fetching orders: {ex.Message}");
         }
+    }
 
-        string[] attributes;
-        foreach (Order order in Orders)
+    private void ParseOrderDetails(OrderDetail orderDetail)
+    {
+        string[] attributes = orderDetail.Description?.Split(',') ?? Array.Empty<string>();
+
+        foreach (var attribute in attributes)
         {
-            foreach (OrderDetail orderDetail in order.OrderDetails)
+            string trimmed = attribute.Trim(); // Remove any leading/trailing whitespace
+
+            if (trimmed.Contains("Ice", StringComparison.OrdinalIgnoreCase))
             {
-                attributes = orderDetail.Description.Split(',');
-
-                foreach (var attribute in attributes)
-                {
-                    string trimmed = attribute.Trim(); // Remove any leading/trailing whitespace
-
-                    if (trimmed.Contains("Ice", StringComparison.OrdinalIgnoreCase))
-                    {
-                        orderDetail.Ice = trimmed.Replace("Ice", "", StringComparison.OrdinalIgnoreCase).Trim();
-                    }
-                    else if (trimmed.Contains("Sugar", StringComparison.OrdinalIgnoreCase))
-                    {
-                        orderDetail.Sugar = trimmed.Replace("Sugar", "", StringComparison.OrdinalIgnoreCase).Trim();
-                    }
-                    else
-                    {
-                        orderDetail.Topping += (orderDetail.Topping == "" ? "" : ", ") + trimmed;
-                    }
-                }
-                orderDetail.Topping = orderDetail.Topping.Length > 2 ? orderDetail.Topping.Substring(2) : string.Empty;
+                orderDetail.Ice = trimmed.Replace("Ice", "", StringComparison.OrdinalIgnoreCase).Trim();
+            }
+            else if (trimmed.Contains("Sugar", StringComparison.OrdinalIgnoreCase))
+            {
+                orderDetail.Sugar = trimmed.Replace("Sugar", "", StringComparison.OrdinalIgnoreCase).Trim();
+            }
+            else
+            {
+                orderDetail.Topping += (string.IsNullOrEmpty(orderDetail.Topping) ? "" : ", ") + trimmed;
             }
         }
+        // Set default values if properties are empty
+        orderDetail.Ice = string.IsNullOrEmpty(orderDetail.Ice) ? "none" : orderDetail.Ice;
+        orderDetail.Sugar = string.IsNullOrEmpty(orderDetail.Sugar) ? "none" : orderDetail.Sugar;
+        orderDetail.Topping = string.IsNullOrEmpty(orderDetail.Topping) ? "none" : orderDetail.Topping;
     }
-    public PendingOrderViewModel()
-    {
-        Yeh();
-    }
-
-
 }
 
 
-public class ItemToMakeListViewModel : INotifyPropertyChanged
+/*public class ItemToMakeListViewModel : INotifyPropertyChanged
 {
     private ObservableCollection<GroupedMenuItem> _groupedMenuItems;
     public ObservableCollection<GroupedMenuItem> GroupedMenuItems
@@ -372,8 +365,6 @@ public class ItemToMakeListViewModel : INotifyPropertyChanged
     private List<OrderDetail> GetSampleOrderDetails()
     {
 
-
-
         return new List<OrderDetail>
         {
             new OrderDetail { OrderDetailId = 1, ItemName = "Pizza", Quantity = 2, Status = null, MenuItem = new MenuItem { ItemName = "Pizza" }, Description = "normal Ice, normal Sugar, Hạt Bí, Hướng Duong" },
@@ -389,8 +380,114 @@ public class ItemToMakeListViewModel : INotifyPropertyChanged
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
-}
+}*/
 
+
+public class ItemToMakeListViewModel : INotifyPropertyChanged
+{
+    private readonly HttpClient _client = new HttpClient(new HttpClientHandler
+    {
+        ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => true
+    });
+    private readonly Config _config = new Config();
+    private ObservableCollection<GroupedMenuItem> _groupedMenuItems;
+
+    public ObservableCollection<GroupedMenuItem> GroupedMenuItems
+    {
+        get => _groupedMenuItems;
+        set
+        {
+            _groupedMenuItems = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public ItemToMakeListViewModel()
+    {
+        LoadOrderDetails();
+    }
+
+    private async void LoadOrderDetails()
+    {
+        try
+        {
+            var uri = new Uri(_config.BaseAddress + "OrderDetail/");
+            HttpResponseMessage response = await _client.GetAsync(uri);
+
+            if (response.IsSuccessStatusCode)
+            {
+                string data = await response.Content.ReadAsStringAsync();
+                var orderDetails = JsonConvert.DeserializeObject<List<OrderDetail>>(data);
+
+                if (orderDetails != null)
+                {
+                    foreach (var orderDetail in orderDetails)
+                    {
+                        ParseOrderDetails(orderDetail);
+                    }
+                    GroupedMenuItems = new ObservableCollection<GroupedMenuItem>(
+                        orderDetails.GroupBy(o => o.MenuItem.ItemName)
+                            .Select(g => new GroupedMenuItem
+                            {
+                                MenuItemName = g.Key,
+                                PendingItems = g.Where(o => o.Status == null).ToList(),
+                                ProcessingItems = g.Where(o => o.Status == false).ToList(),
+                                DoneItems = g.Where(o => o.Status == true).ToList()
+                            })
+                    );
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            // Handle exceptions
+            Console.WriteLine($"Error fetching order details: {ex.Message}");
+        }
+    }
+
+    private void ParseOrderDetails(OrderDetail orderDetail)
+    {
+        string[] attributes = orderDetail.Description?.Split(',') ?? Array.Empty<string>();
+
+        foreach (var attribute in attributes)
+        {
+            string trimmed = attribute.Trim(); // Remove any leading/trailing whitespace
+
+            if (trimmed.Contains("Ice", StringComparison.OrdinalIgnoreCase))
+            {
+                orderDetail.Ice = trimmed.Replace("Ice", "", StringComparison.OrdinalIgnoreCase).Trim();
+            }
+            else if (trimmed.Contains("Sugar", StringComparison.OrdinalIgnoreCase))
+            {
+                orderDetail.Sugar = trimmed.Replace("Sugar", "", StringComparison.OrdinalIgnoreCase).Trim();
+            }
+            else
+            {
+                orderDetail.Topping += (string.IsNullOrEmpty(orderDetail.Topping) ? "" : ", ") + trimmed;
+            }
+        }
+
+        // Set default values if properties are empty
+        orderDetail.Ice = string.IsNullOrEmpty(orderDetail.Ice) ? "none" : orderDetail.Ice;
+        orderDetail.Sugar = string.IsNullOrEmpty(orderDetail.Sugar) ? "none" : orderDetail.Sugar;
+        orderDetail.Topping = string.IsNullOrEmpty(orderDetail.Topping) ? "none" : orderDetail.Topping;
+    }
+
+    public event PropertyChangedEventHandler PropertyChanged;
+
+    protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+
+    public class GroupedMenuItem
+    {
+        public string MenuItemName { get; set; }
+        public List<OrderDetail> PendingItems { get; set; }
+        public List<OrderDetail> ProcessingItems { get; set; }
+        public List<OrderDetail> DoneItems { get; set; }
+    }
+}
 
 
 public class StatusToTextConverter : IValueConverter
