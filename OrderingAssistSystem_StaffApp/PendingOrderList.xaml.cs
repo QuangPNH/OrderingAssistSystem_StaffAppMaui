@@ -10,27 +10,56 @@ using Newtonsoft.Json;
 
 using Config = OrderingAssistSystem_StaffApp.Models.Config;
 using System.Text.Json;
+using Twilio.TwiML.Voice;
+using Application = Microsoft.Maui.Controls.Application;
+using Task = System.Threading.Tasks.Task;
 
 namespace OrderingAssistSystem_StaffApp;
 
 public partial class PendingOrderList : ContentPage
 {
-    private ObservableCollection<Models.Notification> Notifications;
-
-    Config config = new Config();
+    private ObservableCollection<Models.Notification> Notifications { get; set; } = new ObservableCollection<Models.Notification>();
+    private readonly HttpClient _client = new HttpClient(new HttpClientHandler
+    {
+        ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => true
+    });
+    Config _config = new Config();
     public PendingOrderList()
     {
         InitializeComponent();
         BindingContext = new CombinedViewModel();
-
-        // Mock Notifications
-        Notifications = new ObservableCollection<Models.Notification>
-            {
-                new Models.Notification { Title = "Order", Content = "Order #1234 is ready." },
-                new Models.Notification { Title = "Reminder", Content = "Restock ingredients soon." }
-            };
+        LoadNotifications();
     }
 
+
+    private async void LoadNotifications()
+    {
+        try
+        {
+            var uri = new Uri(_config.BaseAddress + "Notification/Employee/1");
+            HttpResponseMessage response = await _client.GetAsync(uri);
+
+            if (response.IsSuccessStatusCode)
+            {
+                string data = await response.Content.ReadAsStringAsync();
+                var notifications = JsonConvert.DeserializeObject<List<Models.Notification>>(data);
+
+                Notifications.Clear();
+                if (notifications != null)
+                {
+                    foreach (var notification in notifications)
+                    {
+                        Notifications.Add(notification);
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            // Handle exceptions
+            Console.WriteLine($"Error fetching notifications: {ex.Message}");
+        }
+    }
 
     private void OnBellIconClicked(object sender, EventArgs e)
     {
@@ -118,90 +147,6 @@ public class NotificationPopup : Popup
         };
     }
 }
-
-
-
-/*public class PendingOrderViewModel
-{
-    public ObservableCollection<Order> Orders { get; set; }
-    Config config = new Config();
-    HttpClient _client = new HttpClient(new HttpClientHandler
-    {
-        ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => true
-    });
-
-    JsonSerializerOptions _serializerOptions = new JsonSerializerOptions
-    {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        WriteIndented = true
-    };
-
-    public PendingOrderViewModel()
-    {
-        Orders = new ObservableCollection<Order>
-        {
-            new Order
-            {
-                OrderId = 1,
-                OrderDate = DateTime.Now,
-                Cost = 50.75,
-                Status = false,
-                Table = new Table { Qr = "TableQR123" },
-                Member = new Member { MemberName = "John Doe", Phone = "123456789" },
-                OrderDetails = new ObservableCollection<OrderDetail>
-                {
-                    new OrderDetail { OrderDetailId = 1, MenuItem = new MenuItem { ItemName = "Pizza" }, Quantity = 2, Status = true, Description = "normal Ice, normal Sugar, Hạt Bí, Hướng Duong" },
-                    new OrderDetail { OrderDetailId = 2, MenuItem = new MenuItem { ItemName = "Pasta" }, Quantity = 1, Status = false, Description = "normal Ice, normal Sugar, Hạt Bí, Hướng Duong" },
-                }
-            },
-            new Order
-            {
-                OrderId = 2,
-                OrderDate = DateTime.Now.AddHours(-2),
-                Cost = 30.25,
-                Status = true,
-                Table = new Table { Qr = "TableQR456" },
-                Member = new Member { MemberName = "Jane Smith", Phone = "987654321" },
-                OrderDetails = new ObservableCollection<OrderDetail>
-                {
-                    new OrderDetail { OrderDetailId = 3, MenuItem = new MenuItem { ItemName = "Burger" }, Quantity = 3, Status = true, Description = "normal Ice, normal Sugar, Hạt Bí, Hướng Duong" },
-                    new OrderDetail { OrderDetailId = 4, MenuItem = new MenuItem { ItemName = "Fries" }, Quantity = 2, Status = true, Description = "normal Ice, normal Sugar, Hạt Bí, Hướng Duong" },
-                }
-            }
-        };
-
-
-
-
-        string[] attributes;
-        foreach (Order order in Orders)
-        {
-            foreach (OrderDetail orderDetail in order.OrderDetails)
-            {
-                attributes = orderDetail.Description.Split(',');
-
-                foreach (var attribute in attributes)
-                {
-                    string trimmed = attribute.Trim(); // Remove any leading/trailing whitespace
-
-                    if (trimmed.Contains("Ice", StringComparison.OrdinalIgnoreCase))
-                    {
-                        orderDetail.Ice = trimmed.Replace("Ice", "", StringComparison.OrdinalIgnoreCase).Trim();
-                    }
-                    else if (trimmed.Contains("Sugar", StringComparison.OrdinalIgnoreCase))
-                    {
-                        orderDetail.Sugar = trimmed.Replace("Sugar", "", StringComparison.OrdinalIgnoreCase).Trim();
-                    }
-                    else
-                    {
-                        orderDetail.Topping += (orderDetail.Topping == "" ? "" : ", ") + trimmed;
-                    }
-                }
-                orderDetail.Topping = orderDetail.Topping.Length > 2 ? orderDetail.Topping.Substring(2) : string.Empty;
-            }
-        }
-    }
-}*/
 
 
 public class PendingOrderViewModel

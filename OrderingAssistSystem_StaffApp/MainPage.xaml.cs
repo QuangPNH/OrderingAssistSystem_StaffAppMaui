@@ -11,8 +11,6 @@ namespace OrderingAssistSystem_StaffApp
 {
     public partial class MainPage : ContentPage
     {
-
-
         private readonly HttpClient _client;
         private readonly JsonSerializerOptions _serializerOptions;
 
@@ -62,8 +60,6 @@ namespace OrderingAssistSystem_StaffApp
                 await DisplayAlert("Status", "Nothing much really", "OK");
             }
         }
-
-
 
 
         private async void OnSendOtpClicked(object sender, EventArgs e)

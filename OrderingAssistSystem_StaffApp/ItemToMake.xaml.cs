@@ -1,4 +1,5 @@
 using CommunityToolkit.Maui.Views;
+using Newtonsoft.Json;
 using OrderingAssistSystem_StaffApp.Models;
 using System.Collections.ObjectModel;
 
@@ -6,23 +7,51 @@ namespace OrderingAssistSystem_StaffApp;
 
 public partial class ItemToMake : ContentPage
 {
-	private ObservableCollection<Models.Notification> Notifications;
-	public ItemToMake()
+    private ObservableCollection<Models.Notification> Notifications { get; set; } = new ObservableCollection<Models.Notification>();
+    private readonly HttpClient _client = new HttpClient(new HttpClientHandler
+    {
+        ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => true
+    });
+    Models.Config _config = new Models.Config();
+    public ItemToMake()
 	{
 
 		InitializeComponent();
 		BindingContext = new CombinedViewModel();
-		// Mock Notifications
-		Notifications = new ObservableCollection<Models.Notification>
-			{
-				new Models.Notification { Title = "Order", Content = "Order #1234 is ready." },
-				new Models.Notification { Title = "Reminder", Content = "Restock ingredients soon." }
-			};
+        // Mock Notifications
+        LoadNotifications();
+    }
 
+    private async void LoadNotifications()
+    {
+        try
+        {
+            var uri = new Uri(_config.BaseAddress + "Notification/Employee/1");
+            HttpResponseMessage response = await _client.GetAsync(uri);
 
-	}
+            if (response.IsSuccessStatusCode)
+            {
+                string data = await response.Content.ReadAsStringAsync();
+                var notifications = JsonConvert.DeserializeObject<List<Models.Notification>>(data);
 
-	private void OnBellIconClicked(object sender, EventArgs e)
+                Notifications.Clear();
+                if (notifications != null)
+                {
+                    foreach (var notification in notifications)
+                    {
+                        Notifications.Add(notification);
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            // Handle exceptions
+            Console.WriteLine($"Error fetching notifications: {ex.Message}");
+        }
+    }
+
+    private void OnBellIconClicked(object sender, EventArgs e)
 	{
 		// Create and display the popup
 		var popup = new NotificationPopup(Notifications);

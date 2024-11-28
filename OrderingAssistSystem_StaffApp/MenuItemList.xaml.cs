@@ -5,50 +5,59 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using Twilio.TwiML.Voice;
+using Application = Microsoft.Maui.Controls.Application;
 using MenuItem = OrderingAssistSystem_StaffApp.Models.MenuItem;
+using Task = System.Threading.Tasks.Task;
 //using Twilio.TwiML.Voice;
 
 namespace OrderingAssistSystem_StaffApp;
 
 public partial class MenuItemList : ContentPage
 {
-    private ObservableCollection<Models.Notification> Notifications;
+    private ObservableCollection<Models.Notification> Notifications { get; set; } = new ObservableCollection<Models.Notification>();
+    private readonly HttpClient _client = new HttpClient(new HttpClientHandler
+    {
+        ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => true
+    });
+    Models.Config _config = new Models.Config();
     public ObservableCollection<CartItem> CartItems { get; set; }
     public MenuItemList()
     {
-
         InitializeComponent();
 
-        CartItems = new ObservableCollection<CartItem>
+        LoadNotifications();
+
+        SaveCartToPreferences();
+    }
+
+    private async void LoadNotifications()
     {
-        new CartItem
+        try
         {
-            ItemName = "Pizza",
-            Quantity = 1,
-            Price = 10.0,
-            Discount = 1.0
-        },
-        new CartItem
-        {
-            ItemName = "Burger",
-            Quantity = 2,
-            Price = 5.0,
-            Discount = 0.5
+            var uri = new Uri(_config.BaseAddress + "Notification/Employee/1");
+            HttpResponseMessage response = await _client.GetAsync(uri);
+
+            if (response.IsSuccessStatusCode)
+            {
+                string data = await response.Content.ReadAsStringAsync();
+                var notifications = JsonConvert.DeserializeObject<List<Models.Notification>>(data);
+
+                Notifications.Clear();
+                if (notifications != null)
+                {
+                    foreach (var notification in notifications)
+                    {
+                        Notifications.Add(notification);
+                    }
+                }
+            }
         }
-    };
-
-        Notifications = new ObservableCollection<Models.Notification>
-    {
-        new Models.Notification { Title = "Order", Content = "Order #1234 is ready." },
-        new Models.Notification { Title = "Reminder", Content = "Restock ingredients soon." }
-    };
-
-        // Parse the attributes for example descriptions
-        CartItems[0].ParseDescription("less Ice, normal Sugar, Hạt Bí");
-        CartItems[1].ParseDescription("normal Ice, less Sugar, Hướng Duong");
-
-        CartList.ItemsSource = CartItems;
-        //BindingContext = CartItems;
+        catch (Exception ex)
+        {
+            // Handle exceptions
+            Console.WriteLine($"Error fetching notifications: {ex.Message}");
+        }
     }
 
     private void ShowCartPopup(object sender, EventArgs e)
@@ -82,24 +91,6 @@ public partial class MenuItemList : ContentPage
         this.ShowPopup(popup);
     }
 
-    /*// Navigate to Pending Orders List
-    private async void OnPendingOrdersClicked(object sender, EventArgs e)
-    {
-        await Application.Current.MainPage.Navigation.PushAsync(new PendingOrderList());
-    }
-
-    // Navigate to Menu Item List
-    private async void OnMenuItemsClicked(object sender, EventArgs e)
-    {
-        await Application.Current.MainPage.Navigation.PushAsync(new MenuItemList());
-    }
-
-    // Navigate to Items to Make
-    private async void OnItemToMakeClicked(object sender, EventArgs e)
-    {
-        await Application.Current.MainPage.Navigation.PushAsync(new ItemToMake());
-    }*/
-
     private void SwitchToPage(string pageKey, Func<Page> createPage)
     {
         var page = PageCache.Instance.GetOrCreatePage(pageKey, createPage);
@@ -129,6 +120,33 @@ public partial class MenuItemList : ContentPage
         // Reset the MainPage to the login page
         Application.Current.MainPage = new NavigationPage(new MainPage());
         await Task.CompletedTask; // Ensure the method is still async.
+    }
+    private void SaveCartToPreferences()
+    {
+        CartItems = new ObservableCollection<CartItem>
+        {
+            new CartItem { ItemName = "Item1", Quantity = 1, Price = 5.0 },
+            new CartItem { ItemName = "Item2", Quantity = 1, Price = 5.0 }
+        };
+
+        CartItems[0].ParseDescription("less Ice, normal Sugar, Hạt Bí");
+        CartItems[1].ParseDescription("normal Ice, less Sugar, Hướng Duong");
+
+        CartList.ItemsSource = CartItems;
+
+        string cartJson = JsonConvert.SerializeObject(CartItems);
+        Preferences.Set("Cart", cartJson);
+    }
+
+    private void LoadCartFromPreferences()
+    {
+        string cartJson = Preferences.Get("Cart", "[]");
+        var cartItems = JsonConvert.DeserializeObject<ObservableCollection<CartItem>>(cartJson);
+        if (cartItems != null)
+        {
+            CartItems = cartItems;
+            CartList.ItemsSource = CartItems;
+        }
     }
 }
 
@@ -421,6 +439,8 @@ public class MenuItemViewModel : INotifyPropertyChanged
 
     public MenuItemViewModel()
     {
+        _sugar = "Normal"; // Default value
+        _ice = "Normal";   // Default value
         AddToCartCommand = new Command<MenuItemViewModel>(AddToCart);
     }
 
