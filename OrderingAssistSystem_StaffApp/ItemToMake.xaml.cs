@@ -14,7 +14,7 @@ public partial class ItemToMake : ContentPage
     {
         ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => true
     });
-    Models.Config _config = new Models.Config();
+    Models.ConfigApi _config = new Models.ConfigApi();
     public ItemToMake()
 	{
 
