@@ -25,9 +25,7 @@ public partial class MenuItemList : ContentPage
     public MenuItemList()
     {
         InitializeComponent();
-
         LoadNotifications();
-
         SaveCartToPreferences();
     }
 
