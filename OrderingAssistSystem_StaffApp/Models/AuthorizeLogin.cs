@@ -17,7 +17,7 @@ namespace OrderingAssistSystem_StaffApp.Models
         public async Task<string> CheckLogin()
         {
 
-            Config config = new Config();
+            ConfigApi config = new ConfigApi();
 
             string loginInfoJson = Preferences.Get("LoginInfo", string.Empty);
             Employee emp = JsonConvert.DeserializeObject<Employee>(loginInfoJson);

@@ -8,7 +8,7 @@ using System.Runtime.CompilerServices;
 using CommunityToolkit.Maui.Views;
 using Newtonsoft.Json;
 
-using Config = OrderingAssistSystem_StaffApp.Models.Config;
+using ConfigApi = OrderingAssistSystem_StaffApp.Models.ConfigApi;
 using System.Text.Json;
 using Twilio.TwiML.Voice;
 using Application = Microsoft.Maui.Controls.Application;
@@ -23,7 +23,7 @@ public partial class PendingOrderList : ContentPage
     {
         ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => true
     });
-    Config _config = new Config();
+    ConfigApi _config = new Config();
     public PendingOrderList()
     {
         InitializeComponent();
@@ -155,7 +155,7 @@ public class PendingOrderViewModel
     {
         ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => true
     });
-    private readonly Config _config = new Config();
+    private readonly ConfigApi _config = new Config();
     public ObservableCollection<Order> Orders { get; set; } = new ObservableCollection<Order>();
 
     public PendingOrderViewModel()
@@ -334,7 +334,7 @@ public class ItemToMakeListViewModel : INotifyPropertyChanged
     {
         ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => true
     });
-    private readonly Config _config = new Config();
+    private readonly ConfigApi _config = new Config();
     private ObservableCollection<GroupedMenuItem> _groupedMenuItems;
 
     public ObservableCollection<GroupedMenuItem> GroupedMenuItems

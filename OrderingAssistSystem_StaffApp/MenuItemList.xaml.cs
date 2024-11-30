@@ -20,7 +20,7 @@ public partial class MenuItemList : ContentPage
     {
         ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => true
     });
-    Models.Config _config = new Models.Config();
+    Models.ConfigApi _config = new Models.ConfigApi();
     public ObservableCollection<CartItem> CartItems { get; set; }
     public MenuItemList()
     {
@@ -193,7 +193,7 @@ public class MenuItemListViewModel : INotifyPropertyChanged
 {
     private string _searchText;
     private ItemCategory _selectedCategory;
-    private readonly Models.Config _config = new Models.Config();
+    private readonly Models.ConfigApi _config = new Models.ConfigApi();
     private readonly HttpClient _client = new HttpClient(new HttpClientHandler
     {
         ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => true
