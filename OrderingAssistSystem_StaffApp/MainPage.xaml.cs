@@ -4,7 +4,6 @@ using OrderingAssistSystem_StaffApp.Models;
 using Twilio;
 using Twilio.Rest.Api.V2010.Account;
 using Twilio.Types;
-using OrderingAssistSystem_StaffApp.Models;
 using System.Text.Json;
 using OrderingAssistSystem_StaffApp.Services;
 namespace OrderingAssistSystem_StaffApp
@@ -63,19 +62,19 @@ namespace OrderingAssistSystem_StaffApp
         }
         void OnRegisterButtonClicked(object sender, EventArgs e)
         {
-            _notificationRegistrationService.RegisterDeviceAsync()
+            _notificationRegistrationService?.RegisterDeviceAsync()
                 .ContinueWith((task) =>
                 {
-                    ShowAlert(task.IsFaulted ? task.Exception.Message : $"Device registered");
+                    ShowAlert(task.IsFaulted ? task.Exception?.Message ?? "Unknown error" : $"Device registered");
                 });
         }
 
         void OnDeregisterButtonClicked(object sender, EventArgs e)
         {
-            _notificationRegistrationService.DeregisterDeviceAsync()
+            _notificationRegistrationService?.DeregisterDeviceAsync()
                 .ContinueWith((task) =>
                 {
-                    ShowAlert(task.IsFaulted ? task.Exception.Message : $"Device deregistered");
+                    ShowAlert(task.IsFaulted ? task.Exception?.Message : $"Device deregistered");
                 });
         }
 

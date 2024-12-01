@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "284008896133",
+    "project_id": "oas-staff-app",
+    "storage_bucket": "oas-staff-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:284008896133:android:48ca9a01d242ef2a1bbbec",
+        "android_client_info": {
+          "package_name": "com.OAS.OrderingAssistSystemStaffApp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBVcMFyOO7W1ORzXUGOCP7d5_fu_KBMrVE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
