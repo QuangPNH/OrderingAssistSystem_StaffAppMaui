@@ -169,7 +169,6 @@ public class PendingOrderViewModel
         {
             var uri = new Uri(_config.BaseAddress + "Order/");
             HttpResponseMessage response = await _client.GetAsync(uri);
-
             if (response.IsSuccessStatusCode)
             {
                 string data = await response.Content.ReadAsStringAsync();

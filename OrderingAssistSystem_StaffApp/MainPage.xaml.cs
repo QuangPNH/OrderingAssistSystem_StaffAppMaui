@@ -20,13 +20,8 @@ namespace OrderingAssistSystem_StaffApp
                 {
                     ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => true
                 });
-
-			InitializeComponent();
-
-			//Navigation.PushAsync(new PendingOrderList());
-
-			Authoriz();
-
+            Authoriz();
+            InitializeComponent();
         }
 
 

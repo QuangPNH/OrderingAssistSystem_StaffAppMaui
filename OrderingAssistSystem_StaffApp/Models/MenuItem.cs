@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace OrderingAssistSystem_StaffApp.Models
 {
@@ -19,6 +20,7 @@ namespace OrderingAssistSystem_StaffApp.Models
         public string? Image { get; set; }
         public bool? IsAvailable { get; set; }
         public int? EmployeeId { get; set; }
+        public ObservableCollection<MenuItem> AvailableToppings { get; set; }
 
         public virtual Employee? Employee { get; set; }
         public virtual ICollection<MenuCategory> MenuCategories { get; set; }
