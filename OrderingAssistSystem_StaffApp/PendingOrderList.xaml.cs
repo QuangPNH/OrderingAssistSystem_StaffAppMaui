@@ -13,6 +13,7 @@ using System.Text.Json;
 using Twilio.TwiML.Voice;
 using Application = Microsoft.Maui.Controls.Application;
 using Task = System.Threading.Tasks.Task;
+using System.Windows.Input;
 
 namespace OrderingAssistSystem_StaffApp;
 
@@ -29,6 +30,31 @@ public partial class PendingOrderList : ContentPage
         InitializeComponent();
         BindingContext = new CombinedViewModel();
         LoadNotifications();
+    }
+
+    private void OnConfirmOrderPaidClicked(object sender, EventArgs e)
+    {
+        // Get the Order object from the CommandParameter
+        var button = sender as Button;
+        var order = button?.CommandParameter as Order; // Cast to your Order type
+
+        if (order != null)
+        {
+            
+        }
+    }
+
+    private void OnCancelOrderClicked(object sender, EventArgs e)
+    {
+        // Get the Order object from the CommandParameter
+        var button = sender as Button;
+        var order = button?.CommandParameter as Order; // Cast to your Order type
+
+        if (order != null)
+        {
+            // Handle the logic for canceling the order
+            // For example, cancel order, update status, etc.
+        }
     }
 
 
@@ -221,6 +247,7 @@ public class PendingOrderViewModel
         orderDetail.Sugar = string.IsNullOrEmpty(orderDetail.Sugar) ? "none" : orderDetail.Sugar;
         orderDetail.Topping = string.IsNullOrEmpty(orderDetail.Topping) ? "none" : orderDetail.Topping;
     }
+
 }
 
 

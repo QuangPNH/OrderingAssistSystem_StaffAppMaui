@@ -148,7 +148,7 @@
                                                         <ColumnDefinition Width="*" />
                                                     </Grid.ColumnDefinitions>
                                                     <Label Text="Price: " VerticalOptions="Center" />
-                                                    <Label Text="{Binding Price, StringFormat='{0:C}'}" Grid.Column="1" VerticalOptions="Center" />
+                                                    <Label Text="{Binding Price, StringFormat='Price: {0:#,##0₫}'}" Grid.Column="1" VerticalOptions="Center" />
                                                 </Grid>
 
                                                 <!-- Discount -->
@@ -158,7 +158,7 @@
                                                         <ColumnDefinition Width="*" />
                                                     </Grid.ColumnDefinitions>
                                                     <Label Text="Discount: " VerticalOptions="Center" />
-                                                    <Label Text="{Binding Discount, StringFormat='{0:C}'}" Grid.Column="1" VerticalOptions="Center" />
+                                                    <Label Text="{Binding Discount, StringFormat='Price: {0:#,##0₫}'}" Grid.Column="1" VerticalOptions="Center" />
                                                 </Grid>
 
                                                 <!-- Remove Button -->
@@ -217,10 +217,7 @@
                                            FontAttributes="Bold" 
                                            FontSize="18" 
                                            Grid.Column="0" />
-                                        <Label Text="{Binding Price, StringFormat='Price: {0:C}'}" 
-                                           FontAttributes="Italic" 
-                                           Grid.Column="1" 
-                                           HorizontalOptions="End" />
+                                        <Label Text="{Binding Price, StringFormat='Price: {0:#,##0₫}'}" FontAttributes="Italic" Grid.Column="1" HorizontalOptions="End" />
                                     </Grid>
                                     <Label Text="{Binding Category}" 
                                        FontAttributes="Italic" 
