@@ -7,16 +7,14 @@ namespace OrderingAssistSystem_StaffApp
     {
         public static PageCache PageCache { get; private set; }
         readonly IPushDemoNotificationActionService _actionService;
-        public App(IPushDemoNotificationActionService service, INotificationRegistrationService serviceNoti)
+        public App(IPushDemoNotificationActionService service)
         {
             InitializeComponent();
 
             _actionService = service;
             _actionService.ActionTriggered += NotificationActionTriggered;
-
-            //MainPage = new AppShell();
-            MainPage = new NavigationPage(new MainPage(serviceNoti));
-
+            INotificationRegistrationService serviceNoti = DependencyService.Get<INotificationRegistrationService>();
+            MainPage = new AppShell();
             //MainPage = new AppTabbedPage();
         }
         void NotificationActionTriggered(object sender, OasStaffAppAction e)

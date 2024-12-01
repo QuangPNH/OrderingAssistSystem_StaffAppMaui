@@ -13,6 +13,7 @@ using System.Text.Json;
 using Twilio.TwiML.Voice;
 using Application = Microsoft.Maui.Controls.Application;
 using Task = System.Threading.Tasks.Task;
+using OrderingAssistSystem_StaffApp.Services;
 
 namespace OrderingAssistSystem_StaffApp;
 
@@ -23,7 +24,7 @@ public partial class PendingOrderList : ContentPage
     {
         ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => true
     });
-    ConfigApi _config = new Config();
+    ConfigApi _config = new ConfigApi();
     public PendingOrderList()
     {
         InitializeComponent();
@@ -93,9 +94,9 @@ public partial class PendingOrderList : ContentPage
     private async void OnLogOutClicked(object sender, EventArgs e)
     {
         Preferences.Remove("LoginInfo");
-
+        INotificationRegistrationService notificationRegistrationService = DependencyService.Get<INotificationRegistrationService>();
         // Reset the MainPage to the login page
-        Application.Current.MainPage = new NavigationPage(new MainPage());
+        Application.Current.MainPage = new NavigationPage(new MainPage(notificationRegistrationService));
         await Task.CompletedTask; // Ensure the method is still async.
     }
 }
@@ -155,7 +156,7 @@ public class PendingOrderViewModel
     {
         ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => true
     });
-    private readonly ConfigApi _config = new Config();
+    private readonly ConfigApi _config = new ConfigApi();
     public ObservableCollection<Order> Orders { get; set; } = new ObservableCollection<Order>();
 
     public PendingOrderViewModel()
@@ -334,7 +335,7 @@ public class ItemToMakeListViewModel : INotifyPropertyChanged
     {
         ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => true
     });
-    private readonly ConfigApi _config = new Config();
+    private readonly ConfigApi _config = new ConfigApi();
     private ObservableCollection<GroupedMenuItem> _groupedMenuItems;
 
     public ObservableCollection<GroupedMenuItem> GroupedMenuItems
