@@ -14,6 +14,7 @@ using Twilio.TwiML.Voice;
 using Application = Microsoft.Maui.Controls.Application;
 using Task = System.Threading.Tasks.Task;
 using System.Windows.Input;
+using System.Text;
 
 namespace OrderingAssistSystem_StaffApp;
 
@@ -32,7 +33,10 @@ public partial class PendingOrderList : ContentPage
         LoadNotifications();
     }
 
-    private void OnConfirmOrderPaidClicked(object sender, EventArgs e)
+    
+
+
+    private async void OnConfirmOrderPaidClicked(object sender, EventArgs e)
     {
         // Get the Order object from the CommandParameter
         var button = sender as Button;
@@ -40,11 +44,33 @@ public partial class PendingOrderList : ContentPage
 
         if (order != null)
         {
-            
+            try
+            {
+                var uri = new Uri(_config.BaseAddress + $"Order/{order.OrderId}");
+                order.Status = false; // Update the status in the order object
+                var content = new StringContent(JsonConvert.SerializeObject(order), Encoding.UTF8, "application/json");
+                HttpResponseMessage response = await _client.PutAsync(uri, content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    // Update the order status locally if needed
+                    order.Status = false;
+                    // Refresh the pending order list and item to make list
+                    var viewModel = BindingContext as CombinedViewModel;
+                    viewModel?.PendingOrder.LoadOrders();
+                    viewModel?.ItemToMake.LoadOrderDetails();
+                    DisplayAlert("Confirmed", $"Order: {order.OrderId} has been confirmed paid.", "OK");
+                }
+            }
+            catch (Exception ex)
+            {
+                // Handle exceptions
+                Console.WriteLine($"Error updating order status: {ex.Message}");
+            }
         }
     }
 
-    private void OnCancelOrderClicked(object sender, EventArgs e)
+    private async void OnCancelOrderClicked(object sender, EventArgs e)
     {
         // Get the Order object from the CommandParameter
         var button = sender as Button;
@@ -52,8 +78,27 @@ public partial class PendingOrderList : ContentPage
 
         if (order != null)
         {
-            // Handle the logic for canceling the order
-            // For example, cancel order, update status, etc.
+            try
+            {
+                var uri = new Uri(_config.BaseAddress + $"Order/{order.OrderId}");
+                HttpResponseMessage response = await _client.DeleteAsync(uri);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    // Remove the order from the local collection if needed
+                    var viewModel = BindingContext as CombinedViewModel;
+                    viewModel?.PendingOrder.Orders.Remove(order);
+                    // Refresh the pending order list and item to make list
+                    viewModel?.PendingOrder.LoadOrders();
+                    viewModel?.ItemToMake.LoadOrderDetails();
+                    DisplayAlert("Cancelled", $"Order: {order.OrderId} has been cancelled.", "OK");
+                }
+            }
+            catch (Exception ex)
+            {
+                // Handle exceptions
+                Console.WriteLine($"Error deleting order: {ex.Message}");
+            }
         }
     }
 
@@ -138,9 +183,6 @@ public class CombinedViewModel
     }
 }
 
-
-
-
 public class NotificationPopup : Popup
 {
     public NotificationPopup(ObservableCollection<Models.Notification> notifications)
@@ -189,17 +231,17 @@ public class PendingOrderViewModel
         LoadOrders();
     }
 
-    private async void LoadOrders()
+    public async void LoadOrders()
     {
         try
         {
-            var uri = new Uri(_config.BaseAddress + "Order/");
+            var uri = new Uri(_config.BaseAddress + "Order/Employee/1");
             HttpResponseMessage response = await _client.GetAsync(uri);
             if (response.IsSuccessStatusCode)
             {
                 string data = await response.Content.ReadAsStringAsync();
                 var orders = JsonConvert.DeserializeObject<List<Order>>(data);
-
+                orders = orders.Where(o => o.Status == null).ToList();
                 Orders.Clear();
                 if (orders != null)
                 {
@@ -247,112 +289,7 @@ public class PendingOrderViewModel
         orderDetail.Sugar = string.IsNullOrEmpty(orderDetail.Sugar) ? "none" : orderDetail.Sugar;
         orderDetail.Topping = string.IsNullOrEmpty(orderDetail.Topping) ? "none" : orderDetail.Topping;
     }
-
 }
-
-
-/*public class ItemToMakeListViewModel : INotifyPropertyChanged
-{
-    private ObservableCollection<GroupedMenuItem> _groupedMenuItems;
-    public ObservableCollection<GroupedMenuItem> GroupedMenuItems
-    {
-        get => _groupedMenuItems;
-        set
-        {
-            _groupedMenuItems = value;
-            OnPropertyChanged();
-        }
-    }
-
-    public class OrderDetail
-    {
-        public int OrderDetailId { get; set; }
-        public string ItemName { get; set; }
-        public int Quantity { get; set; }
-        public bool? Status { get; set; } // null = not processed, false = processing, true = done
-        public string Description { get; set; }
-        public string Sugar { get; set; }
-        public string Ice { get; set; }
-        public string Topping { get; set; }
-        public MenuItem MenuItem { get; set; }
-    }
-
-    public class MenuItem
-    {
-        public string ItemName { get; set; }
-    }
-
-    public class GroupedMenuItem
-    {
-        public string MenuItemName { get; set; }
-        public List<OrderDetail> PendingItems { get; set; }
-        public List<OrderDetail> ProcessingItems { get; set; }
-        public List<OrderDetail> DoneItems { get; set; }
-    }
-
-    public ItemToMakeListViewModel()
-    {
-        var orderDetails = GetSampleOrderDetails();
-
-        string[] attributes;
-        foreach (OrderDetail orderDetail in orderDetails)
-        {
-            attributes = orderDetail.Description.Split(',');
-
-            foreach (var attribute in attributes)
-            {
-                string trimmed = attribute.Trim(); // Remove any leading/trailing whitespace
-
-                if (trimmed.Contains("Ice", StringComparison.OrdinalIgnoreCase))
-                {
-                    orderDetail.Ice = trimmed.Replace("Ice", "", StringComparison.OrdinalIgnoreCase).Trim();
-                }
-                else if (trimmed.Contains("Sugar", StringComparison.OrdinalIgnoreCase))
-                {
-                    orderDetail.Sugar = trimmed.Replace("Sugar", "", StringComparison.OrdinalIgnoreCase).Trim();
-                }
-                else
-                {
-                    orderDetail.Topping += (orderDetail.Topping == "" ? "" : ", ") + trimmed;
-                }
-            }
-            orderDetail.Topping = orderDetail.Topping.Length > 2 ? orderDetail.Topping.Substring(2) : string.Empty;
-        }
-
-        // Group order details by MenuItem and then by status
-        GroupedMenuItems = new ObservableCollection<GroupedMenuItem>(
-            orderDetails.GroupBy(o => o.MenuItem.ItemName)
-                .Select(g => new GroupedMenuItem
-                {
-                    MenuItemName = g.Key,
-                    PendingItems = g.Where(o => o.Status == null).ToList(),
-                    ProcessingItems = g.Where(o => o.Status == false).ToList(),
-                    DoneItems = g.Where(o => o.Status == true).ToList()
-                })
-        );
-    }
-
-    // Sample method to generate some mock data
-    private List<OrderDetail> GetSampleOrderDetails()
-    {
-
-        return new List<OrderDetail>
-        {
-            new OrderDetail { OrderDetailId = 1, ItemName = "Pizza", Quantity = 2, Status = null, MenuItem = new MenuItem { ItemName = "Pizza" }, Description = "normal Ice, normal Sugar, Hạt Bí, Hướng Duong" },
-            new OrderDetail { OrderDetailId = 2, ItemName = "Pizza", Quantity = 1, Status = false, MenuItem = new MenuItem { ItemName = "Pizza" }, Description = "normal Ice, normal Sugar, Hạt Bí, Hướng Duong" },
-            new OrderDetail { OrderDetailId = 3, ItemName = "Pasta", Quantity = 3, Status = true, MenuItem = new MenuItem { ItemName = "Pasta" }, Description = "normal Ice, normal Sugar, Hạt Bí, Hướng Duong" },
-            new OrderDetail { OrderDetailId = 4, ItemName = "Pasta", Quantity = 1, Status = null, MenuItem = new MenuItem { ItemName = "Pasta" }, Description = "normal Ice, normal Sugar, Hạt Bí, Hướng Duong" },
-        };
-    }
-
-    public event PropertyChangedEventHandler PropertyChanged;
-
-    protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-    }
-}*/
-
 
 public class ItemToMakeListViewModel : INotifyPropertyChanged
 {
@@ -378,11 +315,11 @@ public class ItemToMakeListViewModel : INotifyPropertyChanged
         LoadOrderDetails();
     }
 
-    private async void LoadOrderDetails()
+    public async void LoadOrderDetails()
     {
         try
         {
-            var uri = new Uri(_config.BaseAddress + "OrderDetail/");
+            var uri = new Uri(_config.BaseAddress + "OrderDetail/Employee/1");
             HttpResponseMessage response = await _client.GetAsync(uri);
 
             if (response.IsSuccessStatusCode)
@@ -392,12 +329,12 @@ public class ItemToMakeListViewModel : INotifyPropertyChanged
 
                 if (orderDetails != null)
                 {
-                    foreach (var orderDetail in orderDetails)
+                    foreach (var orderDetail in orderDetails.Where(od => od.Order?.Status != null))
                     {
                         ParseOrderDetails(orderDetail);
                     }
                     GroupedMenuItems = new ObservableCollection<GroupedMenuItem>(
-                        orderDetails.GroupBy(o => o.MenuItem.ItemName)
+                        orderDetails.Where(od => od.Order?.Status != null).GroupBy(o => o.MenuItem.ItemName)
                             .Select(g => new GroupedMenuItem
                             {
                                 MenuItemName = g.Key,
@@ -437,7 +374,6 @@ public class ItemToMakeListViewModel : INotifyPropertyChanged
                 orderDetail.Topping += (string.IsNullOrEmpty(orderDetail.Topping) ? "" : ", ") + trimmed;
             }
         }
-
         // Set default values if properties are empty
         orderDetail.Ice = string.IsNullOrEmpty(orderDetail.Ice) ? "none" : orderDetail.Ice;
         orderDetail.Sugar = string.IsNullOrEmpty(orderDetail.Sugar) ? "none" : orderDetail.Sugar;

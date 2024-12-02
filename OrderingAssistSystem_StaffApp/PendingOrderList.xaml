@@ -86,14 +86,11 @@
                                             <Label Grid.Row="1" Grid.Column="2" Text="Table QR:" FontAttributes="Bold" />
                                             <Label Grid.Row="1" Grid.Column="3" Text="{Binding Table.Qr}" />
 
-                                            <Label Grid.Row="2" Text="Status:" FontAttributes="Bold" />
-                                            <Label Grid.Row="2" Grid.Column="1" Text="{Binding Status, Converter={StaticResource StatusToTextConverter}}" />
-
                                             <Label Grid.Row="2" Grid.Column="2" Text="Cost:" FontAttributes="Bold" />
                                             <Label Grid.Row="2" Grid.Column="3" Text="{Binding Cost, StringFormat='{}{0:#,##0₫}'}" />
 
-                                            <Label Grid.Row="3" Text="Order Date:" FontAttributes="Bold" />
-                                            <Label Grid.Row="3" Grid.Column="1" Text="{Binding OrderDate, StringFormat='{}{0:MM/dd/yyyy}'}" />
+                                            <Label Grid.Row="2" Text="Order Date:" FontAttributes="Bold" />
+                                            <Label Grid.Row="2" Grid.Column="1" Text="{Binding OrderDate, StringFormat='{}{0:MM/dd/yyyy}'}" />
                                         </Grid>
 
                                         <!-- Buttons -->

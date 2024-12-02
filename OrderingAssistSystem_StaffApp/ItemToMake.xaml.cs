@@ -2,6 +2,8 @@ using CommunityToolkit.Maui.Views;
 using Newtonsoft.Json;
 using OrderingAssistSystem_StaffApp.Models;
 using System.Collections.ObjectModel;
+using System.Text;
+using MenuItem = OrderingAssistSystem_StaffApp.Models.MenuItem;
 
 namespace OrderingAssistSystem_StaffApp;
 
@@ -20,6 +22,58 @@ public partial class ItemToMake : ContentPage
 		BindingContext = new CombinedViewModel();
         // Mock Notifications
         LoadNotifications();
+    }
+
+    private async void OnStartItemClicked(object sender, EventArgs e)
+    {
+        var button = sender as Button;
+        var orderDetail = button?.CommandParameter as OrderDetail; // Cast to your Order type
+        if (orderDetail != null)
+        {
+            // Update the status of the order and order detail
+            orderDetail.Status = false;
+            orderDetail.Order.Status = false;
+
+            // Update the status via API
+            await UpdateOrderStatus(orderDetail.Order);
+            await UpdateOrderDetailStatus(orderDetail);
+
+            // Handle the PendingItem object here
+            await DisplayAlert("Item Started", $"Item: {orderDetail.MenuItem.ItemName} has been started.", "OK");
+        }
+    }
+
+    private async void OnFinishItemClicked(object sender, EventArgs e)
+    {
+        var button = sender as Button;
+        var orderDetail = button?.CommandParameter as OrderDetail; // Cast to your Order type
+        if (orderDetail != null)
+        {
+            // Update the status of the order and order detail
+            orderDetail.Status = true;
+            orderDetail.Order.Status = true;
+
+            // Update the status via API
+            await UpdateOrderStatus(orderDetail.Order);
+            await UpdateOrderDetailStatus(orderDetail);
+
+            // Handle the ProcessingItem object here
+            await DisplayAlert("Item Finished", $"Item: {orderDetail.MenuItem.ItemName} has been finished.", "OK");
+        }
+    }
+
+    private async Task UpdateOrderStatus(Order order)
+    {
+        var uri = new Uri(_config.BaseAddress + $"Order/{order.OrderId}");
+        var content = new StringContent(JsonConvert.SerializeObject(order), Encoding.UTF8, "application/json");
+        await _client.PutAsync(uri, content);
+    }
+
+    private async Task UpdateOrderDetailStatus(OrderDetail orderDetail)
+    {
+        var uri = new Uri(_config.BaseAddress + $"OrderDetail/{orderDetail.OrderDetailId}");
+        var content = new StringContent(JsonConvert.SerializeObject(orderDetail), Encoding.UTF8, "application/json");
+        await _client.PutAsync(uri, content);
     }
 
     private async void LoadNotifications()
