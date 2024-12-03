@@ -29,6 +29,34 @@ public partial class MenuItemList : ContentPage
         SaveCartToPreferences();
     }
 
+    private void Button_Clicked(object sender, EventArgs e)
+    {
+        if (sender is Button button && button.BindingContext is MenuItem menuItem)
+        {
+            // Get selected sugar and ice levels
+            string sugar = string.IsNullOrEmpty(menuItem.Sugar?.ToLower()) ? "normal Sugar" : $"{menuItem.Sugar} Sugar";
+            string ice = string.IsNullOrEmpty(menuItem.Ice?.ToLower()) ? "normal Ice" : $"{menuItem.Ice} Ice";
+
+            // Get selected toppings
+            var selectedToppings = menuItem.AvailableToppings
+                .Where(topping => topping.IsSelected)
+                .Select(topping => topping.ItemName)
+                .ToList();
+
+            string toppingsList = selectedToppings.Any() ? string.Join(", ", selectedToppings) : "No Toppings";
+
+            // Combine into a single string
+            string combinedPreferences = $"{ice}, {sugar}, {toppingsList}";
+
+
+
+
+
+        }
+    }
+
+
+
 
     private async void LoadNotifications()
     {
@@ -381,6 +409,7 @@ public class MenuItemViewModel : INotifyPropertyChanged
     public double Price { get; set; }
     public string Category { get; set; }
 
+
     public bool IsAvailable
     {
         get => _isAvailable;
@@ -489,12 +518,3 @@ public class ToppingViewModel : INotifyPropertyChanged
     }
 }
 
-public class ItemCategory
-{
-    public int ItemCategoryId { get; set; }
-    public string ItemCategoryName { get; set; }
-    public string Description { get; set; }
-    public double Discount { get; set; }
-    public string Image { get; set; }
-    public bool IsDelete { get; set; }
-}

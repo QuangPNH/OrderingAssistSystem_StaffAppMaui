@@ -10,6 +10,10 @@ namespace OrderingAssistSystem_StaffApp.Models
         {
             MenuCategories = new HashSet<MenuCategory>();
             OrderDetails = new HashSet<OrderDetail>();
+            AvailableToppings = new ObservableCollection<MenuItem>();
+            Sugar = "Normal";
+            Ice = "Normal";
+            Quantity = 1;
         }
 
         public int MenuItemId { get; set; }
@@ -20,7 +24,15 @@ namespace OrderingAssistSystem_StaffApp.Models
         public string? Image { get; set; }
         public bool? IsAvailable { get; set; }
         public int? EmployeeId { get; set; }
+
+
+        // Cart
+        public int? Quantity { get; set; }
+        public string? Sugar { get; set; }
+        public string? Ice { get; set; }
         public ObservableCollection<MenuItem> AvailableToppings { get; set; }
+
+        public bool IsSelected { get; set; } // Add this property to track selection
 
         public virtual Employee? Employee { get; set; }
         public virtual ICollection<MenuCategory> MenuCategories { get; set; }

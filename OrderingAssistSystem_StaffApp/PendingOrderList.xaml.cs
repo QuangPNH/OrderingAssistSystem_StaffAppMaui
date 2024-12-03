@@ -147,7 +147,8 @@ public partial class PendingOrderList : ContentPage
 
     private void OnPendingOrdersClicked(object sender, EventArgs e)
     {
-        SwitchToPage("PendingOrders", () => new PendingOrderList());
+        var viewModel = BindingContext as CombinedViewModel;
+        viewModel?.PendingOrder.LoadOrders();
     }
 
     private void OnMenuItemsClicked(object sender, EventArgs e)
@@ -288,111 +289,6 @@ public class PendingOrderViewModel
         orderDetail.Ice = string.IsNullOrEmpty(orderDetail.Ice) ? "none" : orderDetail.Ice;
         orderDetail.Sugar = string.IsNullOrEmpty(orderDetail.Sugar) ? "none" : orderDetail.Sugar;
         orderDetail.Topping = string.IsNullOrEmpty(orderDetail.Topping) ? "none" : orderDetail.Topping;
-    }
-}
-
-public class ItemToMakeListViewModel : INotifyPropertyChanged
-{
-    private readonly HttpClient _client = new HttpClient(new HttpClientHandler
-    {
-        ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => true
-    });
-    private readonly Config _config = new Config();
-    private ObservableCollection<GroupedMenuItem> _groupedMenuItems;
-
-    public ObservableCollection<GroupedMenuItem> GroupedMenuItems
-    {
-        get => _groupedMenuItems;
-        set
-        {
-            _groupedMenuItems = value;
-            OnPropertyChanged();
-        }
-    }
-
-    public ItemToMakeListViewModel()
-    {
-        LoadOrderDetails();
-    }
-
-    public async void LoadOrderDetails()
-    {
-        try
-        {
-            var uri = new Uri(_config.BaseAddress + "OrderDetail/Employee/1");
-            HttpResponseMessage response = await _client.GetAsync(uri);
-
-            if (response.IsSuccessStatusCode)
-            {
-                string data = await response.Content.ReadAsStringAsync();
-                var orderDetails = JsonConvert.DeserializeObject<List<OrderDetail>>(data);
-
-                if (orderDetails != null)
-                {
-                    foreach (var orderDetail in orderDetails.Where(od => od.Order?.Status != null))
-                    {
-                        ParseOrderDetails(orderDetail);
-                    }
-                    GroupedMenuItems = new ObservableCollection<GroupedMenuItem>(
-                        orderDetails.Where(od => od.Order?.Status != null).GroupBy(o => o.MenuItem.ItemName)
-                            .Select(g => new GroupedMenuItem
-                            {
-                                MenuItemName = g.Key,
-                                PendingItems = g.Where(o => o.Status == null).ToList(),
-                                ProcessingItems = g.Where(o => o.Status == false).ToList(),
-                                DoneItems = g.Where(o => o.Status == true).ToList()
-                            })
-                    );
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            // Handle exceptions
-            Console.WriteLine($"Error fetching order details: {ex.Message}");
-        }
-    }
-
-    private void ParseOrderDetails(OrderDetail orderDetail)
-    {
-        string[] attributes = orderDetail.Description?.Split(',') ?? Array.Empty<string>();
-
-        foreach (var attribute in attributes)
-        {
-            string trimmed = attribute.Trim(); // Remove any leading/trailing whitespace
-
-            if (trimmed.Contains("Ice", StringComparison.OrdinalIgnoreCase))
-            {
-                orderDetail.Ice = trimmed.Replace("Ice", "", StringComparison.OrdinalIgnoreCase).Trim();
-            }
-            else if (trimmed.Contains("Sugar", StringComparison.OrdinalIgnoreCase))
-            {
-                orderDetail.Sugar = trimmed.Replace("Sugar", "", StringComparison.OrdinalIgnoreCase).Trim();
-            }
-            else
-            {
-                orderDetail.Topping += (string.IsNullOrEmpty(orderDetail.Topping) ? "" : ", ") + trimmed;
-            }
-        }
-        // Set default values if properties are empty
-        orderDetail.Ice = string.IsNullOrEmpty(orderDetail.Ice) ? "none" : orderDetail.Ice;
-        orderDetail.Sugar = string.IsNullOrEmpty(orderDetail.Sugar) ? "none" : orderDetail.Sugar;
-        orderDetail.Topping = string.IsNullOrEmpty(orderDetail.Topping) ? "none" : orderDetail.Topping;
-    }
-
-    public event PropertyChangedEventHandler PropertyChanged;
-
-    protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-    }
-
-    public class GroupedMenuItem
-    {
-        public string MenuItemName { get; set; }
-        public List<OrderDetail> PendingItems { get; set; }
-        public List<OrderDetail> ProcessingItems { get; set; }
-        public List<OrderDetail> DoneItems { get; set; }
     }
 }
 

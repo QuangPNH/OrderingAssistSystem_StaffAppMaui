@@ -2,6 +2,8 @@ using CommunityToolkit.Maui.Views;
 using Newtonsoft.Json;
 using OrderingAssistSystem_StaffApp.Models;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Text;
 using MenuItem = OrderingAssistSystem_StaffApp.Models.MenuItem;
 
@@ -16,10 +18,9 @@ public partial class ItemToMake : ContentPage
     });
     Models.Config _config = new Models.Config();
     public ItemToMake()
-	{
-
-		InitializeComponent();
-		BindingContext = new CombinedViewModel();
+    {
+        InitializeComponent();
+        BindingContext = new ItemToMakeListViewModel();
         // Mock Notifications
         LoadNotifications();
     }
@@ -30,16 +31,36 @@ public partial class ItemToMake : ContentPage
         var orderDetail = button?.CommandParameter as OrderDetail; // Cast to your Order type
         if (orderDetail != null)
         {
-            // Update the status of the order and order detail
+            // Update the status of the order detail
             orderDetail.Status = false;
-            orderDetail.Order.Status = false;
 
-            // Update the status via API
-            await UpdateOrderStatus(orderDetail.Order);
-            await UpdateOrderDetailStatus(orderDetail);
+            var uri = new Uri(_config.BaseAddress + $"OrderDetail/{orderDetail.OrderDetailId}");
+            var content = new StringContent(JsonConvert.SerializeObject(orderDetail), Encoding.UTF8, "application/json");
+            HttpResponseMessage response = await _client.PutAsync(uri, content);
+
+            uri = new Uri(_config.BaseAddress + $"Order/{orderDetail.Order?.OrderId}");
+            response = await _client.GetAsync(uri);
+            if (response.IsSuccessStatusCode)
+            {
+                string data = await response.Content.ReadAsStringAsync();
+                var order = JsonConvert.DeserializeObject<Order>(data);
+                var orderDetails = order?.OrderDetails;
+                if (orderDetails != null && orderDetails.All(od => od.Status == false))
+                {
+                    // Update the status of the order
+                    orderDetail.Order.Status = false;
+                    uri = new Uri(_config.BaseAddress + $"Order/{orderDetail.Order.OrderId}");
+                    content = new StringContent(JsonConvert.SerializeObject(order), Encoding.UTF8, "application/json");
+                    response = await _client.PutAsync(uri, content);
+                }
+            }
 
             // Handle the PendingItem object here
-            await DisplayAlert("Item Started", $"Item: {orderDetail.MenuItem.ItemName} has been started.", "OK");
+            await DisplayAlert("Item Started", $"Item: {orderDetail.MenuItem?.ItemName} has been started.", "OK");
+
+            // Reload the to-make list
+            var viewModel = BindingContext as ItemToMakeListViewModel;
+            viewModel?.LoadOrderDetails();
         }
     }
 
@@ -49,31 +70,37 @@ public partial class ItemToMake : ContentPage
         var orderDetail = button?.CommandParameter as OrderDetail; // Cast to your Order type
         if (orderDetail != null)
         {
-            // Update the status of the order and order detail
+            // Update the status of the order detail
             orderDetail.Status = true;
-            orderDetail.Order.Status = true;
 
-            // Update the status via API
-            await UpdateOrderStatus(orderDetail.Order);
-            await UpdateOrderDetailStatus(orderDetail);
+            var uri = new Uri(_config.BaseAddress + $"OrderDetail/{orderDetail.OrderDetailId}");
+            var content = new StringContent(JsonConvert.SerializeObject(orderDetail), Encoding.UTF8, "application/json");
+            HttpResponseMessage response = await _client.PutAsync(uri, content);
 
+            // Check if all order details have status = true
+            uri = new Uri(_config.BaseAddress + $"Order/{orderDetail.Order?.OrderId}");
+            response = await _client.GetAsync(uri);
+            if (response.IsSuccessStatusCode)
+            {
+                string data = await response.Content.ReadAsStringAsync();
+                var order = JsonConvert.DeserializeObject<Order>(data);
+                var orderDetails = order?.OrderDetails;
+                if (orderDetails != null && orderDetails.All(od => od.Status == true))
+                {
+                    // Update the status of the order
+                    orderDetail.Order.Status = true;
+                    uri = new Uri(_config.BaseAddress + $"Order/{orderDetail.Order.OrderId}");
+                    content = new StringContent(JsonConvert.SerializeObject(order), Encoding.UTF8, "application/json");
+                    response = await _client.PutAsync(uri, content);
+                }
+            }
             // Handle the ProcessingItem object here
-            await DisplayAlert("Item Finished", $"Item: {orderDetail.MenuItem.ItemName} has been finished.", "OK");
+            await DisplayAlert("Item Finished", $"Item: {orderDetail.MenuItem?.ItemName} has been finished.", "OK");
+
+            // Reload the to-make list
+            var viewModel = BindingContext as ItemToMakeListViewModel;
+            viewModel?.LoadOrderDetails();
         }
-    }
-
-    private async Task UpdateOrderStatus(Order order)
-    {
-        var uri = new Uri(_config.BaseAddress + $"Order/{order.OrderId}");
-        var content = new StringContent(JsonConvert.SerializeObject(order), Encoding.UTF8, "application/json");
-        await _client.PutAsync(uri, content);
-    }
-
-    private async Task UpdateOrderDetailStatus(OrderDetail orderDetail)
-    {
-        var uri = new Uri(_config.BaseAddress + $"OrderDetail/{orderDetail.OrderDetailId}");
-        var content = new StringContent(JsonConvert.SerializeObject(orderDetail), Encoding.UTF8, "application/json");
-        await _client.PutAsync(uri, content);
     }
 
     private async void LoadNotifications()
@@ -106,29 +133,11 @@ public partial class ItemToMake : ContentPage
     }
 
     private void OnBellIconClicked(object sender, EventArgs e)
-	{
-		// Create and display the popup
-		var popup = new NotificationPopup(Notifications);
-		this.ShowPopup(popup);
-	}
-
-    /*// Navigate to Pending Orders List
-    private async void OnPendingOrdersClicked(object sender, EventArgs e)
     {
-        await Application.Current.MainPage.Navigation.PushAsync(new PendingOrderList());
+        // Create and display the popup
+        var popup = new NotificationPopup(Notifications);
+        this.ShowPopup(popup);
     }
-
-    // Navigate to Menu Item List
-    private async void OnMenuItemsClicked(object sender, EventArgs e)
-    {
-        await Application.Current.MainPage.Navigation.PushAsync(new MenuItemList());
-    }
-
-    // Navigate to Items to Make
-    private async void OnItemToMakeClicked(object sender, EventArgs e)
-    {
-        await Application.Current.MainPage.Navigation.PushAsync(new ItemToMake());
-    }*/
 
     private void SwitchToPage(string pageKey, Func<Page> createPage)
     {
@@ -148,10 +157,9 @@ public partial class ItemToMake : ContentPage
 
     private void OnItemToMakeClicked(object sender, EventArgs e)
     {
-        SwitchToPage("ItemsToMake", () => new ItemToMake());
+        var viewModel = BindingContext as ItemToMakeListViewModel;
+        viewModel?.LoadOrderDetails();
     }
-
-
 
     private async void OnLogOutClicked(object sender, EventArgs e)
     {
@@ -165,3 +173,98 @@ public partial class ItemToMake : ContentPage
 
 
 
+public class ItemToMakeListViewModel : INotifyPropertyChanged
+{
+    private readonly HttpClient _client = new HttpClient(new HttpClientHandler
+    {
+        ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => true
+    });
+    private readonly Config _config = new Config();
+
+    public ObservableCollection<GroupedMenuItem> GroupedMenuItems { get; set; } = new ObservableCollection<GroupedMenuItem>();
+    public ItemToMakeListViewModel()
+    {
+        LoadOrderDetails();
+    }
+
+    public async void LoadOrderDetails()
+    {
+        try
+        {
+            var uri = new Uri(_config.BaseAddress + "OrderDetail/Employee/1");
+            HttpResponseMessage response = await _client.GetAsync(uri);
+
+            if (response.IsSuccessStatusCode)
+            {
+                string data = await response.Content.ReadAsStringAsync();
+                var orderDetails = JsonConvert.DeserializeObject<List<OrderDetail>>(data);
+
+                if (orderDetails != null)
+                {
+                    foreach (var orderDetail in orderDetails.Where(od => od.Order?.Status != null))
+                    {
+                        ParseOrderDetails(orderDetail);
+                    }
+                    GroupedMenuItems.Clear();
+                    foreach (var groupedItem in orderDetails.Where(od => od.Order?.Status != null).GroupBy(o => o.MenuItem?.ItemName)
+                        .Select(g => new GroupedMenuItem
+                        {
+                            MenuItemName = g.Key ?? string.Empty,
+                            PendingItems = g.Where(o => o.Status == null).ToList(),
+                            ProcessingItems = g.Where(o => o.Status == false).ToList(),
+                            DoneItems = g.Where(o => o.Status == true && o.Order?.OrderDate?.Date == DateTime.Today).ToList()
+                        }))
+                    {
+                        GroupedMenuItems.Add(groupedItem);
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            // Handle exceptions
+            Console.WriteLine($"Error fetching order details: {ex.Message}");
+        }
+    }
+
+    private void ParseOrderDetails(OrderDetail orderDetail)
+    {
+        string[] attributes = orderDetail.Description?.Split(',') ?? Array.Empty<string>();
+
+        foreach (var attribute in attributes)
+        {
+            string trimmed = attribute.Trim(); // Remove any leading/trailing whitespace
+
+            if (trimmed.Contains("Ice", StringComparison.OrdinalIgnoreCase))
+            {
+                orderDetail.Ice = trimmed.Replace("Ice", "", StringComparison.OrdinalIgnoreCase).Trim();
+            }
+            else if (trimmed.Contains("Sugar", StringComparison.OrdinalIgnoreCase))
+            {
+                orderDetail.Sugar = trimmed.Replace("Sugar", "", StringComparison.OrdinalIgnoreCase).Trim();
+            }
+            else
+            {
+                orderDetail.Topping += (string.IsNullOrEmpty(orderDetail.Topping) ? "" : ", ") + trimmed;
+            }
+        }
+        orderDetail.Ice = string.IsNullOrEmpty(orderDetail.Ice) ? "none" : orderDetail.Ice;
+        orderDetail.Sugar = string.IsNullOrEmpty(orderDetail.Sugar) ? "none" : orderDetail.Sugar;
+        orderDetail.Topping = string.IsNullOrEmpty(orderDetail.Topping) ? "none" : orderDetail.Topping;
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = "")
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+
+    public class GroupedMenuItem
+    {
+        public string MenuItemName { get; set; } = string.Empty;
+        public List<OrderDetail> PendingItems { get; set; } = new List<OrderDetail>();
+        public List<OrderDetail> ProcessingItems { get; set; } = new List<OrderDetail>();
+        public List<OrderDetail> DoneItems { get; set; } = new List<OrderDetail>();
+    }
+}

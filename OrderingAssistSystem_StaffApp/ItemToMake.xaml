@@ -54,14 +54,12 @@ HorizontalOptions="Center" />
 
                 <!-- Grouped Menu Items -->
                 <Label Text="Pending" FontAttributes="Bold" FontSize="18" Margin="10,0,10,5" />
-                <CollectionView ItemsSource="{Binding ItemToMake.GroupedMenuItems}">
+                <CollectionView ItemsSource="{Binding GroupedMenuItems}">
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
                             <StackLayout Margin="0,10">
                                 <!-- Menu Item Header -->
-                                <Frame BorderColor="Gray"
-                CornerRadius="5"
-                Padding="10">
+                                <Frame BorderColor="Gray" CornerRadius="5" Padding="10">
                                     <VerticalStackLayout>
                                         <CollectionView ItemsSource="{Binding PendingItems}">
                                             <CollectionView.ItemTemplate>
@@ -88,10 +86,7 @@ HorizontalOptions="Center" />
                                                             <Label Grid.Row="3" Text="Topping:" FontAttributes="Bold" />
                                                             <Label Grid.Row="3" Grid.Column="1" Text="{Binding Topping}" />
                                                         </Grid>
-                                                        <Button Text="Start Item" 
-        Style="{StaticResource PrimaryButtonStyle}" 
-        Margin="0,10,0,0" 
-                                                                CommandParameter="{Binding .}" Clicked="OnStartItemClicked" />
+                                                        <Button Text="Start Item" Style="{StaticResource PrimaryButtonStyle}" Margin="0,10,0,0" CommandParameter="{Binding .}" Clicked="OnStartItemClicked" />
                                                     </StackLayout>
                                                 </DataTemplate>
                                             </CollectionView.ItemTemplate>
@@ -104,7 +99,7 @@ HorizontalOptions="Center" />
                 </CollectionView>
 
                 <Label Text="Processing" FontAttributes="Bold"  FontSize="18"  Margin="10,20,10,5" />
-                <CollectionView ItemsSource="{Binding ItemToMake.GroupedMenuItems}">
+                <CollectionView ItemsSource="{Binding GroupedMenuItems}">
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
                             <StackLayout Margin="0,10">
@@ -116,8 +111,8 @@ HorizontalOptions="Center" />
                                                 <DataTemplate>
                                                     <StackLayout Margin="0,5">
                                                         <Grid ColumnDefinitions="2*,3*,3*,2*" RowDefinitions="Auto,Auto,Auto,Auto">
-                                                            <Label Text="Queue ID:" FontAttributes="Bold" />
-                                                            <Label Grid.Column="1" Text="{Binding QueueId}" />
+                                                            <Label Text="Order Detail ID:" FontAttributes="Bold" />
+                                                            <Label Grid.Column="1" Text="{Binding OrderDetailId}" />
 
                                                             <Label Grid.Column="2" Text="Item Name:" FontAttributes="Bold" />
                                                             <Label Grid.Column="3" Text="{Binding MenuItem.ItemName}" />
@@ -125,7 +120,6 @@ HorizontalOptions="Center" />
                                                             <Label Grid.Row="1" Text="Quantity:" FontAttributes="Bold" />
                                                             <Label Grid.Row="1" Grid.Column="1" Text="{Binding Quantity}" />
 
-                                                            <!-- Sugar -->
                                                             <Label Grid.Row="2" Text="Sugar:" FontAttributes="Bold" />
                                                             <Label Grid.Row="2" Grid.Column="1" Text="{Binding Sugar}" />
 
@@ -154,8 +148,8 @@ HorizontalOptions="Center" />
                     </CollectionView.ItemTemplate>
                 </CollectionView>
 
-                <Label Text="Done" FontAttributes="Bold"  FontSize="18"  Margin="10,20,10,5" />
-                <CollectionView ItemsSource="{Binding ItemToMake.GroupedMenuItems}">
+                <Label Text="Done Today" FontAttributes="Bold"  FontSize="18"  Margin="10,20,10,5" />
+                <CollectionView ItemsSource="{Binding GroupedMenuItems}">
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
                             <StackLayout Margin="0,10">
@@ -167,9 +161,9 @@ HorizontalOptions="Center" />
                                                 <DataTemplate>
                                                     <StackLayout Margin="0,5">
                                                         <Grid ColumnDefinitions="2*,3*,3*,2*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto">
-                                                            <!-- Queue ID -->
-                                                            <Label Text="Queue ID:" FontAttributes="Bold" />
-                                                            <Label Grid.Column="1" Text="{Binding QueueId}" />
+                                                            
+                                                            <Label Text="Order Detail ID:" FontAttributes="Bold" />
+                                                            <Label Grid.Column="1" Text="{Binding OrderDetailId}" />
 
                                                             <!-- Item Name -->
                                                             <Label Grid.Column="2" Text="Item Name:" FontAttributes="Bold" />
