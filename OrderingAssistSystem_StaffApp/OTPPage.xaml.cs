@@ -19,9 +19,9 @@ public partial class OTPPage : ContentPage
 
         string otp = Preferences.Get("otp", string.Empty);
 
-        if (string.IsNullOrWhiteSpace(otpInput))
+        if (string.IsNullOrWhiteSpace(otpInput) || otpInput.Length != 6 || !otpInput.All(char.IsDigit))
         {
-            await DisplayAlert("Error", "Please enter the OTP.", "OK");
+            await DisplayAlert("Error", "Please enter a valid 6-digit OTP.", "OK");
             return;
         }
 

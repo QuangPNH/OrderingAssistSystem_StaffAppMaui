@@ -24,6 +24,41 @@ public partial class ItemToMake : ContentPage
         BindingContext = new ItemToMakeListViewModel();
         // Mock Notifications
         LoadNotifications();
+        Authoriz();
+    }
+
+    public async Task Authoriz()
+    {
+        //DisplayAlert("Status", Preferences.Get("LoginInfo", string.Empty), "OK");
+
+        AuthorizeLogin authorizeLogin = new AuthorizeLogin(_client);
+
+        var loginStatus = await authorizeLogin.CheckLogin();
+        if (loginStatus.Equals("staff") || loginStatus.Equals("bartender"))
+        {
+        }
+        else if (loginStatus.Equals("employee expired"))
+        {
+            LogOut();
+            await DisplayAlert("Status", "The owner's subscription has been over for over a week. Contact for more info.", "OK");
+        }
+        else if (loginStatus.Equals("null"))
+        {
+            await DisplayAlert("Status", "Staff not found", "OK");
+        }
+        else
+        {
+            await DisplayAlert("Status", "Nothing much really", "OK");
+        }
+    }
+
+    private async void LogOut()
+    {
+        Preferences.Remove("LoginInfo");
+        INotificationRegistrationService notificationRegistrationService = DependencyService.Get<INotificationRegistrationService>();
+        // Reset the MainPage to the login page
+        Application.Current.MainPage = new NavigationPage(new MainPage(notificationRegistrationService));
+        await Task.CompletedTask; // Ensure the method is still async.
     }
 
     private async void OnStartItemClicked(object sender, EventArgs e)
@@ -109,7 +144,10 @@ public partial class ItemToMake : ContentPage
     {
         try
         {
-            var uri = new Uri(_config.BaseAddress + "Notification/Employee/1");
+            var loginInfoJson = Preferences.Get("LoginInfo", string.Empty);
+            var employee = JsonConvert.DeserializeObject<Employee>(loginInfoJson);
+            var managerId = employee?.ManagerId ?? 0;
+            var uri = new Uri(_config.BaseAddress + "Notification/Employee/" + managerId);
             HttpResponseMessage response = await _client.GetAsync(uri);
 
             if (response.IsSuccessStatusCode)
@@ -165,11 +203,7 @@ public partial class ItemToMake : ContentPage
 
     private async void OnLogOutClicked(object sender, EventArgs e)
     {
-        Preferences.Remove("LoginInfo");
-        INotificationRegistrationService notificationRegistrationService = DependencyService.Get<INotificationRegistrationService>();
-        // Reset the MainPage to the login page
-        Application.Current.MainPage = new NavigationPage(new MainPage(notificationRegistrationService));
-        await Task.CompletedTask; // Ensure the method is still async.
+        LogOut();
     }
 }
 
@@ -181,7 +215,7 @@ public class ItemToMakeListViewModel : INotifyPropertyChanged
     {
         ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => true
     });
-    private readonly Config _config = new Config();
+    private readonly ConfigApi _config = new ConfigApi();
 
     public ObservableCollection<GroupedMenuItem> GroupedMenuItems { get; set; } = new ObservableCollection<GroupedMenuItem>();
     public ItemToMakeListViewModel()
@@ -193,7 +227,10 @@ public class ItemToMakeListViewModel : INotifyPropertyChanged
     {
         try
         {
-            var uri = new Uri(_config.BaseAddress + "OrderDetail/Employee/1");
+            var loginInfoJson = Preferences.Get("LoginInfo", string.Empty);
+            var employee = JsonConvert.DeserializeObject<Employee>(loginInfoJson);
+            var managerId = employee?.ManagerId ?? 0;
+            var uri = new Uri(_config.BaseAddress + "OrderDetail/Employee/" + managerId);
             HttpResponseMessage response = await _client.GetAsync(uri);
 
             if (response.IsSuccessStatusCode)

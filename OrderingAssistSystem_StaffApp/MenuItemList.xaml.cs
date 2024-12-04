@@ -28,9 +28,46 @@ public partial class MenuItemList : ContentPage
     {
         InitializeComponent();
         LoadNotifications();
+        Authoriz();
     }
 
-    private void Button_Clicked(object sender, EventArgs e)
+    public async Task Authoriz()
+    {
+        //DisplayAlert("Status", Preferences.Get("LoginInfo", string.Empty), "OK");
+
+        AuthorizeLogin authorizeLogin = new AuthorizeLogin(_client);
+
+        var loginStatus = await authorizeLogin.CheckLogin();
+        if (loginStatus.Equals("staff") || loginStatus.Equals("bartender"))
+        {
+        }
+        else if (loginStatus.Equals("employee expired"))
+        {
+            LogOut();
+            await DisplayAlert("Status", "The owner's subscription has been over for over a week. Contact for more info.", "OK");
+        }
+        else if (loginStatus.Equals("null"))
+        {
+            await DisplayAlert("Status", "Staff not found", "OK");
+        }
+        else
+        {
+            await DisplayAlert("Status", "Nothing much really", "OK");
+        }
+    }
+
+    private async void LogOut()
+    {
+        Preferences.Remove("LoginInfo");
+        INotificationRegistrationService notificationRegistrationService = DependencyService.Get<INotificationRegistrationService>();
+        // Reset the MainPage to the login page
+        Application.Current.MainPage = new NavigationPage(new MainPage(notificationRegistrationService));
+        await Task.CompletedTask; // Ensure the method is still async.
+    }
+
+
+    //Add to cart
+    private void OnAddToCartClicked(object sender, EventArgs e)
     {
         if (sender is Button button && button.BindingContext is MenuItem menuItem)
         {
@@ -85,14 +122,22 @@ public partial class MenuItemList : ContentPage
 
         if (!string.IsNullOrEmpty(PhoneNumberEntry.Text?.Trim()))
         {
+            // Check if phone number format is correct
+            var phoneNumber = PhoneNumberEntry.Text.Trim();
+            if (!System.Text.RegularExpressions.Regex.IsMatch(phoneNumber, @"^0[1-9]\d{8,14}$"))
+            {
+                await DisplayAlert("Error", "Invalid phone number format.", "OK");
+                return;
+            }
+
             try
             {
                 // Get member by phone number
-                var memberResponse = await _client.GetAsync($"{_config.BaseAddress}Member/Phone/{PhoneNumberEntry.Text.Trim()}");
+                var memberResponse = await _client.GetAsync($"{_config.BaseAddress}Member/Phone/{phoneNumber}");
                 if (!memberResponse.IsSuccessStatusCode)
                 {
                     // Register new member
-                    var newMember = new Member { Phone = PhoneNumberEntry.Text.Trim(), IsDelete = false, Gmail = "" };
+                    var newMember = new Member { Phone = phoneNumber, IsDelete = false, Gmail = "" };
                     var registerResponse = await _client.PostAsJsonAsync($"{_config.BaseAddress}Member/Add", newMember);
                     if (!registerResponse.IsSuccessStatusCode)
                     {
@@ -118,8 +163,10 @@ public partial class MenuItemList : ContentPage
 
         try
         {
-            // Fetch tables by manager ID
-            var tablesResponse = await _client.GetAsync($"{_config.BaseAddress}Table/GetTablesByManagerId/1");
+            var loginInfoJson = Preferences.Get("LoginInfo", string.Empty);
+            var employee = JsonConvert.DeserializeObject<Employee>(loginInfoJson);
+            var managerId = employee?.ManagerId ?? 0;
+            var tablesResponse = await _client.GetAsync($"{_config.BaseAddress}Table/GetTablesByManagerId/" + managerId);
             if (!tablesResponse.IsSuccessStatusCode)
             {
                 await DisplayAlert("Error", "Failed to fetch tables.", "OK");
@@ -227,7 +274,10 @@ public partial class MenuItemList : ContentPage
     {
         try
         {
-            var uri = new Uri(_config.BaseAddress + "Notification/Employee/1");
+            var loginInfoJson = Preferences.Get("LoginInfo", string.Empty);
+            var employee = JsonConvert.DeserializeObject<Employee>(loginInfoJson);
+            var managerId = employee?.ManagerId ?? 0;
+            var uri = new Uri(_config.BaseAddress + "Notification/Employee/" + managerId);
             HttpResponseMessage response = await _client.GetAsync(uri);
 
             if (response.IsSuccessStatusCode)
@@ -300,11 +350,7 @@ public partial class MenuItemList : ContentPage
 
     private async void OnLogOutClicked(object sender, EventArgs e)
     {
-        Preferences.Remove("LoginInfo");
-        INotificationRegistrationService notificationRegistrationService = DependencyService.Get<INotificationRegistrationService>();
-        // Reset the MainPage to the login page
-        Application.Current.MainPage = new NavigationPage(new MainPage(notificationRegistrationService));
-        await Task.CompletedTask; // Ensure the method is still async.
+        LogOut();
     }
 }
 
@@ -437,7 +483,10 @@ public class MenuItemListViewModel : INotifyPropertyChanged
     {
         try
         {
-            var uri = new Uri(_config.BaseAddress + "MenuItem/GetAllMenuItem?employeeId=1");
+            var loginInfoJson = Preferences.Get("LoginInfo", string.Empty);
+            var employee = JsonConvert.DeserializeObject<Employee>(loginInfoJson);
+            var managerId = employee?.ManagerId ?? 0;
+            var uri = new Uri(_config.BaseAddress + "MenuItem/GetAllMenuItem?employeeId="+managerId);
             HttpResponseMessage response = await _client.GetAsync(uri);
 
             if (response.IsSuccessStatusCode)

@@ -82,9 +82,7 @@ namespace OrderingAssistSystem_StaffApp
             });
         }
 #if ANDROID
-        protected override async void OnAppearing()
-        {
-            base.OnAppearing();
+        
 
         void OnDeregisterButtonClicked(object sender, EventArgs e)
         {
@@ -95,19 +93,6 @@ namespace OrderingAssistSystem_StaffApp
                 });
         }
 
-        void ShowAlert(string message)
-        {
-            MainThread.BeginInvokeOnMainThread(() =>
-            {
-                DisplayAlert("Push notifications demo", message, "OK")
-                    .ContinueWith((task) =>
-                    {
-                        if (task.IsFaulted)
-                            throw task.Exception;
-                    });
-            });
-        }
-#if ANDROID
         protected override async void OnAppearing()
         {
             base.OnAppearing();
@@ -118,14 +103,22 @@ namespace OrderingAssistSystem_StaffApp
         private async void OnSendOtpClicked(object sender, EventArgs e)
         {
             ConfigApi config = new ConfigApi();
-            var phoneNumber = PhoneNumberEntry.Text?.Replace("\0", "").Trim();
-            string placeholder = "";
+            var phoneNumber = PhoneNumberEntry.Text.Trim();
 
             if (string.IsNullOrWhiteSpace(phoneNumber))
             {
                 await DisplayAlert("Error", "Please enter a phone number.", "OK");
                 return;
             }
+
+            if (!System.Text.RegularExpressions.Regex.IsMatch(phoneNumber, @"^0[1-9]\d{8,14}$"))
+            {
+                await DisplayAlert("Error", "Invalid phone number format.", "OK");
+                return;
+            }
+            string placeholder = "";
+
+            
 
             Employee? emp = null;
 
@@ -137,7 +130,8 @@ namespace OrderingAssistSystem_StaffApp
                 if (response.IsSuccessStatusCode)
                 {
                     string content = await response.Content.ReadAsStringAsync();
-                    emp = System.Text.Json.JsonSerializer.Deserialize<Employee>(content, _serializerOptions);
+                    //emp = System.Text.Json.JsonSerializer.Deserialize<Employee>(content, _serializerOptions);
+                    emp = JsonConvert.DeserializeObject<Employee>(content);
                 }
                 else
                 {

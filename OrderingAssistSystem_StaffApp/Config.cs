@@ -8,7 +8,7 @@ namespace OrderingAssistSystem_StaffApp
 {
     public static partial class Config
     {
-        public static string ApiKey = "API_KEY";
-        public static string BackendServiceEndpoint = "BACKEND_SERVICE_ENDPOINT";
+        public static string ApiKey = "0624d820-6616-430d-92a5-e68265a08593";
+        public static string BackendServiceEndpoint = "https://oas-noti-api-handling-hqb2gxavecakdtey.southeastasia-01.azurewebsites.net/";
     }
 }

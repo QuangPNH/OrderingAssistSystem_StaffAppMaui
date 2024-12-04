@@ -38,6 +38,7 @@ namespace OrderingAssistSystem_StaffApp.Models
                 {
                     string data = await response.Content.ReadAsStringAsync();
                     emp = JsonConvert.DeserializeObject<Employee>(data);
+                    Preferences.Set("LoginInfo", JsonConvert.SerializeObject(emp));
                     if (emp.Phone != null)
                     {
                         if (emp.Role.RoleName.ToLower() == "staff")
