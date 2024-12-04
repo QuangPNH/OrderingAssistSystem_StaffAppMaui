@@ -62,12 +62,13 @@ namespace OrderingAssistSystem_StaffApp
         }
         void OnRegisterButtonClicked(object sender, EventArgs e)
         {
-            _notificationRegistrationService?.RegisterDeviceAsync()
+            _notificationRegistrationService.RegisterDeviceAsync()
                 .ContinueWith((task) =>
                 {
-                    ShowAlert(task.IsFaulted ? task.Exception?.Message ?? "Unknown error" : $"Device registered");
+                    ShowAlert(task.IsFaulted ? task.Exception.Message : $"Device registered");
                 });
         }
+
 
         void OnDeregisterButtonClicked(object sender, EventArgs e)
         {

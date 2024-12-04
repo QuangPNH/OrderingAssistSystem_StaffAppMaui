@@ -188,7 +188,6 @@ public class MenuItemListViewModel : INotifyPropertyChanged
 {
     private string _searchText;
     private ItemCategory _selectedCategory;
-    private readonly Models.Config _config = new Models.Config();
     public ObservableCollection<MenuItem> AvailableToppings { get; set; } = new ObservableCollection<MenuItem>();
     private readonly Models.ConfigApi _config = new Models.ConfigApi();
     private readonly HttpClient _client = new HttpClient(new HttpClientHandler
