@@ -74,6 +74,10 @@ HorizontalOptions="Center" />
 
                                                             <Label Grid.Row="1" Text="Quantity:" FontAttributes="Bold" />
                                                             <Label Grid.Row="1" Grid.Column="1" Text="{Binding Quantity}" />
+
+                                                            <Label Grid.Row="1" Grid.Column="2" Text="Table Name:" FontAttributes="Bold" />
+                                                            <Label Grid.Row="1" Grid.Column="3" Text="{Binding Order.Table.Qr}" />
+                                                            
                                                             <!-- Sugar -->
                                                             <Label Grid.Row="2" Text="Sugar:" FontAttributes="Bold" />
                                                             <Label Grid.Row="2" Grid.Column="1" Text="{Binding Sugar}" />

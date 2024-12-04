@@ -147,7 +147,6 @@
                                                         <ColumnDefinition Width="Auto" />
                                                         <ColumnDefinition Width="*" />
                                                     </Grid.ColumnDefinitions>
-                                                    <Label Text="Price: " VerticalOptions="Center" />
                                                     <Label Text="{Binding Price, StringFormat='Price: {0:#,##0₫}'}" Grid.Column="1" VerticalOptions="Center" />
                                                 </Grid>
 
@@ -157,14 +156,12 @@
                                                         <ColumnDefinition Width="Auto" />
                                                         <ColumnDefinition Width="*" />
                                                     </Grid.ColumnDefinitions>
-                                                    <Label Text="Discount: " VerticalOptions="Center" />
-                                                    <Label Text="{Binding Discount, StringFormat='Price: {0:#,##0₫}'}" Grid.Column="1" VerticalOptions="Center" />
+                                                    <Label Text="{Binding Discount, StringFormat='Discount: {0:#,##0₫}'}" Grid.Column="1" VerticalOptions="Center" />
                                                 </Grid>
 
                                                 <!-- Remove Button -->
                                                 <Button Text="Remove" BackgroundColor="Red" TextColor="White" Command="{Binding RemoveCommand}" />
                                             </StackLayout>
-
 
                                         </Frame>
                                     </DataTemplate>
@@ -182,10 +179,11 @@
                             </StackLayout>
 
                             <Button Text="Create Order"
-                                BackgroundColor="DodgerBlue"
-                                TextColor="White"
-                                CornerRadius="5"
-                                Command="{Binding CreateOrderCommand}" />
+        BackgroundColor="DodgerBlue"
+        TextColor="White"
+        CornerRadius="5"
+        Clicked="OnCreateOrderClicked" />
+
                         </StackLayout>
                     </Frame>
                 </Grid>
@@ -195,17 +193,9 @@
                     <SearchBar Placeholder="Search Item Name" 
                            Text="{Binding SearchText}" 
                            Grid.Column="0" />
-                    <Picker Title="Category" 
-        ItemsSource="{Binding Categories}" 
-        SelectedItem="{Binding SelectedCategory}" 
-        ItemDisplayBinding="{Binding ItemCategoryName}" 
-        Grid.Column="1" 
-        HorizontalOptions="End" />
-
+                    <Picker Title="Category" ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory}" ItemDisplayBinding="{Binding ItemCategoryName}" Grid.Column="1" HorizontalOptions="End" />
                 </Grid>
-
-                <CollectionView ItemsSource="{Binding FilteredMenuItems}" 
-                            SelectionMode="None">
+                <CollectionView ItemsSource="{Binding FilteredMenuItems}" SelectionMode="None">
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
                             <Frame BorderColor="Gray" CornerRadius="10" Padding="10" Margin="0,5">
@@ -241,11 +231,7 @@
                                         </StackLayout>
 
                                         <!-- Add to Cart Button -->
-                                        <Button Text="Add to Cart" 
-        Clicked="Button_Clicked" 
-        Grid.Column="2" 
-        Margin="10,0,0,0" 
-        HeightRequest="40" />
+                                        <Button Text="Add to Cart" Clicked="Button_Clicked" Grid.Column="2" Margin="10,0,0,0" HeightRequest="40" />
                                     </Grid>
 
                                     <!-- Preferences: Sugar, Ice, Toppings -->

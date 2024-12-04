@@ -84,6 +84,7 @@ public partial class ItemToMake : ContentPage
             {
                 string data = await response.Content.ReadAsStringAsync();
                 var order = JsonConvert.DeserializeObject<Order>(data);
+                order.OrderDate = DateTime.Now;
                 var orderDetails = order?.OrderDetails;
                 if (orderDetails != null && orderDetails.All(od => od.Status == true))
                 {

@@ -13,7 +13,6 @@ namespace OrderingAssistSystem_StaffApp.Models
 
         public int OrderId { get; set; }
         public DateTime? OrderDate { get; set; }
-        public int? OrderDetailId { get; set; }
         public int? TableId { get; set; }
         public double? Cost { get; set; }
         public double? Tax { get; set; }

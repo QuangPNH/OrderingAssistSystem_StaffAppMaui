@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using OrderingAssistSystem_StaffApp.Models;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Net.Http.Json;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Twilio.TwiML.Voice;
@@ -21,12 +22,11 @@ public partial class MenuItemList : ContentPage
         ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => true
     });
     Models.Config _config = new Models.Config();
-    public ObservableCollection<CartItem> CartItems { get; set; }
+    public ObservableCollection<CartItem> CartItems { get; set; } = new ObservableCollection<CartItem>();
     public MenuItemList()
     {
         InitializeComponent();
         LoadNotifications();
-        SaveCartToPreferences();
     }
 
     private void Button_Clicked(object sender, EventArgs e)
@@ -42,16 +42,180 @@ public partial class MenuItemList : ContentPage
                 .Where(topping => topping.IsSelected)
                 .Select(topping => topping.ItemName)
                 .ToList();
-
-            string toppingsList = selectedToppings.Any() ? string.Join(", ", selectedToppings) : "No Toppings";
+            string toppingsList = selectedToppings.Any() ? string.Join(", ", selectedToppings) : "";
 
             // Combine into a single string
             string combinedPreferences = $"{ice}, {sugar}, {toppingsList}";
 
+            // Check if the item with the same properties already exists in the cart
+            var existingCartItem = CartItems?.FirstOrDefault(item =>
+    item.ItemName == menuItem.ItemName &&
+    item.Sugar == menuItem.Sugar &&
+    item.Ice == menuItem.Ice &&
+    item.Topping == toppingsList);
+
+            if (existingCartItem != null)
+            {
+                // If it exists, increase the quantity
+                existingCartItem.Quantity += 1;
+            }
+            else
+            {
+                // If it doesn't exist, add a new item to the cart
+                CartItems.Add(new CartItem
+                {id = menuItem.MenuItemId,
+                    ItemName = menuItem.ItemName,
+                    Quantity = (int)menuItem.Quantity,
+                    Sugar = menuItem.Sugar,
+                    Ice = menuItem.Ice,
+                    Topping = toppingsList,
+                    Description = combinedPreferences,
+                    Price = menuItem.Price ?? 0
+                });
+            }
+            UpdateTotalPrice();
+            SaveCartToPreferences();
+        }
+    }
+
+    private async void OnCreateOrderClicked(object sender, EventArgs e)
+    {
+        Member member = null;
+
+        if (!string.IsNullOrEmpty(PhoneNumberEntry.Text?.Trim()))
+        {
+            try
+            {
+                // Get member by phone number
+                var memberResponse = await _client.GetAsync($"{_config.BaseAddress}Member/Phone/{PhoneNumberEntry.Text.Trim()}");
+                if (!memberResponse.IsSuccessStatusCode)
+                {
+                    // Register new member
+                    var newMember = new Member { Phone = PhoneNumberEntry.Text.Trim(), IsDelete = false, Gmail = "" };
+                    var registerResponse = await _client.PostAsJsonAsync($"{_config.BaseAddress}Member/Add", newMember);
+                    if (!registerResponse.IsSuccessStatusCode)
+                    {
+                        await DisplayAlert("Error", "Failed to register new member.", "OK");
+                        return;
+                    }
+                    var registerData = await registerResponse.Content.ReadAsStringAsync();
+                    member = JsonConvert.DeserializeObject<Member>(registerData);
+                    await DisplayAlert("Registered", "Member " + member.Phone + " registered.", "OK");
+                }
+                else
+                {
+                    var memberData = await memberResponse.Content.ReadAsStringAsync();
+                    member = JsonConvert.DeserializeObject<Member>(memberData);
+                }
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlert("Error", $"An error occurred while fetching or registering the member: {ex.Message}", "OK");
+                return;
+            }
+        }
+
+        try
+        {
+            // Fetch tables by manager ID
+            var tablesResponse = await _client.GetAsync($"{_config.BaseAddress}Table/GetTablesByManagerId/1");
+            if (!tablesResponse.IsSuccessStatusCode)
+            {
+                await DisplayAlert("Error", "Failed to fetch tables.", "OK");
+                return;
+            }
+
+            var tablesData = await tablesResponse.Content.ReadAsStringAsync();
+            var tables = JsonConvert.DeserializeObject<List<Table>>(tablesData);
+
+            // Find the table with the lowest ID
+            var tableWithLowestId = tables.OrderBy(t => t.TableId).FirstOrDefault();
+            if (tableWithLowestId == null)
+            {
+                await DisplayAlert("Error", "No tables found.", "OK");
+                return;
+            }
+
+            // Create order details
+            var orderDetails = CartItems.Select(cartItem => new OrderDetail
+            {
+                Quantity = cartItem.Quantity,
+                MenuItemId = cartItem.id,
+                Status = null,
+                Description = cartItem.Attributes
+            }).ToList();
+
+            // Create new order
+            var newOrder = new Order
+            {
+                OrderDate = DateTime.Now,
+                MemberId = member?.MemberId,
+                Status = false,
+                Cost = CartItems.Sum(item => item.Price * item.Quantity),
+                Tax = 0, // Add tax calculation if needed
+                OrderDetails = orderDetails,
+                TableId = tableWithLowestId.TableId // Assign the table with the lowest ID
+            };
+
+            var orderResponse = await _client.PostAsJsonAsync($"{_config.BaseAddress}Order/", newOrder);
+            if (!orderResponse.IsSuccessStatusCode)
+            {
+                await DisplayAlert("Error", "Failed to create order.", "OK");
+                return;
+            }
+
+            // Update member points if member exists
+            if (member != null)
+            {
+                var points = newOrder.Cost / 1000;
+                var updatePointsResponse = await _client.GetAsync($"{_config.BaseAddress}Member/UpdatePoints/memberId/point?memberId={member.MemberId}&point={points}");
+                if (!updatePointsResponse.IsSuccessStatusCode)
+                {
+                    await DisplayAlert("Error", "Failed to update member points.", "OK");
+                    return;
+                }
+            }
+
+            ClearCartPreferences();
+            await DisplayAlert("Success", "Order created successfully.", "OK");
+        }
+        catch (Exception ex)
+        {
+            // Handle exceptions
+            await DisplayAlert("Error", $"An error occurred: {ex.Message}", "OK");
+        }
+    }
 
 
+    private void ClearCartPreferences()
+    {
+        Preferences.Remove("Cart");
+        CartItems.Clear();
+        CartList.ItemsSource = CartItems;
+        UpdateTotalPrice();
+    }
 
+    public void RemoveCartItem(CartItem cartItem)
+    {
+        CartItems.Remove(cartItem);
+        SaveCartToPreferences();
+    }
 
+    public void SaveCartToPreferences()
+    {
+        CartList.ItemsSource = CartItems;
+        string cartJson = JsonConvert.SerializeObject(CartItems);
+        Preferences.Set("Cart", cartJson);
+    }
+
+    private void LoadCartFromPreferences()
+    {
+        string cartJson = Preferences.Get("Cart", "[]");
+        var cartItems = JsonConvert.DeserializeObject<ObservableCollection<CartItem>>(cartJson);
+        if (cartItems != null)
+        {
+            CartItems = cartItems;
+            CartList.ItemsSource = CartItems;
         }
     }
 
@@ -89,6 +253,8 @@ public partial class MenuItemList : ContentPage
 
     private void ShowCartPopup(object sender, EventArgs e)
     {
+        LoadCartFromPreferences();
+        UpdateTotalPrice();
         CartPopup.IsVisible = true;
     }
 
@@ -100,12 +266,7 @@ public partial class MenuItemList : ContentPage
     private void UpdateTotalPrice()
     {
         var totalPrice = CartItems.Sum(item => (item.Price - item.Discount) * item.Quantity);
-        TotalPriceLabel.Text = totalPrice.ToString("C");
-    }
-
-    // You can bind this to your command in a real application
-    private void CreateOrder()
-    {
+        TotalPriceLabel.Text = totalPrice.ToString("C", new System.Globalization.CultureInfo("vi-VN"));
     }
 
     private void OnBellIconClicked(object sender, EventArgs e)
@@ -125,7 +286,7 @@ public partial class MenuItemList : ContentPage
         SwitchToPage("PendingOrders", () => new PendingOrderList());
     }
 
-    private void OnReloadMenuClicked(object sender, EventArgs e)
+    private void OnMenuItemsClicked(object sender, EventArgs e)
     {
         var viewModel = BindingContext as MenuItemListViewModel;
         viewModel?.LoadMenuItems();
@@ -143,33 +304,6 @@ public partial class MenuItemList : ContentPage
         Application.Current.MainPage = new NavigationPage(new MainPage());
         await Task.CompletedTask; // Ensure the method is still async.
     }
-    private void SaveCartToPreferences()
-    {
-        CartItems = new ObservableCollection<CartItem>
-        {
-            new CartItem { ItemName = "Item1", Quantity = 1, Price = 5.0 },
-            new CartItem { ItemName = "Item2", Quantity = 1, Price = 5.0 }
-        };
-
-        CartItems[0].ParseDescription("less Ice, normal Sugar, Hạt Bí");
-        CartItems[1].ParseDescription("normal Ice, less Sugar, Hướng Duong");
-
-        CartList.ItemsSource = CartItems;
-
-        string cartJson = JsonConvert.SerializeObject(CartItems);
-        Preferences.Set("Cart", cartJson);
-    }
-
-    private void LoadCartFromPreferences()
-    {
-        string cartJson = Preferences.Get("Cart", "[]");
-        var cartItems = JsonConvert.DeserializeObject<ObservableCollection<CartItem>>(cartJson);
-        if (cartItems != null)
-        {
-            CartItems = cartItems;
-            CartList.ItemsSource = CartItems;
-        }
-    }
 }
 
 public class CartItem
@@ -179,12 +313,20 @@ public class CartItem
     public string Sugar { get; set; } = "Normal"; // Default value
     public string Ice { get; set; } = "Normal";   // Default value
     public string Topping { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
     public double Price { get; set; }
+    public int id { get; set; }
     public double Discount { get; set; }
 
     public string Attributes => $"{Ice} Ice, {Sugar} Sugar{(string.IsNullOrEmpty(Topping) ? "" : $", {Topping}")}";
 
-    public Command RemoveCommand => new Command(() => App.Current.MainPage.DisplayAlert("Remove", "Removing Item!", "OK"));
+    public Command RemoveCommand => new Command(() =>
+    {
+        var menuItemList = Application.Current.MainPage.Navigation.NavigationStack
+            .OfType<MenuItemList>()
+            .FirstOrDefault();
+        menuItemList?.RemoveCartItem(this);
+    });
 
     // Parse description to fill Sugar, Ice, and Topping
     public void ParseDescription(string description)
@@ -253,7 +395,6 @@ public class MenuItemListViewModel : INotifyPropertyChanged
         MenuItems = new ObservableCollection<MenuItem>();
         FilteredMenuItems = new ObservableCollection<MenuItem>();
         Categories = new ObservableCollection<ItemCategory>();
-        AddToCartCommand = new Command<MenuItemViewModel>(AddToCart);
         LoadCategories();
         LoadMenuItems();
     }
@@ -349,43 +490,6 @@ public class MenuItemListViewModel : INotifyPropertyChanged
         FilteredMenuItems.Clear();
         foreach (var item in filtered)
             FilteredMenuItems.Add(item);
-    }
-
-    private void AddToCart(MenuItemViewModel menuItem)
-    {
-        if (!menuItem.IsAvailable)
-        {
-            // Optionally notify user that item is disabled
-            return;
-        }
-
-        if (menuItem.Quantity <= 0)
-        {
-            // Optionally notify user to enter a valid quantity
-            return;
-        }
-
-        // Create OrderDetail
-        var orderDetail = new OrderDetail
-        {
-            MenuItemId = menuItem.MenuItemId,
-            Quantity = menuItem.Quantity,
-            Sugar = menuItem.Sugar,
-            Ice = menuItem.Ice,
-            Topping = string.Join(", ", menuItem.AvailableToppings.Where(t => t.IsSelected).Select(t => t.ItemName)),
-            Description = $"{menuItem.Ice ?? "Normal"} Ice, {menuItem.Sugar ?? "Normal"} Sugar, {string.Join(", ", menuItem.AvailableToppings.Where(t => t.IsSelected).Select(t => t.ItemName))}",
-            Status = null // Not processed yet
-        };
-
-        // Add to cart using Preferences
-        // Serialize the OrderDetail and store it in Preferences
-        string cartJson = Preferences.Get("Cart", "[]");
-        var cart = JsonConvert.DeserializeObject<ObservableCollection<OrderDetail>>(cartJson) ?? new ObservableCollection<OrderDetail>();
-        cart.Add(orderDetail);
-        Preferences.Set("Cart", JsonConvert.SerializeObject(cart));
-
-        // Optionally notify user that item was added
-        Application.Current.MainPage.DisplayAlert("Success", $"{orderDetail.MenuItem.ItemName} added to cart.", "OK");
     }
 
     public event PropertyChangedEventHandler PropertyChanged;
