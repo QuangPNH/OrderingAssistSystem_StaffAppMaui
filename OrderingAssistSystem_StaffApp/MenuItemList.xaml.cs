@@ -125,9 +125,10 @@ public partial class MenuItemList : ContentPage
         SwitchToPage("PendingOrders", () => new PendingOrderList());
     }
 
-    private void OnMenuItemsClicked(object sender, EventArgs e)
+    private void OnReloadMenuClicked(object sender, EventArgs e)
     {
-        SwitchToPage("MenuItems", () => new MenuItemList());
+        var viewModel = BindingContext as MenuItemListViewModel;
+        viewModel?.LoadMenuItems();
     }
 
     private void OnItemToMakeClicked(object sender, EventArgs e)
@@ -289,7 +290,7 @@ public class MenuItemListViewModel : INotifyPropertyChanged
         }
     }
 
-    private async void LoadMenuItems()
+    public async void LoadMenuItems()
     {
         try
         {
