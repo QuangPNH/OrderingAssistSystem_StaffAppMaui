@@ -69,6 +69,22 @@ namespace OrderingAssistSystem_StaffApp
                 });
         }
 
+        void ShowAlert(string message)
+        {
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                DisplayAlert("Push notifications demo", message, "OK")
+                    .ContinueWith((task) =>
+                    {
+                        if (task.IsFaulted)
+                            throw task.Exception;
+                    });
+            });
+        }
+#if ANDROID
+        protected override async void OnAppearing()
+        {
+            base.OnAppearing();
 
         void OnDeregisterButtonClicked(object sender, EventArgs e)
         {
