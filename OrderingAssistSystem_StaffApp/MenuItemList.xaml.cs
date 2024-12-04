@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Maui.Views;
 using Newtonsoft.Json;
 using OrderingAssistSystem_StaffApp.Models;
+using OrderingAssistSystem_StaffApp.Services;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Net.Http.Json;
@@ -21,7 +22,7 @@ public partial class MenuItemList : ContentPage
     {
         ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => true
     });
-    Models.Config _config = new Models.Config();
+    Models.ConfigApi _config = new Models.ConfigApi();
     public ObservableCollection<CartItem> CartItems { get; set; } = new ObservableCollection<CartItem>();
     public MenuItemList()
     {
@@ -300,8 +301,9 @@ public partial class MenuItemList : ContentPage
     private async void OnLogOutClicked(object sender, EventArgs e)
     {
         Preferences.Remove("LoginInfo");
+        INotificationRegistrationService notificationRegistrationService = DependencyService.Get<INotificationRegistrationService>();
         // Reset the MainPage to the login page
-        Application.Current.MainPage = new NavigationPage(new MainPage());
+        Application.Current.MainPage = new NavigationPage(new MainPage(notificationRegistrationService));
         await Task.CompletedTask; // Ensure the method is still async.
     }
 }
@@ -357,8 +359,8 @@ public class MenuItemListViewModel : INotifyPropertyChanged
 {
     private string _searchText;
     private ItemCategory _selectedCategory;
-    private readonly Models.Config _config = new Models.Config();
     public ObservableCollection<MenuItem> AvailableToppings { get; set; } = new ObservableCollection<MenuItem>();
+    private readonly Models.ConfigApi _config = new Models.ConfigApi();
     private readonly HttpClient _client = new HttpClient(new HttpClientHandler
     {
         ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => true

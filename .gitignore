@@ -9,7 +9,7 @@
 *.user
 *.userosscache
 *.sln.docstates
-
+*.local_secrets.*
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
@@ -331,7 +331,7 @@ __pycache__/
 *.btm.cs
 *.odx.cs
 *.xsd.cs
-
+*.local_secrets.*
 # OpenCover UI analysis results
 OpenCover/
 

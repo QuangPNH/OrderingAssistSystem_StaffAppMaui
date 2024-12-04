@@ -1,6 +1,7 @@
 using CommunityToolkit.Maui.Views;
 using Newtonsoft.Json;
 using OrderingAssistSystem_StaffApp.Models;
+using OrderingAssistSystem_StaffApp.Services;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -16,7 +17,7 @@ public partial class ItemToMake : ContentPage
     {
         ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => true
     });
-    Models.Config _config = new Models.Config();
+    Models.ConfigApi _config = new Models.ConfigApi();
     public ItemToMake()
     {
         InitializeComponent();
@@ -165,9 +166,9 @@ public partial class ItemToMake : ContentPage
     private async void OnLogOutClicked(object sender, EventArgs e)
     {
         Preferences.Remove("LoginInfo");
-
+        INotificationRegistrationService notificationRegistrationService = DependencyService.Get<INotificationRegistrationService>();
         // Reset the MainPage to the login page
-        Application.Current.MainPage = new NavigationPage(new MainPage());
+        Application.Current.MainPage = new NavigationPage(new MainPage(notificationRegistrationService));
         await Task.CompletedTask; // Ensure the method is still async.
     }
 }

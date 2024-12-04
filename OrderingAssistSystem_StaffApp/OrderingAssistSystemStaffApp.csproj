@@ -24,7 +24,7 @@
 		<ApplicationTitle>OrderingAssistSystem_StaffApp</ApplicationTitle>
 
 		<!-- App Identifier -->
-		<ApplicationId>com.companyname.orderingassistsystem_staffapp</ApplicationId>
+		<ApplicationId>com.OAS.OrderingAssistSystemStaffApp</ApplicationId>
 
 		<!-- Versions -->
 		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
@@ -32,7 +32,7 @@
 
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">11.0</SupportedOSPlatformVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">13.1</SupportedOSPlatformVersion>
-		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">26.0</SupportedOSPlatformVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
 		<TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
@@ -58,9 +58,36 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <None Remove="Platforms\Android\Resources\drawable\ic_notification.png" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Remove="Config.local_secrets.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
 	  <None Remove="Resources\Images\bell_icon.png" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <None Include="Config.local_secrets.cs" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0-android'">
+		<GoogleServicesJson Include="Platforms\Android\google-services.json" />
+		<PackageReference Include="Xamarin.AndroidX.Activity">
+		  <Version>1.9.3.1</Version>
+		</PackageReference>
+		<PackageReference Include="Xamarin.AndroidX.Collection.Jvm">
+		  <Version>1.4.5.1</Version>
+		</PackageReference>
+		<PackageReference Include="Xamarin.AndroidX.Collection.Ktx">
+		  <Version>1.4.5.1</Version>
+		</PackageReference>
+		<PackageReference Include="Xamarin.AndroidX.Fragment.Ktx">
+		  <Version>1.8.5.1</Version>
+		</PackageReference>
+	</ItemGroup>
 	<ItemGroup>
 		<PackageReference Include="CommunityToolkit.Maui" Version="9.1.1" />
 		<PackageReference Include="Microsoft.Extensions.Http" Version="9.0.0" />
@@ -69,6 +96,11 @@
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 		<PackageReference Include="Twilio" Version="7.6.0" />
+	</ItemGroup>
+	<ItemGroup>
+	  <AndroidResource Update="Platforms\Android\Resources\values\colors.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </AndroidResource>
 	</ItemGroup>
 
 	<ItemGroup>
@@ -84,6 +116,12 @@
 	  <MauiXaml Update="PendingOrderList.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0-android'">
+	  <PackageReference Include="Xamarin.Firebase.Messaging">
+	    <Version>124.1.0</Version>
+	  </PackageReference>
 	</ItemGroup>
 
 	<ProjectExtensions><VisualStudio><UserProperties XamarinHotReloadDebuggerTimeoutExceptionOrderingAssistSystemStaffAppHideInfoBar="True" /></VisualStudio></ProjectExtensions>

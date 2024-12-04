@@ -4,24 +4,29 @@ using OrderingAssistSystem_StaffApp.Models;
 using Twilio;
 using Twilio.Rest.Api.V2010.Account;
 using Twilio.Types;
-using OrderingAssistSystem_StaffApp.Models;
 using System.Text.Json;
-
+using OrderingAssistSystem_StaffApp.Services;
 namespace OrderingAssistSystem_StaffApp
 {
     public partial class MainPage : ContentPage
     {
         private readonly HttpClient _client;
         private readonly JsonSerializerOptions _serializerOptions;
+        readonly INotificationRegistrationService _notificationRegistrationService;
 
-        public MainPage()
+        public MainPage(INotificationRegistrationService service)
         {
             _client = new HttpClient(new HttpClientHandler
                 {
                     ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => true
                 });
-            Authoriz();
-            InitializeComponent();
+
+			InitializeComponent();
+
+			//Navigation.PushAsync(new PendingOrderList());
+
+			Authoriz();
+            _notificationRegistrationService = service;
         }
 
 
@@ -55,11 +60,64 @@ namespace OrderingAssistSystem_StaffApp
                 await DisplayAlert("Status", "Nothing much really", "OK");
             }
         }
+        void OnRegisterButtonClicked(object sender, EventArgs e)
+        {
+            _notificationRegistrationService.RegisterDeviceAsync()
+                .ContinueWith((task) =>
+                {
+                    ShowAlert(task.IsFaulted ? task.Exception.Message : $"Device registered");
+                });
+        }
 
+        void ShowAlert(string message)
+        {
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                DisplayAlert("Push notifications demo", message, "OK")
+                    .ContinueWith((task) =>
+                    {
+                        if (task.IsFaulted)
+                            throw task.Exception;
+                    });
+            });
+        }
+#if ANDROID
+        protected override async void OnAppearing()
+        {
+            base.OnAppearing();
 
+        void OnDeregisterButtonClicked(object sender, EventArgs e)
+        {
+            _notificationRegistrationService?.DeregisterDeviceAsync()
+                .ContinueWith((task) =>
+                {
+                    ShowAlert(task.IsFaulted ? task.Exception?.Message : $"Device deregistered");
+                });
+        }
+
+        void ShowAlert(string message)
+        {
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                DisplayAlert("Push notifications demo", message, "OK")
+                    .ContinueWith((task) =>
+                    {
+                        if (task.IsFaulted)
+                            throw task.Exception;
+                    });
+            });
+        }
+#if ANDROID
+        protected override async void OnAppearing()
+        {
+            base.OnAppearing();
+
+            PermissionStatus status = await Permissions.RequestAsync<Permissions.PostNotifications>();
+        }
+#endif
         private async void OnSendOtpClicked(object sender, EventArgs e)
         {
-            Config config = new Config();
+            ConfigApi config = new ConfigApi();
             var phoneNumber = PhoneNumberEntry.Text?.Replace("\0", "").Trim();
             string placeholder = "";
 
