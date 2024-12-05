@@ -199,33 +199,45 @@ public partial class PendingOrderList : ContentPage
 
     private void OnPendingOrdersClicked(object sender, EventArgs e)
     {
+        
         var viewModel = BindingContext as CombinedViewModel;
+        viewModel?.CalculateRemainingDays();
         viewModel?.PendingOrder.LoadOrders();
     }
 
     private void OnMenuItemsClicked(object sender, EventArgs e)
     {
+        var viewModel = BindingContext as CombinedViewModel;
+        viewModel?.CalculateRemainingDays();
         SwitchToPage("MenuItems", () => new MenuItemList());
     }
 
     private void OnItemToMakeClicked(object sender, EventArgs e)
     {
+        var viewModel = BindingContext as CombinedViewModel;
+        viewModel?.CalculateRemainingDays();
         SwitchToPage("ItemsToMake", () => new ItemToMake());
     }
-
 
     private async void OnLogOutClicked(object sender, EventArgs e)
     {
         LogOut();
     }
-
-    
 }
 
 public class CombinedViewModel : INotifyPropertyChanged
 {
     public PendingOrderViewModel PendingOrder { get; set; }
     public ItemToMakeListViewModel ItemToMake { get; set; }
+
+    
+
+    public CombinedViewModel()
+    {
+        PendingOrder = new PendingOrderViewModel();
+        ItemToMake = new ItemToMakeListViewModel();
+        CalculateRemainingDays();
+    }
 
     private string _remainingDaysMessage;
     public string RemainingDaysMessage
@@ -238,14 +250,7 @@ public class CombinedViewModel : INotifyPropertyChanged
         }
     }
 
-    public CombinedViewModel()
-    {
-        PendingOrder = new PendingOrderViewModel();
-        ItemToMake = new ItemToMakeListViewModel();
-        CalculateRemainingDays();
-    }
-
-    private void CalculateRemainingDays()
+    public void CalculateRemainingDays()
     {
         string loginInfoJson = Preferences.Get("LoginInfo", string.Empty);
         Employee emp = JsonConvert.DeserializeObject<Employee>(loginInfoJson);
@@ -257,6 +262,10 @@ public class CombinedViewModel : INotifyPropertyChanged
             if (remainingTime.Days <= 7)
             {
                 RemainingDaysMessage = $"Your owner's subscription to the service is expired.\nYou can still use the system for {remainingTime.Days} day(s).";
+            }
+            else if (remainingTime.Days <= 0)
+            {
+                Application.Current.MainPage.DisplayAlert("Expired", $"Your owner's subscription to the service is expired for over a week.", "Ok");
             }
             else
             {

@@ -24,11 +24,31 @@ public partial class MenuItemList : ContentPage
     });
     Models.ConfigApi _config = new Models.ConfigApi();
     public ObservableCollection<CartItem> CartItems { get; set; } = new ObservableCollection<CartItem>();
+
     public MenuItemList()
     {
         InitializeComponent();
         LoadNotifications();
         Authoriz();
+        CalculateRemainingDays();
+    }
+
+    public void CalculateRemainingDays()
+    {
+        string loginInfoJson = Preferences.Get("LoginInfo", string.Empty);
+        Employee emp = JsonConvert.DeserializeObject<Employee>(loginInfoJson);
+        DateTime? subscribeEndDate = emp?.Owner?.SubscribeEndDate;
+        if (subscribeEndDate.HasValue)
+        {
+            DateTime endDateWithGracePeriod = subscribeEndDate.Value.AddDays(7);
+            TimeSpan remainingTime = endDateWithGracePeriod - DateTime.Now;
+            if (remainingTime.Days <= 0)
+            {
+                INotificationRegistrationService notificationRegistrationService = DependencyService.Get<INotificationRegistrationService>();
+                Application.Current.MainPage = new NavigationPage(new MainPage(notificationRegistrationService));
+                Application.Current.MainPage.DisplayAlert("Expired", $"Your owner's subscription to the service is expired for over a week.", "Ok");
+            }
+        }
     }
 
     public async Task Authoriz()
@@ -44,15 +64,16 @@ public partial class MenuItemList : ContentPage
         else if (loginStatus.Equals("employee expired"))
         {
             LogOut();
-            await DisplayAlert("Status", "The owner's subscription has been over for over a week. Contact for more info.", "OK");
         }
         else if (loginStatus.Equals("null"))
         {
-            await DisplayAlert("Status", "Staff not found", "OK");
+            await DisplayAlert("Status", "Login info not found.", "OK");
+            INotificationRegistrationService notificationRegistrationService = DependencyService.Get<INotificationRegistrationService>();
+            Application.Current.MainPage = new NavigationPage(new MainPage(notificationRegistrationService));
         }
         else
         {
-            await DisplayAlert("Status", "Nothing much really", "OK");
+            await DisplayAlert("Status", "Something went wrong.", "OK");
         }
     }
 
@@ -101,7 +122,8 @@ public partial class MenuItemList : ContentPage
             {
                 // If it doesn't exist, add a new item to the cart
                 CartItems.Add(new CartItem
-                {id = menuItem.MenuItemId,
+                {
+                    id = menuItem.MenuItemId,
                     ItemName = menuItem.ItemName,
                     Quantity = (int)menuItem.Quantity,
                     Sugar = menuItem.Sugar,
@@ -334,17 +356,20 @@ public partial class MenuItemList : ContentPage
 
     private void OnPendingOrdersClicked(object sender, EventArgs e)
     {
+        CalculateRemainingDays();
         SwitchToPage("PendingOrders", () => new PendingOrderList());
     }
 
     private void OnMenuItemsClicked(object sender, EventArgs e)
     {
+        CalculateRemainingDays();
         var viewModel = BindingContext as MenuItemListViewModel;
         viewModel?.LoadMenuItems();
     }
 
     private void OnItemToMakeClicked(object sender, EventArgs e)
     {
+        CalculateRemainingDays();
         SwitchToPage("ItemsToMake", () => new ItemToMake());
     }
 
@@ -486,7 +511,7 @@ public class MenuItemListViewModel : INotifyPropertyChanged
             var loginInfoJson = Preferences.Get("LoginInfo", string.Empty);
             var employee = JsonConvert.DeserializeObject<Employee>(loginInfoJson);
             var managerId = employee?.ManagerId ?? 0;
-            var uri = new Uri(_config.BaseAddress + "MenuItem/GetAllMenuItem?employeeId="+managerId);
+            var uri = new Uri(_config.BaseAddress + "MenuItem/GetAllMenuItem?employeeId=" + managerId);
             HttpResponseMessage response = await _client.GetAsync(uri);
 
             if (response.IsSuccessStatusCode)
