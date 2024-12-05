@@ -31,8 +31,21 @@ public partial class PendingOrderList : ContentPage
     {
         InitializeComponent();
         BindingContext = new CombinedViewModel();
+        var viewModel = BindingContext as CombinedViewModel;
+        viewModel?.PendingOrder.LoadOrders();
+        viewModel?.ItemToMake.LoadOrderDetails();
         LoadNotifications();
         Authoriz();
+        CheckEmptyLists();
+    }
+
+    private void CheckEmptyLists()
+    {
+        var viewModel = BindingContext as CombinedViewModel;
+        if (viewModel?.PendingOrder.Orders == null || (viewModel?.ItemToMake.GroupedMenuItems == null))
+        {
+            DisplayAlert("Info", "Nothing here", "OK");
+        }
     }
 
     public async Task Authoriz()
@@ -48,15 +61,16 @@ public partial class PendingOrderList : ContentPage
         else if (loginStatus.Equals("employee expired"))
         {
             LogOut();
-            await DisplayAlert("Status", "The owner's subscription has been over for over a week. Contact for more info.", "OK");
         }
         else if (loginStatus.Equals("null"))
         {
-            await DisplayAlert("Status", "Staff not found", "OK");
+            await DisplayAlert("Status", "Login info not found.", "OK");
+            INotificationRegistrationService notificationRegistrationService = DependencyService.Get<INotificationRegistrationService>();
+            Application.Current.MainPage = new NavigationPage(new MainPage(notificationRegistrationService));
         }
         else
         {
-            await DisplayAlert("Status", "Nothing much really", "OK");
+            await DisplayAlert("Status", "Something went wrong.", "OK");
         }
     }
 
@@ -208,17 +222,56 @@ public partial class PendingOrderList : ContentPage
     
 }
 
-public class CombinedViewModel
+public class CombinedViewModel : INotifyPropertyChanged
 {
     public PendingOrderViewModel PendingOrder { get; set; }
     public ItemToMakeListViewModel ItemToMake { get; set; }
+
+    private string _remainingDaysMessage;
+    public string RemainingDaysMessage
+    {
+        get => _remainingDaysMessage;
+        set
+        {
+            _remainingDaysMessage = value;
+            OnPropertyChanged();
+        }
+    }
 
     public CombinedViewModel()
     {
         PendingOrder = new PendingOrderViewModel();
         ItemToMake = new ItemToMakeListViewModel();
+        CalculateRemainingDays();
+    }
+
+    private void CalculateRemainingDays()
+    {
+        string loginInfoJson = Preferences.Get("LoginInfo", string.Empty);
+        Employee emp = JsonConvert.DeserializeObject<Employee>(loginInfoJson);
+        DateTime? subscribeEndDate = emp?.Owner?.SubscribeEndDate;
+        if (subscribeEndDate.HasValue)
+        {
+            DateTime endDateWithGracePeriod = subscribeEndDate.Value.AddDays(7);
+            TimeSpan remainingTime = endDateWithGracePeriod - DateTime.Now;
+            if (remainingTime.Days <= 7)
+            {
+                RemainingDaysMessage = $"Your owner's subscription to the service is expired.\nYou can still use the system for {remainingTime.Days} day(s).";
+            }
+            else
+            {
+                RemainingDaysMessage = string.Empty;
+            }
+        }
+    }
+
+    public event PropertyChangedEventHandler PropertyChanged;
+    protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }
+
 
 public class NotificationPopup : Popup
 {

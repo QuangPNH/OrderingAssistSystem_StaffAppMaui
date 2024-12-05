@@ -27,6 +27,35 @@ namespace OrderingAssistSystem_StaffApp
 
 			Authoriz();
             _notificationRegistrationService = service;
+            CalculateRemainingDays();
+        }
+
+        private void CalculateRemainingDays()
+        {
+            string loginInfoJson = Preferences.Get("LoginInfo", string.Empty);
+            if (string.IsNullOrEmpty(loginInfoJson))
+            {
+                DisplayAlert("Error", "Login information is missing.", "Ok");
+                return;
+            }
+
+            Employee emp = JsonConvert.DeserializeObject<Employee>(loginInfoJson);
+            if (emp?.Owner == null)
+            {
+                DisplayAlert("Error", "Owner information is missing.", "Ok");
+                return;
+            }
+
+            DateTime? subscribeEndDate = emp.Owner.SubscribeEndDate;
+            if (subscribeEndDate.HasValue)
+            {
+                DateTime endDateWithGracePeriod = subscribeEndDate.Value.AddDays(7);
+                TimeSpan remainingTime = endDateWithGracePeriod - DateTime.Now;
+                if (remainingTime.Days <= 0)
+                {
+                    DisplayAlert("Expired", $"Your owner's subscription to the service is expired for over a week.", "Ok");
+                }
+            }
         }
 
 
@@ -53,11 +82,11 @@ namespace OrderingAssistSystem_StaffApp
             }
             else if(loginStatus.Equals("null"))
             {
-				await DisplayAlert("Status", Preferences.Get("LoginInfo", string.Empty) +  "null", "OK");
+				
             }
             else
             {
-                await DisplayAlert("Status", "Nothing much really", "OK");
+                await DisplayAlert("Status", "Something went wrong.", "OK");
             }
         }
         void OnRegisterButtonClicked(object sender, EventArgs e)
@@ -103,7 +132,7 @@ namespace OrderingAssistSystem_StaffApp
         private async void OnSendOtpClicked(object sender, EventArgs e)
         {
             ConfigApi config = new ConfigApi();
-            var phoneNumber = PhoneNumberEntry.Text.Trim();
+            var phoneNumber = PhoneNumberEntry?.Text?.Trim();
 
             if (string.IsNullOrWhiteSpace(phoneNumber))
             {
@@ -116,9 +145,6 @@ namespace OrderingAssistSystem_StaffApp
                 await DisplayAlert("Error", "Invalid phone number format.", "OK");
                 return;
             }
-            string placeholder = "";
-
-            
 
             Employee? emp = null;
 
@@ -130,12 +156,7 @@ namespace OrderingAssistSystem_StaffApp
                 if (response.IsSuccessStatusCode)
                 {
                     string content = await response.Content.ReadAsStringAsync();
-                    //emp = System.Text.Json.JsonSerializer.Deserialize<Employee>(content, _serializerOptions);
                     emp = JsonConvert.DeserializeObject<Employee>(content);
-                }
-                else
-                {
-                    await DisplayAlert("Error", $"Failed to retrieve employee. Error code: {(int)response.StatusCode}", "OK");
                 }
             }
             catch (Exception ex)
@@ -143,45 +164,14 @@ namespace OrderingAssistSystem_StaffApp
                 await DisplayAlert("Error", $"Failed to retrieve employee. Exception: {ex.Message}", "OK");
             }
 
-
-            /*using (HttpClient client = new HttpClient(new HttpClientHandler
-            {
-                ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => true
-            }))
-            {
-                try
-                {
-                    HttpResponseMessage res = await client.GetAsync(config.BaseAddress + "Employee/Staff/Phone/" + phoneNumber);
-                    string data = await res.Content.ReadAsStringAsync();
-                    int something = (int)res.StatusCode;
-                    placeholder = data;
-                    emp = JsonConvert.DeserializeObject<Employee?>(data);
-
-                    if (!res.IsSuccessStatusCode)
-                    {
-                        await DisplayAlert("Error", $"Failed to send OTP. Error code: {(int)res.StatusCode}", "OK");
-                        return;
-                    }
-                }
-                catch (Exception ee)
-                {
-                    await DisplayAlert("Error", $"Failed to send OTP. Exception: {ee.Message}", "OK");
-                    return;
-                }
-            }*/
-
-
-
             if (emp == null)
             {
-                await DisplayAlert("Error", "Failed to send OTP. Try again.\n" + placeholder + phoneNumber, "OK");
+                await DisplayAlert("Error", phoneNumber + " is not found. Please enter an exist number.\n", "OK");
             }
             else
             {
                 string otp = new Random().Next(000000, 999999).ToString();
-
                 otp = "123456"; // For testing only, remove this line in production
-
                 Preferences.Set("otp", otp);
 
                 // Redirect to the OTP input page

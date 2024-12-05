@@ -61,7 +61,7 @@
                FontSize="20"
                FontAttributes="Bold"
                HorizontalOptions="Center" />
-
+                <Label Text="{Binding RemainingDaysMessage}" />
                 <CollectionView ItemsSource="{Binding PendingOrder.Orders}">
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
