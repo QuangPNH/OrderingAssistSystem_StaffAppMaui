@@ -67,24 +67,31 @@ HorizontalOptions="Center" />
                                                     <StackLayout Margin="0,5">
                                                         <Grid ColumnDefinitions="2*,3*,3*,2*" RowDefinitions="Auto,Auto,Auto,Auto">
                                                             <Label Text="OrderDetail ID:" FontAttributes="Bold" />
+                                                            <!-- Order Date -->
+                                                            <Label Grid.Row="1" Text="Order Date:" FontAttributes="Bold" />
+                                                            <Label Grid.Row="1" Grid.Column="1" Text="{Binding Order.OrderDate}" />
+
+                                                            <Label Grid.Row="1" Grid.Column="2" Text="Quantity:" FontAttributes="Bold" />
+                                                            <Label Grid.Row="1" Grid.Column="3" Text="{Binding Quantity}" />
+
+                                                            <Label Grid.Row="2" Grid.Column="0" Text="Table Name:" FontAttributes="Bold" />
+                                                            <Label Grid.Row="2" Grid.Column="1" Text="{Binding Order.Table.Qr}" />
+
+                                                            <!-- Ice -->
+                                                            <Label Grid.Row="4" Grid.Column="2" Text="Ice:" FontAttributes="Bold" />
+                                                            <Label Grid.Row="4" Grid.Column="3" Text="{Binding Ice}" />
+
+                                                            <!-- Topping -->
+                                                            <Label Grid.Row="5" Text="Topping:" FontAttributes="Bold" />
+                                                            <Label Grid.Row="5" Grid.Column="1" Text="{Binding Topping}" />
                                                             <Label Grid.Column="1" Text="{Binding OrderDetailId}" />
 
                                                             <Label Grid.Column="2" Text="Item Name:" FontAttributes="Bold" />
                                                             <Label Grid.Column="3" Text="{Binding MenuItem.ItemName}" />
 
-                                                            <Label Grid.Row="1" Text="Quantity:" FontAttributes="Bold" />
-                                                            <Label Grid.Row="1" Grid.Column="1" Text="{Binding Quantity}" />
-
-                                                            <Label Grid.Row="1" Grid.Column="2" Text="Table Name:" FontAttributes="Bold" />
-                                                            <Label Grid.Row="1" Grid.Column="3" Text="{Binding Order.Table.Qr}" />
-                                                            
                                                             <!-- Sugar -->
-                                                            <Label Grid.Row="2" Text="Sugar:" FontAttributes="Bold" />
-                                                            <Label Grid.Row="2" Grid.Column="1" Text="{Binding Sugar}" />
-
-                                                            <!-- Ice -->
-                                                            <Label Grid.Row="2" Grid.Column="2" Text="Ice:" FontAttributes="Bold" />
-                                                            <Label Grid.Row="2" Grid.Column="3" Text="{Binding Ice}" />
+                                                            <Label Grid.Row="2" Grid.Column="2" Text="Sugar:" FontAttributes="Bold" />
+                                                            <Label Grid.Row="2" Grid.Column="3" Text="{Binding Sugar}" />
 
                                                             <!-- Topping -->
                                                             <Label Grid.Row="3" Text="Topping:" FontAttributes="Bold" />

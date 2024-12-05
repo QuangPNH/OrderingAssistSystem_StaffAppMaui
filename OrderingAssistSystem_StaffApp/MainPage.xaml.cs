@@ -35,7 +35,7 @@ namespace OrderingAssistSystem_StaffApp
             string loginInfoJson = Preferences.Get("LoginInfo", string.Empty);
             if (string.IsNullOrEmpty(loginInfoJson))
             {
-                DisplayAlert("Error", "Login information is missing.", "Ok");
+                //DisplayAlert("Error", "Login information is missing.", "Ok");
                 return;
             }
 
