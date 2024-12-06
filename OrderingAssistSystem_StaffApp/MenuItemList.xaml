@@ -6,9 +6,7 @@
              x:Class="OrderingAssistSystem_StaffApp.MenuItemList"
              Title="Menu Item List">
 
-    <ContentPage.BindingContext>
-        <local:MenuItemListViewModel />
-    </ContentPage.BindingContext>
+    
 
     <ContentPage.Resources>
         <ResourceDictionary>
@@ -216,7 +214,11 @@
                                     <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto" Margin="0,5,0,0">
                                         <!-- Enable/Disable Checkbox -->
                                         <StackLayout Orientation="Horizontal" Grid.Column="0" VerticalOptions="Center">
-                                            <CheckBox IsChecked="{Binding IsAvailable}" />
+                                            <CheckBox IsChecked="{Binding IsAvailable}">
+                                                <CheckBox.GestureRecognizers>
+                                                    <TapGestureRecognizer Tapped="OnCheckBoxTapped" />
+                                                </CheckBox.GestureRecognizers>
+                                            </CheckBox>
                                             <Label Text="Available" VerticalOptions="Center" Margin="5,0,0,0" />
                                         </StackLayout>
 

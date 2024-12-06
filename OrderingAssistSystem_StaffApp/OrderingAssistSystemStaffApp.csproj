@@ -67,6 +67,7 @@
 
 	<ItemGroup>
 	  <None Remove="Resources\Images\bell_icon.png" />
+	  <None Remove="Resources\Images\bell_icon_red.png" />
 	</ItemGroup>
 
 	<ItemGroup>

@@ -1,12 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Text.Json.Serialization;
 
 namespace OrderingAssistSystem_StaffApp.Models
 {
     public partial class MenuItem
     {
-        public MenuItem()
+
+		
+
+		private MenuItem()
         {
             MenuCategories = new HashSet<MenuCategory>();
             OrderDetails = new HashSet<OrderDetail>();
@@ -26,12 +30,16 @@ namespace OrderingAssistSystem_StaffApp.Models
         public int? EmployeeId { get; set; }
 
 
-        // Cart
-        public int? Quantity { get; set; }
-        public string? Sugar { get; set; }
-        public string? Ice { get; set; }
-        public ObservableCollection<MenuItem> AvailableToppings { get; set; }
-
+		// Cart
+		[JsonIgnore]
+		public int? Quantity { get; set; }
+		[JsonIgnore]
+		public string? Sugar { get; set; }
+		[JsonIgnore]
+		public string? Ice { get; set; }
+		[JsonIgnore]
+		public ObservableCollection<MenuItem> AvailableToppings { get; set; }
+        [JsonIgnore]
         public bool IsSelected { get; set; } // Add this property to track selection
 
         public virtual Employee? Employee { get; set; }

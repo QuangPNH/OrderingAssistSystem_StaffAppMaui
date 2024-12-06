@@ -222,7 +222,8 @@ public partial class ItemToMake : ContentPage
         CalculateRemainingDays();
         var viewModel = BindingContext as ItemToMakeListViewModel;
         viewModel?.LoadOrderDetails();
-    }
+		Application.Current.MainPage.DisplayAlert("Loaded", "Items to make reloaded.", "OK");
+	}
 
     private async void OnLogOutClicked(object sender, EventArgs e)
     {

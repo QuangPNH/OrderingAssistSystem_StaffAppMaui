@@ -203,7 +203,8 @@ public partial class PendingOrderList : ContentPage
         var viewModel = BindingContext as CombinedViewModel;
         viewModel?.CalculateRemainingDays();
         viewModel?.PendingOrder.LoadOrders();
-    }
+		Application.Current.MainPage.DisplayAlert("Loaded", "Pending items reloaded.", "OK");
+	}
 
     private void OnMenuItemsClicked(object sender, EventArgs e)
     {

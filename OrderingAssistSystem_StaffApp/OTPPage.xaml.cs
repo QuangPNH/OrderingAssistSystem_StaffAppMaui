@@ -29,9 +29,9 @@ public partial class OTPPage : ContentPage
         {
             Preferences.Set("LoginInfo", Preferences.Get("TempLoginInfo", string.Empty));
             Preferences.Remove("TempLoginInfo");
-            await DisplayAlert("Success", "OTP verified!", "OK");
             await Navigation.PushAsync(new PendingOrderList());
-        }
+			await DisplayAlert("Success", "OTP verified!", "OK");
+		}
         else
         {
             await DisplayAlert("Error", "Invalid OTP. Please try again.", "OK");
