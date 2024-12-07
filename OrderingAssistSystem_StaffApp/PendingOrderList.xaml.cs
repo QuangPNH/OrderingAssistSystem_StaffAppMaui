@@ -44,7 +44,7 @@ public partial class PendingOrderList : ContentPage
         var viewModel = BindingContext as CombinedViewModel;
         if (viewModel?.PendingOrder.Orders == null || (viewModel?.ItemToMake.GroupedMenuItems == null))
         {
-            DisplayAlert("Info", "Nothing here", "OK");
+            DisplayAlert("Info", "Nothing here.", "OK");
         }
     }
 
@@ -116,7 +116,8 @@ public partial class PendingOrderList : ContentPage
                 Console.WriteLine($"Error updating order status: {ex.Message}");
             }
         }
-    }
+		CheckEmptyLists();
+	}
 
     private async void OnCancelOrderClicked(object sender, EventArgs e)
     {
@@ -148,7 +149,8 @@ public partial class PendingOrderList : ContentPage
                 Console.WriteLine($"Error deleting order: {ex.Message}");
             }
         }
-    }
+		CheckEmptyLists();
+	}
 
 
     private async void LoadNotifications()
@@ -203,6 +205,7 @@ public partial class PendingOrderList : ContentPage
         var viewModel = BindingContext as CombinedViewModel;
         viewModel?.CalculateRemainingDays();
         viewModel?.PendingOrder.LoadOrders();
+		CheckEmptyLists();
 		Application.Current.MainPage.DisplayAlert("Loaded", "Pending items reloaded.", "OK");
 	}
 
@@ -262,11 +265,11 @@ public class CombinedViewModel : INotifyPropertyChanged
             TimeSpan remainingTime = endDateWithGracePeriod - DateTime.Now;
             if (remainingTime.Days <= 7)
             {
-                RemainingDaysMessage = $"Your owner's subscription to the service is expired.\nYou can still use the system for {remainingTime.Days} day(s).";
+                RemainingDaysMessage = $"Your owner's subscription to the service has expired.\nYou can still use the system for {remainingTime.Days} day(s).";
             }
             else if (remainingTime.Days <= 0)
             {
-                Application.Current.MainPage.DisplayAlert("Expired", $"Your owner's subscription to the service is expired for over a week.", "Ok");
+                Application.Current.MainPage.DisplayAlert("Expired", $"Your owner's subscription to the service has expired for over a week.", "Ok");
             }
             else
             {

@@ -70,12 +70,12 @@ public partial class MenuItemList : ContentPage
 				// Handle failure (e.g., revert the status or display an error)
 				if (Application.Current?.MainPage != null)
 				{
-					await Application.Current.MainPage.DisplayAlert("Error", "Failed to update availability.", "OK");
+					await Application.Current.MainPage.DisplayAlert("Error", "Failed to update menu item. Status code: {response.StatusCode}", "OK");
 				}
 			}
 			else
 			{
-				await Application.Current.MainPage.DisplayAlert("Ok", "Item's status changed.", "OK");
+				await Application.Current.MainPage.DisplayAlert("Error", $"Update menu item status success.", "OK");
 			}
 		}
 		catch (Exception ex)
