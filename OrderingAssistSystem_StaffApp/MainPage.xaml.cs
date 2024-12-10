@@ -6,6 +6,8 @@ using Twilio.Rest.Api.V2010.Account;
 using Twilio.Types;
 using System.Text.Json;
 using OrderingAssistSystem_StaffApp.Services;
+using CommunityToolkit.Maui.Alerts;
+using CommunityToolkit.Maui.Core;
 namespace OrderingAssistSystem_StaffApp
 {
     public partial class MainPage : ContentPage
@@ -22,12 +24,46 @@ namespace OrderingAssistSystem_StaffApp
                 });
 
 			InitializeComponent();
+            InitializeFirebaseToken();
+            //Navigation.PushAsync(new PendingOrderList());
 
-			//Navigation.PushAsync(new PendingOrderList());
-
-			Authoriz();
+            Authoriz();
             _notificationRegistrationService = service;
             CalculateRemainingDays();
+            InitializeFirebaseToken();
+        }
+
+        private void InitializeFirebaseToken()
+        {
+            var token = Preferences.Get("FirebaseToken", string.Empty);
+            if (!string.IsNullOrEmpty(token))
+            {
+                var deviceInstallationService = Application.Current.Windows[0].Page.Handler.MauiContext.Services.GetService<IDeviceInstallationService>();
+                if (deviceInstallationService != null)
+                {
+                    deviceInstallationService.Token = token;
+                    if (_notificationRegistrationService != null)
+                    {
+                        _notificationRegistrationService.RegisterDeviceAsync()
+                            .ContinueWith((task) =>
+                            {
+                                ShowAlert(task.IsFaulted ? task.Exception.Message : $"Device registered");
+                            });
+                    }
+                    else
+                    {
+                        Console.WriteLine("NotificationRegistrationService is not available.");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("DeviceInstallationService is not available.");
+                }
+            }
+            else
+            {
+                Console.WriteLine("Firebase token is not available.");
+            }
         }
 
         private void CalculateRemainingDays()
@@ -100,14 +136,10 @@ namespace OrderingAssistSystem_StaffApp
 
         void ShowAlert(string message)
         {
-            MainThread.BeginInvokeOnMainThread(() =>
+            MainThread.BeginInvokeOnMainThread(async () =>
             {
-                DisplayAlert("Push notifications demo", message, "OK")
-                    .ContinueWith((task) =>
-                    {
-                        if (task.IsFaulted)
-                            throw task.Exception;
-                    });
+                var toast = Toast.Make(message, ToastDuration.Long);
+                await toast.Show();
             });
         }
 #if ANDROID

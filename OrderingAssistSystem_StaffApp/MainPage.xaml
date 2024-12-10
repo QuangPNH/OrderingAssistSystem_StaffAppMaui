@@ -8,10 +8,12 @@
         <Button Text="Send OTP" Clicked="OnSendOtpClicked"/>
         <Button x:Name="registerButton"
             Text="Register"
-            Clicked="OnRegisterButtonClicked" />
+            Clicked="OnRegisterButtonClicked"
+            IsVisible="False" />
         <Button x:Name="deregisterButton"
             Text="Deregister"
-            Clicked="OnDeregisterButtonClicked" />
+            Clicked="OnDeregisterButtonClicked"
+            IsVisible="False" />
     </StackLayout>
 
 </ContentPage>

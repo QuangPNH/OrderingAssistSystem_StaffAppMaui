@@ -53,16 +53,36 @@ namespace OrderingAssistSystem_StaffApp.Services
 
         public async Task RegisterDeviceAsync(params string[] tags)
         {
-            var deviceInstallation = DeviceInstallationService?.GetDeviceInstallation(tags);
+            try
+            {
+                if (DeviceInstallationService == null)
+                {
+                    Console.WriteLine("DeviceInstallationService is not initialized.");
+                    return;
+                }
 
-            await SendAsync<DeviceInstallation>(HttpMethod.Put, RequestUrl, deviceInstallation)
-                .ConfigureAwait(false);
+                if (string.IsNullOrWhiteSpace(DeviceInstallationService.Token))
+                {
+                    Console.WriteLine("DeviceInstallationService.Token is not available.");
+                    return;
+                }
 
-            await SecureStorage.SetAsync(CachedDeviceTokenKey, deviceInstallation.PushChannel)
-                .ConfigureAwait(false);
+                var deviceInstallation = DeviceInstallationService.GetDeviceInstallation(tags);
 
-            await SecureStorage.SetAsync(CachedTagsKey, JsonSerializer.Serialize(tags));
+                await SendAsync<DeviceInstallation>(HttpMethod.Put, RequestUrl, deviceInstallation)
+                    .ConfigureAwait(false);
+
+                await SecureStorage.SetAsync(CachedDeviceTokenKey, deviceInstallation.PushChannel)
+                    .ConfigureAwait(false);
+
+                await SecureStorage.SetAsync(CachedTagsKey, JsonSerializer.Serialize(tags));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
         }
+
 
         public async Task RefreshRegistrationAsync()
         {

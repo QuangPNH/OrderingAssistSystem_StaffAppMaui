@@ -1,6 +1,7 @@
 ﻿using OrderingAssistSystem_StaffApp.Models;
 using OrderingAssistSystem_StaffApp.Models;
 using OrderingAssistSystem_StaffApp.Services;
+using Plugin.LocalNotification;
 namespace OrderingAssistSystem_StaffApp
 {
     public partial class App : Application
@@ -26,12 +27,14 @@ namespace OrderingAssistSystem_StaffApp
         {
             MainThread.BeginInvokeOnMainThread(() =>
             {
-                Windows[0].Page?.DisplayAlert("Push notifications demo", $"{action} action received.", "OK")
-                    .ContinueWith((task) =>
-                    {
-                        if (task.IsFaulted)
-                            throw task.Exception;
-                    });
+                var notification = new NotificationRequest
+                {
+                    Title = "Push notifications demo",
+                    Description = $"{action} action received.",
+                    ReturningData = "Dummy data", // Returning data when tapped on notification.
+                    NotificationId = 1337
+                };
+                LocalNotificationCenter.Current.Show(notification);
             });
         }
     }

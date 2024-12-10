@@ -4,6 +4,8 @@ using Android.OS;
 using Android.Content;
 using OrderingAssistSystem_StaffApp.Services;
 using Firebase.Messaging;
+using Microsoft.Maui.Storage;
+
 namespace OrderingAssistSystem_StaffApp
 {
     [Activity(
@@ -28,7 +30,9 @@ namespace OrderingAssistSystem_StaffApp
         {
             if (result != null)
             {
-                DeviceInstallationService.Token = result.ToString();
+                var token = result.ToString();
+                DeviceInstallationService.Token = token;
+                Preferences.Set("FirebaseToken", token);
             }
         }
 
