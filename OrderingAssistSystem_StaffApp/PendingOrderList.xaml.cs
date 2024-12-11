@@ -1,15 +1,12 @@
 ﻿using OrderingAssistSystem_StaffApp.Models;
 using System.Collections.ObjectModel;
 using System.Globalization;
-using Microsoft.Maui.Controls;
-using MenuItem = OrderingAssistSystem_StaffApp.Models.MenuItem;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using CommunityToolkit.Maui.Views;
 using Newtonsoft.Json;
 
 using ConfigApi = OrderingAssistSystem_StaffApp.Models.ConfigApi;
-using System.Text.Json;
 using Twilio.TwiML.Voice;
 using Application = Microsoft.Maui.Controls.Application;
 using Task = System.Threading.Tasks.Task;
@@ -26,6 +23,7 @@ public partial class PendingOrderList : ContentPage
     {
         ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => true
     });
+    string role;
     ConfigApi _config = new ConfigApi();
     public PendingOrderList()
     {
@@ -57,7 +55,8 @@ public partial class PendingOrderList : ContentPage
         var loginStatus = await authorizeLogin.CheckLogin();
         if (loginStatus.Equals("staff") || loginStatus.Equals("bartender"))
         {
-        }
+			role = loginStatus;
+		}
         else if (loginStatus.Equals("employee expired"))
         {
             LogOut();
@@ -220,21 +219,39 @@ public partial class PendingOrderList : ContentPage
     {
         var viewModel = BindingContext as CombinedViewModel;
         viewModel?.CalculateRemainingDays();
-        SwitchToPage("ItemsToMake", () => new ItemToMake());
+        if(role.Equals("bartender"))
+		{
+			SwitchToPage("ItemToMakeBartender", () => new ItemToMakeBartender());
+		}
+		else if (role.Equals("staff"))
+		{
+			SwitchToPage("ItemsToMake", () => new ItemToMake());
+		}
     }
 
     private async void OnLogOutClicked(object sender, EventArgs e)
     {
         LogOut();
     }
+
+	protected override void OnSizeAllocated(double width, double height)
+	{
+		base.OnSizeAllocated(width, height);
+
+		// Check if the orientation is vertical
+		if (width < height)
+		{
+			var viewModel = BindingContext as CombinedViewModel;
+			viewModel?.CalculateRemainingDays();
+			viewModel?.PendingOrder.LoadOrders();
+		}
+	}
 }
 
 public class CombinedViewModel : INotifyPropertyChanged
 {
     public PendingOrderViewModel PendingOrder { get; set; }
     public ItemToMakeListViewModel ItemToMake { get; set; }
-
-    
 
     public CombinedViewModel()
     {
@@ -334,41 +351,41 @@ public class PendingOrderViewModel
         LoadOrders();
     }
 
-    public async void LoadOrders()
-    {
-        try
-        {
-            var loginInfoJson = Preferences.Get("LoginInfo", string.Empty);
-            var employee = JsonConvert.DeserializeObject<Employee>(loginInfoJson);
-            var managerId = employee?.ManagerId ?? 0;
+	public async void LoadOrders()
+	{
+		try
+		{
+			var loginInfoJson = Preferences.Get("LoginInfo", string.Empty);
+			var employee = JsonConvert.DeserializeObject<Employee>(loginInfoJson);
+			var managerId = employee?.ManagerId ?? 0;
 
-            var uri = new Uri(_config.BaseAddress + $"Order/Employee/{managerId}");
-            HttpResponseMessage response = await _client.GetAsync(uri);
-            if (response.IsSuccessStatusCode)
-            {
-                string data = await response.Content.ReadAsStringAsync();
-                var orders = JsonConvert.DeserializeObject<List<Order>>(data);
-                orders = orders.Where(o => o.Status == null).ToList();
-                Orders.Clear();
-                if (orders != null)
-                {
-                    foreach (var order in orders)
-                    {
-                        Orders.Add(order);
-                        foreach (var orderDetail in order.OrderDetails)
-                        {
-                            ParseOrderDetails(orderDetail);
-                        }
-                    }
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            // Handle exceptions
-            Console.WriteLine($"Error fetching orders: {ex.Message}");
-        }
-    }
+			var uri = new Uri(_config.BaseAddress + $"Order/Employee/{managerId}");
+			HttpResponseMessage response = await _client.GetAsync(uri);
+			if (response.IsSuccessStatusCode)
+			{
+				string data = await response.Content.ReadAsStringAsync();
+				var orders = JsonConvert.DeserializeObject<List<Order>>(data);
+				orders = orders.Where(o => o.Status == null).OrderByDescending(o => o.OrderDate).ToList(); // Sort by OrderDate descending
+				Orders.Clear();
+				if (orders != null)
+				{
+					foreach (var order in orders)
+					{
+						Orders.Add(order);
+						foreach (var orderDetail in order.OrderDetails)
+						{
+							ParseOrderDetails(orderDetail);
+						}
+					}
+				}
+			}
+		}
+		catch (Exception ex)
+		{
+			// Handle exceptions
+			Console.WriteLine($"Error fetching orders: {ex.Message}");
+		}
+	}
 
     private void ParseOrderDetails(OrderDetail orderDetail)
     {

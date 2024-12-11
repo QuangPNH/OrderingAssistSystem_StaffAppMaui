@@ -4,7 +4,8 @@
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              xmlns:local="clr-namespace:OrderingAssistSystem_StaffApp"
              x:Class="OrderingAssistSystem_StaffApp.PendingOrderList"
-             Title="PendingOrderList">
+             Title="PendingOrderList"
+             NavigationPage.HasNavigationBar="False">
 
     <ContentPage.Resources>
         <ResourceDictionary>
@@ -32,7 +33,6 @@
                         Style="{StaticResource PrimaryButtonStyle}"
                         HeightRequest="40" 
                         Margin="10,0,0,0" />
-
 
                 <Button Text="Log Out"
         Clicked="OnLogOutClicked"
@@ -74,23 +74,21 @@
                                         <!-- Order Details in Grid -->
                                         <Grid ColumnDefinitions="2*,3*,3*,2*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
                                             <!-- Order Information -->
-                                            <Label Text="Order ID:" FontAttributes="Bold" />
-                                            <Label Grid.Column="1" Text="{Binding OrderId}" />
 
-                                            <Label Grid.Column="2" Text="Member Name:" FontAttributes="Bold" />
-                                            <Label Grid.Column="3" Text="{Binding Member.MemberName}" />
+                                            <Label Grid.Column="0" Text="Member Name:" FontAttributes="Bold" />
+                                            <Label Grid.Column="1" Text="{Binding Member.MemberName}" />
 
-                                            <Label Grid.Row="1" Text="Phone:" FontAttributes="Bold" />
-                                            <Label Grid.Row="1" Grid.Column="1" Text="{Binding Member.Phone}" />
+                                            <Label Grid.Row="0" Grid.Column="2" Text="Phone:" FontAttributes="Bold" />
+                                            <Label Grid.Row="0" Grid.Column="3" Text="{Binding Member.Phone}" />
 
-                                            <Label Grid.Row="1" Grid.Column="2" Text="Table Name:" FontAttributes="Bold" />
-                                            <Label Grid.Row="1" Grid.Column="3" Text="{Binding Table.Qr}" />
+                                            <Label Grid.Row="1" Grid.Column="0" Text="Table Name:" FontAttributes="Bold" />
+                                            <Label Grid.Row="1" Grid.Column="1" Text="{Binding Table.Qr}" />
 
-                                            <Label Grid.Row="2" Grid.Column="2" Text="Cost:" FontAttributes="Bold" />
-                                            <Label Grid.Row="2" Grid.Column="3" Text="{Binding Cost, StringFormat='{}{0:#,##0₫}'}" />
+                                            <Label Grid.Row="2" Grid.Column="0" Text="Cost:" FontAttributes="Bold" />
+                                            <Label Grid.Row="2" Grid.Column="1" Text="{Binding Cost, StringFormat='{}{0:#,##0₫}'}" />
 
-                                            <Label Grid.Row="2" Text="Order Date:" FontAttributes="Bold" />
-                                            <Label Grid.Row="2" Grid.Column="1" Text="{Binding OrderDate, StringFormat='{}{0:MM/dd/yyyy}'}" />
+                                            <Label Grid.Row="1" Grid.Column="2" Text="Order Date:" FontAttributes="Bold" />
+                                            <Label Grid.Row="1" Grid.Column="3" Text="{Binding OrderDate, StringFormat='{}{0:MM/dd/yyyy}'}" />
                                         </Grid>
 
                                         <!-- Buttons -->

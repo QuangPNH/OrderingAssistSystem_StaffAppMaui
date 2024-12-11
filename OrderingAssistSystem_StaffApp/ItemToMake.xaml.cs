@@ -1,333 +1,663 @@
 using CommunityToolkit.Maui.Views;
+using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using OrderingAssistSystem_StaffApp.Models;
 using OrderingAssistSystem_StaffApp.Services;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Text;
-using MenuItem = OrderingAssistSystem_StaffApp.Models.MenuItem;
 
 namespace OrderingAssistSystem_StaffApp;
 
 public partial class ItemToMake : ContentPage
 {
-    private ObservableCollection<Models.Notification> Notifications { get; set; } = new ObservableCollection<Models.Notification>();
-    private readonly HttpClient _client = new HttpClient(new HttpClientHandler
-    {
-        ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => true
-    });
-    Models.ConfigApi _config = new Models.ConfigApi();
-    public ItemToMake()
-    {
-        InitializeComponent();
-        BindingContext = new ItemToMakeListViewModel();
-        // Mock Notifications
-        LoadNotifications();
-        Authoriz();
-        CalculateRemainingDays();
-    }
+	private ObservableCollection<Models.Notification> Notifications { get; set; } = new ObservableCollection<Models.Notification>();
+	private readonly HttpClient _client = new HttpClient(new HttpClientHandler
+	{
+		ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => true
+	});
+	Models.ConfigApi _config = new Models.ConfigApi();
+	string role;
+	public ItemToMake()
+	{
+		InitializeComponent();
+		BindingContext = new ItemToMakeListViewModel();
+		// Mock Notifications
+		LoadNotifications();
+		Authoriz();
+		CalculateRemainingDays();
+		ClearOrderDetailsPreference();
+	}
 
-    public void CalculateRemainingDays()
-    {
-        string loginInfoJson = Preferences.Get("LoginInfo", string.Empty);
-        Employee emp = JsonConvert.DeserializeObject<Employee>(loginInfoJson);
-        DateTime? subscribeEndDate = emp?.Owner?.SubscribeEndDate;
-        if (subscribeEndDate.HasValue)
-        {
-            DateTime endDateWithGracePeriod = subscribeEndDate.Value.AddDays(7);
-            TimeSpan remainingTime = endDateWithGracePeriod - DateTime.Now;
-            if (remainingTime.Days <= 0)
-            {
-                INotificationRegistrationService notificationRegistrationService = DependencyService.Get<INotificationRegistrationService>();
-                Application.Current.MainPage = new NavigationPage(new MainPage(notificationRegistrationService));
-                Application.Current.MainPage.DisplayAlert("Expired", $"Your owner's subscription to the service is expired for over a week.", "Ok");
-            }
-        }
-    }
+	private void OnDecrementClicked(object sender, EventArgs e)
+	{
+		var button = sender as Button;
+		if (button?.Parent is HorizontalStackLayout stackLayout)
+		{
+			var entry = stackLayout.Children.OfType<Entry>().FirstOrDefault();
+			if (entry != null && int.TryParse(entry.Text, out int value))
+			{
+				entry.Text = (value > 0 ? value - 1 : 0).ToString();
+			}
+			else
+			{
+				entry.Text = "0";
+			}
+		}
+	}
 
-    public async Task Authoriz()
-    {
-        //DisplayAlert("Status", Preferences.Get("LoginInfo", string.Empty), "OK");
+	private void OnIncrementClicked(object sender, EventArgs e)
+	{
+		var button = sender as Button;
+		if (button?.Parent is HorizontalStackLayout stackLayout)
+		{
+			var entry = stackLayout.Children.OfType<Entry>().FirstOrDefault();
+			if (entry != null && int.TryParse(entry.Text, out int value))
+			{
+				entry.Text = (value + 1).ToString();
+			}
+			else
+			{
+				entry.Text = "1";
+			}
+		}
+	}
 
-        AuthorizeLogin authorizeLogin = new AuthorizeLogin(_client);
+	public void CalculateRemainingDays()
+	{
+		string loginInfoJson = Preferences.Get("LoginInfo", string.Empty);
+		Employee emp = JsonConvert.DeserializeObject<Employee>(loginInfoJson);
+		DateTime? subscribeEndDate = emp?.Owner?.SubscribeEndDate;
+		if (subscribeEndDate.HasValue)
+		{
+			DateTime endDateWithGracePeriod = subscribeEndDate.Value.AddDays(7);
+			TimeSpan remainingTime = endDateWithGracePeriod - DateTime.Now;
+			if (remainingTime.Days <= 0)
+			{
+				INotificationRegistrationService notificationRegistrationService = DependencyService.Get<INotificationRegistrationService>();
+				Application.Current.MainPage = new NavigationPage(new MainPage(notificationRegistrationService));
+				Application.Current.MainPage.DisplayAlert("Expired", $"Your owner's subscription to the service is expired for over a week.", "Ok");
+			}
+		}
+	}
 
-        var loginStatus = await authorizeLogin.CheckLogin();
-        if (loginStatus.Equals("staff") || loginStatus.Equals("bartender"))
-        {
-        }
-        else if (loginStatus.Equals("employee expired"))
-        {
-            LogOut();
-        }
-        else if (loginStatus.Equals("null"))
-        {
-            await DisplayAlert("Status", "Login info not found.", "OK");
-            INotificationRegistrationService notificationRegistrationService = DependencyService.Get<INotificationRegistrationService>();
-            Application.Current.MainPage = new NavigationPage(new MainPage(notificationRegistrationService));
-        }
-        else
-        {
-            await DisplayAlert("Status", "Something went wrong.", "OK");
-        }
-    }
+	public async Task Authoriz()
+	{
+		//DisplayAlert("Status", Preferences.Get("LoginInfo", string.Empty), "OK");
 
-    private async void LogOut()
-    {
-        Preferences.Remove("LoginInfo");
-        INotificationRegistrationService notificationRegistrationService = DependencyService.Get<INotificationRegistrationService>();
-        // Reset the MainPage to the login page
-        Application.Current.MainPage = new NavigationPage(new MainPage(notificationRegistrationService));
-        await Task.CompletedTask; // Ensure the method is still async.
-    }
+		AuthorizeLogin authorizeLogin = new AuthorizeLogin(_client);
 
-    private async void OnStartItemClicked(object sender, EventArgs e)
-    {
-        var button = sender as Button;
-        var orderDetail = button?.CommandParameter as OrderDetail; // Cast to your Order type
-        if (orderDetail != null)
-        {
-            // Update the status of the order detail
-            orderDetail.Status = false;
+		var loginStatus = await authorizeLogin.CheckLogin();
+		if (loginStatus.Equals("staff") || loginStatus.Equals("bartender"))
+		{
+			role = loginStatus;
+		}
+		else if (loginStatus.Equals("employee expired"))
+		{
+			LogOut();
+		}
+		else if (loginStatus.Equals("null"))
+		{
+			await DisplayAlert("Status", "Login info not found.", "OK");
+			INotificationRegistrationService notificationRegistrationService = DependencyService.Get<INotificationRegistrationService>();
+			Application.Current.MainPage = new NavigationPage(new MainPage(notificationRegistrationService));
+		}
+		else
+		{
+			await DisplayAlert("Status", "Something went wrong.", "OK");
+		}
+	}
 
-            var uri = new Uri(_config.BaseAddress + $"OrderDetail/{orderDetail.OrderDetailId}");
-            var content = new StringContent(JsonConvert.SerializeObject(orderDetail), Encoding.UTF8, "application/json");
-            HttpResponseMessage response = await _client.PutAsync(uri, content);
+	private async void LogOut()
+	{
+		Preferences.Remove("LoginInfo");
+		INotificationRegistrationService notificationRegistrationService = DependencyService.Get<INotificationRegistrationService>();
+		// Reset the MainPage to the login page
+		Application.Current.MainPage = new NavigationPage(new MainPage(notificationRegistrationService));
+		await Task.CompletedTask; // Ensure the method is still async.
+	}
 
-            uri = new Uri(_config.BaseAddress + $"Order/{orderDetail.Order?.OrderId}");
-            response = await _client.GetAsync(uri);
-            if (response.IsSuccessStatusCode)
-            {
-                string data = await response.Content.ReadAsStringAsync();
-                var order = JsonConvert.DeserializeObject<Order>(data);
-                var orderDetails = order?.OrderDetails;
-                if (orderDetails != null && orderDetails.All(od => od.Status == false))
-                {
-                    // Update the status of the order
-                    orderDetail.Order.Status = false;
-                    uri = new Uri(_config.BaseAddress + $"Order/{orderDetail.Order.OrderId}");
-                    content = new StringContent(JsonConvert.SerializeObject(order), Encoding.UTF8, "application/json");
-                    response = await _client.PutAsync(uri, content);
-                }
-            }
+	private async void OnFinishItemClicked(object sender, EventArgs e)
+	{
+		var button = sender as Button;
+		var orderDetail = button?.CommandParameter as OrderDetail; // Cast to your Order type
+		if (orderDetail != null)
+		{
+			// Get the order details with the same order date, item name, sugar, ice, and topping
+			var viewModel = BindingContext as ItemToMakeListViewModel;
+			var matchingOrderDetails = viewModel?.AllOrderDetails
+				.Where(od => od.Order?.OrderDate == orderDetail.Order?.OrderDate &&
+							 od.MenuItem?.ItemName == orderDetail.MenuItem?.ItemName &&
+							 od.Sugar == orderDetail.Sugar &&
+							 od.Ice == orderDetail.Ice &&
+							 od.Topping == orderDetail.Topping && !(bool)od.Status)
+				.ToList();
 
-            // Handle the PendingItem object here
-            await DisplayAlert("Item Started", $"Item: {orderDetail.MenuItem?.ItemName} has been started.", "OK");
+			if (matchingOrderDetails != null)
+			{
+				foreach (var detail in matchingOrderDetails)
+				{
+					// Update the status of each matching order detail
+					detail.Status = true;
 
-            // Reload the to-make list
-            var viewModel = BindingContext as ItemToMakeListViewModel;
-            viewModel?.LoadOrderDetails();
-        }
-    }
+					var uri = new Uri(_config.BaseAddress + $"OrderDetail/{detail.OrderDetailId}");
+					var content = new StringContent(JsonConvert.SerializeObject(detail), Encoding.UTF8, "application/json");
+					HttpResponseMessage response = await _client.PutAsync(uri, content);
 
-    private async void OnFinishItemClicked(object sender, EventArgs e)
-    {
-        var button = sender as Button;
-        var orderDetail = button?.CommandParameter as OrderDetail; // Cast to your Order type
-        if (orderDetail != null)
-        {
-            // Update the status of the order detail
-            orderDetail.Status = true;
+					if (!response.IsSuccessStatusCode)
+					{
+						await DisplayAlert("Error", $"Failed to update item {detail.MenuItem?.ItemName}.", "OK");
+						return;
+					}
+				}
 
-            var uri = new Uri(_config.BaseAddress + $"OrderDetail/{orderDetail.OrderDetailId}");
-            var content = new StringContent(JsonConvert.SerializeObject(orderDetail), Encoding.UTF8, "application/json");
-            HttpResponseMessage response = await _client.PutAsync(uri, content);
+				// Check if all order details have status = true
+				var order = matchingOrderDetails.FirstOrDefault()?.Order;
+				if (order != null)
+				{
+					var uri = new Uri(_config.BaseAddress + $"Order/{order.OrderId}");
+					HttpResponseMessage response = await _client.GetAsync(uri);
+					if (response.IsSuccessStatusCode)
+					{
+						string data = await response.Content.ReadAsStringAsync();
+						order = JsonConvert.DeserializeObject<Order>(data);
+						order.OrderDate = DateTime.Now;
+						var orderDetails = order?.OrderDetails;
+						if (orderDetails != null && orderDetails.All(od => od.Status == true))
+						{
+							// Update the status of the order
+							order.Status = true;
+							uri = new Uri(_config.BaseAddress + $"Order/{order.OrderId}");
+							var content = new StringContent(JsonConvert.SerializeObject(order), Encoding.UTF8, "application/json");
+							response = await _client.PutAsync(uri, content);
+						}
+					}
+				}
 
-            // Check if all order details have status = true
-            uri = new Uri(_config.BaseAddress + $"Order/{orderDetail.Order?.OrderId}");
-            response = await _client.GetAsync(uri);
-            if (response.IsSuccessStatusCode)
-            {
-                string data = await response.Content.ReadAsStringAsync();
-                var order = JsonConvert.DeserializeObject<Order>(data);
-                order.OrderDate = DateTime.Now;
-                var orderDetails = order?.OrderDetails;
-                if (orderDetails != null && orderDetails.All(od => od.Status == true))
-                {
-                    // Update the status of the order
-                    orderDetail.Order.Status = true;
-                    uri = new Uri(_config.BaseAddress + $"Order/{orderDetail.Order.OrderId}");
-                    content = new StringContent(JsonConvert.SerializeObject(order), Encoding.UTF8, "application/json");
-                    response = await _client.PutAsync(uri, content);
-                }
-            }
-            // Handle the ProcessingItem object here
-            await DisplayAlert("Item Finished", $"Item: {orderDetail.MenuItem?.ItemName} has been finished.", "OK");
+				// Handle the ProcessingItem object here
+				await DisplayAlert("Item Finished", $"Finished item {orderDetail.MenuItem?.ItemName}.", "OK");
 
-            // Reload the to-make list
-            var viewModel = BindingContext as ItemToMakeListViewModel;
-            viewModel?.LoadOrderDetails();
-        }
-    }
+				// Reload the to-make list
+				viewModel?.LoadOrderDetails();
+			}
+		}
+	}
 
-    private async void LoadNotifications()
-    {
-        try
-        {
-            var loginInfoJson = Preferences.Get("LoginInfo", string.Empty);
-            var employee = JsonConvert.DeserializeObject<Employee>(loginInfoJson);
-            var managerId = employee?.ManagerId ?? 0;
-            var uri = new Uri(_config.BaseAddress + "Notification/Employee/" + managerId);
-            HttpResponseMessage response = await _client.GetAsync(uri);
+	private void ClearOrderDetailsPreference()
+	{
+		// Remove the key "OrderDetails" from preferences
+		if (Preferences.ContainsKey("OrderDetails"))
+		{
+			Preferences.Remove("OrderDetails");
+			Console.WriteLine("OrderDetails preference cleared successfully.");
+		}
+		else
+		{
+			Console.WriteLine("No OrderDetails preference found to clear.");
+		}
+	}
 
-            if (response.IsSuccessStatusCode)
-            {
-                string data = await response.Content.ReadAsStringAsync();
-                var notifications = JsonConvert.DeserializeObject<List<Models.Notification>>(data);
 
-                Notifications.Clear();
-                if (notifications != null)
-                {
-                    foreach (var notification in notifications)
-                    {
-                        Notifications.Add(notification);
-                    }
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            // Handle exceptions
-            Console.WriteLine($"Error fetching notifications: {ex.Message}");
-        }
-    }
+	private async void OnFinishNumberOfItemsClicked(object sender, EventArgs e)
+	{
+		var button = sender as Button;
+		var orderDetail = button?.CommandParameter as OrderDetail;
+		int input = 0;
 
-    private void OnBellIconClicked(object sender, EventArgs e)
-    {
-        // Create and display the popup
-        var popup = new NotificationPopup(Notifications);
-        this.ShowPopup(popup);
-    }
+		if (button?.Parent is HorizontalStackLayout stackLayout)
+		{
+			var entry = stackLayout.Children.OfType<Entry>().FirstOrDefault();
+			if (entry != null && int.TryParse(entry.Text, out int value))
+			{
+				input = value;
+			}
+		}
 
-    private void SwitchToPage(string pageKey, Func<Page> createPage)
-    {
-        var page = PageCache.Instance.GetOrCreatePage(pageKey, createPage);
-        Application.Current.MainPage = new NavigationPage(page);
-    }
+		if (orderDetail != null && input > 0)
+		{
+			var orderDetails = GetOrderDetailsFromPreference();
+			bool isUpdated = false;
 
-    private void OnPendingOrdersClicked(object sender, EventArgs e)
-    {
-        CalculateRemainingDays();
-        SwitchToPage("PendingOrders", () => new PendingOrderList());
-    }
+			foreach (var detail in orderDetails)
+			{
+				// Match order detail by date, item name, sugar, ice, and topping
+				if (detail.Order.OrderDate == orderDetail.Order.OrderDate &&
+					detail.MenuItem.ItemName == orderDetail.MenuItem.ItemName &&
+					detail.Sugar == orderDetail.Sugar &&
+					detail.Ice == orderDetail.Ice &&
+					detail.Topping == orderDetail.Topping)
+				{
+					// Add input to FinishedItem
+					detail.FinishedItem += input;
 
-    private void OnMenuItemsClicked(object sender, EventArgs e)
-    {
-        CalculateRemainingDays();
-        SwitchToPage("MenuItems", () => new MenuItemList());
-    }
+					if (detail.FinishedItem < detail.Quantity)
+					{
+						// If less than quantity, do nothing else
+						SaveToPreference(detail);
+					}
+					else if (detail.FinishedItem == detail.Quantity)
+					{
+						// If exactly matches quantity, mark as finished and remove
+						detail.Status = true;
+						RemoveFromPreference(detail);
+					}
+					else
+					{
+						// If exceeds quantity, mark as finished and distribute the remainder
+						detail.Status = true;
+						int remainder = (int)(detail.FinishedItem - detail.Quantity);
+						RemoveFromPreference(detail);
 
-    private void OnItemToMakeClicked(object sender, EventArgs e)
-    {
-        CalculateRemainingDays();
-        var viewModel = BindingContext as ItemToMakeListViewModel;
-        viewModel?.LoadOrderDetails();
+						// Distribute the remainder to subsequent matching items
+						DistributeRemainder(orderDetails, detail, remainder);
+					}
+
+					isUpdated = true;
+					break;
+				}
+			}
+
+			// If no matching detail was found, add the new order detail
+			if (!isUpdated)
+			{
+				orderDetail.FinishedItem = input;
+				if (orderDetail.FinishedItem >= orderDetail.Quantity)
+				{
+					orderDetail.Status = true;
+				}
+				orderDetails.Add(orderDetail);
+			}
+
+			SaveAllToPreference(orderDetails);
+
+			// Reload the view model list
+			var viewModel = BindingContext as ItemToMakeListViewModel;
+			viewModel?.LoadOrderDetails();
+		}
+	}
+
+	private void DistributeRemainder(List<OrderDetail> orderDetails, OrderDetail currentDetail, int remainder)
+	{
+		foreach (var detail in orderDetails)
+		{
+			if (remainder <= 0)
+				break;
+
+			if (detail.Order.OrderDate == currentDetail.Order.OrderDate &&
+				detail.MenuItem.ItemName == currentDetail.MenuItem.ItemName &&
+				detail.Sugar == currentDetail.Sugar &&
+				detail.Ice == currentDetail.Ice &&
+				detail.Topping == currentDetail.Topping &&
+				!(bool)detail.Status)
+			{
+				int available = (int)(detail.Quantity - detail.FinishedItem);
+
+				if (available >= remainder)
+				{
+					detail.FinishedItem += remainder;
+					if (detail.FinishedItem == detail.Quantity)
+					{
+						detail.Status = true;
+					}
+					remainder = 0;
+				}
+				else
+				{
+					detail.FinishedItem += available;
+					detail.Status = true;
+					remainder -= available;
+				}
+			}
+		}
+	}
+
+	private void RemoveFromPreference(OrderDetail orderDetail)
+	{
+		var orderDetails = GetOrderDetailsFromPreference();
+		orderDetails.RemoveAll(detail =>
+			detail.Order.OrderDate == orderDetail.Order.OrderDate &&
+			detail.MenuItem.ItemName == orderDetail.MenuItem.ItemName &&
+			detail.Sugar == orderDetail.Sugar &&
+			detail.Ice == orderDetail.Ice &&
+			detail.Topping == orderDetail.Topping);
+		SaveAllToPreference(orderDetails);
+	}
+
+	private void SaveToPreference(OrderDetail orderDetail)
+	{
+		var orderDetails = GetOrderDetailsFromPreference();
+		var existingDetail = orderDetails.FirstOrDefault(detail =>
+			detail.Order.OrderDate == orderDetail.Order.OrderDate &&
+			detail.MenuItem.ItemName == orderDetail.MenuItem.ItemName &&
+			detail.Sugar == orderDetail.Sugar &&
+			detail.Ice == orderDetail.Ice &&
+			detail.Topping == orderDetail.Topping);
+
+		if (existingDetail != null)
+		{
+			orderDetails.Remove(existingDetail);
+		}
+
+		orderDetails.Add(orderDetail);
+		SaveAllToPreference(orderDetails);
+	}
+
+
+	private List<OrderDetail> GetOrderDetailsFromPreference()
+	{
+		var serialized = Preferences.Get("OrderDetails", "[]");
+		return JsonConvert.DeserializeObject<List<OrderDetail>>(serialized);
+	}
+
+	private void SaveAllToPreference(List<OrderDetail> orderDetails)
+	{
+		var settings = new JsonSerializerSettings
+		{
+			ContractResolver = new DefaultContractResolver
+			{
+				IgnoreSerializableAttribute = false
+			}
+		};
+
+		// Serialize ignoring the [JsonIgnore] attribute
+		var serialized = JsonConvert.SerializeObject(orderDetails, settings);
+		Preferences.Set("OrderDetails", serialized);
+	}
+
+
+	private async void LoadNotifications()
+	{
+		try
+		{
+			var loginInfoJson = Preferences.Get("LoginInfo", string.Empty);
+			var employee = JsonConvert.DeserializeObject<Employee>(loginInfoJson);
+			var managerId = employee?.ManagerId ?? 0;
+			var uri = new Uri(_config.BaseAddress + "Notification/Employee/" + managerId);
+			HttpResponseMessage response = await _client.GetAsync(uri);
+
+			if (response.IsSuccessStatusCode)
+			{
+				string data = await response.Content.ReadAsStringAsync();
+				var notifications = JsonConvert.DeserializeObject<List<Models.Notification>>(data);
+
+				Notifications.Clear();
+				if (notifications != null)
+				{
+					foreach (var notification in notifications)
+					{
+						Notifications.Add(notification);
+					}
+				}
+			}
+		}
+		catch (Exception ex)
+		{
+			// Handle exceptions
+			Console.WriteLine($"Error fetching notifications: {ex.Message}");
+		}
+	}
+
+	private void OnBellIconClicked(object sender, EventArgs e)
+	{
+		// Create and display the popup
+		var popup = new NotificationPopup(Notifications);
+		this.ShowPopup(popup);
+	}
+
+	private void SwitchToPage(string pageKey, Func<Page> createPage)
+	{
+		var page = PageCache.Instance.GetOrCreatePage(pageKey, createPage);
+		Application.Current.MainPage = new NavigationPage(page);
+	}
+
+	private void OnPendingOrdersClicked(object sender, EventArgs e)
+	{
+		CalculateRemainingDays();
+		SwitchToPage("PendingOrders", () => new PendingOrderList());
+	}
+
+	private void OnMenuItemsClicked(object sender, EventArgs e)
+	{
+		CalculateRemainingDays();
+		SwitchToPage("MenuItems", () => new MenuItemList());
+	}
+
+	private void OnItemToMakeClicked(object sender, EventArgs e)
+	{
+		CalculateRemainingDays();
+		var viewModel = BindingContext as ItemToMakeListViewModel;
+		viewModel?.LoadOrderDetails();
 		Application.Current.MainPage.DisplayAlert("Loaded", "Items to make reloaded.", "OK");
 	}
 
-    private async void OnLogOutClicked(object sender, EventArgs e)
-    {
-        LogOut();
-    }
+	private async void OnLogOutClicked(object sender, EventArgs e)
+	{
+		LogOut();
+	}
+
+	protected override void OnSizeAllocated(double width, double height)
+	{
+		base.OnSizeAllocated(width, height);
+
+		// Check if the orientation is vertical
+		if (width < height)
+		{
+			CalculateRemainingDays();
+			var viewModel = BindingContext as ItemToMakeListViewModel;
+			viewModel?.LoadOrderDetails();
+		}
+	}
+	
 }
-
-
 
 public class ItemToMakeListViewModel : INotifyPropertyChanged
 {
-    private readonly HttpClient _client = new HttpClient(new HttpClientHandler
-    {
-        ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => true
-    });
-    private readonly ConfigApi _config = new ConfigApi();
+	private readonly HttpClient _client = new HttpClient(new HttpClientHandler
+	{
+		ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => true
+	});
+	private readonly ConfigApi _config = new ConfigApi();
 
-    public ObservableCollection<GroupedMenuItem> GroupedMenuItems { get; set; } = new ObservableCollection<GroupedMenuItem>();
-    public ItemToMakeListViewModel()
-    {
-        LoadOrderDetails();
-    }
+	public ObservableCollection<GroupedMenuItem> GroupedMenuItems { get; set; } = new ObservableCollection<GroupedMenuItem>();
+	public ObservableCollection<OrderDetail> DoneItems { get; set; } = new ObservableCollection<OrderDetail>();
+	public List<OrderDetail> AllOrderDetails { get; set; } = new List<OrderDetail>(); // New list to store all order details
 
-    public async void LoadOrderDetails()
-    {
-        try
-        {
-            var loginInfoJson = Preferences.Get("LoginInfo", string.Empty);
-            var employee = JsonConvert.DeserializeObject<Employee>(loginInfoJson);
-            var managerId = employee?.ManagerId ?? 0;
-            var uri = new Uri(_config.BaseAddress + "OrderDetail/Employee/" + managerId);
-            HttpResponseMessage response = await _client.GetAsync(uri);
+	public ItemToMakeListViewModel()
+	{
+		LoadOrderDetails();
+	}
 
-            if (response.IsSuccessStatusCode)
-            {
-                string data = await response.Content.ReadAsStringAsync();
-                var orderDetails = JsonConvert.DeserializeObject<List<OrderDetail>>(data);
+	public async void LoadOrderDetails()
+	{
+		try
+		{
+			var loginInfoJson = Preferences.Get("LoginInfo", string.Empty);
+			var employee = JsonConvert.DeserializeObject<Employee>(loginInfoJson);
+			var managerId = employee?.ManagerId ?? 0;
+			var uri = new Uri(_config.BaseAddress + "OrderDetail/Employee/" + managerId);
+			HttpResponseMessage response = await _client.GetAsync(uri);
 
-                if (orderDetails != null)
-                {
-                    foreach (var orderDetail in orderDetails.Where(od => od.Order?.Status != null))
-                    {
-                        ParseOrderDetails(orderDetail);
-                    }
-                    GroupedMenuItems.Clear();
-                    foreach (var groupedItem in orderDetails.Where(od => od.Order?.Status != null).GroupBy(o => o.MenuItem?.ItemName)
-                        .Select(g => new GroupedMenuItem
-                        {
-                            MenuItemName = g.Key ?? string.Empty,
-                            PendingItems = g.Where(o => o.Status == null).ToList(),
-                            ProcessingItems = g.Where(o => o.Status == false).ToList(),
-                            DoneItems = g.Where(o => o.Status == true && o.Order?.OrderDate?.Date == DateTime.Today).ToList()
-                        }))
-                    {
-                        GroupedMenuItems.Add(groupedItem);
-                    }
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            // Handle exceptions
-            Console.WriteLine($"Error fetching order details: {ex.Message}");
-        }
-    }
+			if (response.IsSuccessStatusCode)
+			{
+				string data = await response.Content.ReadAsStringAsync();
+				var orderDetails = JsonConvert.DeserializeObject<List<OrderDetail>>(data);
 
-    private void ParseOrderDetails(OrderDetail orderDetail)
-    {
-        string[] attributes = orderDetail.Description?.Split(',') ?? Array.Empty<string>();
+				if (orderDetails != null)
+				{
+					// Parse each OrderDetail to set Topping, Ice, and Sugar properties
+					foreach (var orderDetail in orderDetails)
+					{
+						ParseOrderDetails(orderDetail);
+					}
 
-        foreach (var attribute in attributes)
-        {
-            string trimmed = attribute.Trim(); // Remove any leading/trailing whitespace
+					// Store all order details in the new list
+					AllOrderDetails.Clear();
+					AllOrderDetails.AddRange(orderDetails);
 
-            if (trimmed.Contains("Ice", StringComparison.OrdinalIgnoreCase))
-            {
-                orderDetail.Ice = trimmed.Replace("Ice", "", StringComparison.OrdinalIgnoreCase).Trim();
-            }
-            else if (trimmed.Contains("Sugar", StringComparison.OrdinalIgnoreCase))
-            {
-                orderDetail.Sugar = trimmed.Replace("Sugar", "", StringComparison.OrdinalIgnoreCase).Trim();
-            }
-            else
-            {
-                orderDetail.Topping += (string.IsNullOrEmpty(orderDetail.Topping) ? "" : ", ") + trimmed;
-            }
-        }
-        orderDetail.Ice = string.IsNullOrEmpty(orderDetail.Ice) ? "none" : orderDetail.Ice;
-        orderDetail.Sugar = string.IsNullOrEmpty(orderDetail.Sugar) ? "none" : orderDetail.Sugar;
-        orderDetail.Topping = string.IsNullOrEmpty(orderDetail.Topping) ? "none" : orderDetail.Topping;
-    }
+					foreach (var orderDetail in orderDetails)
+					{
+						orderDetail.PropertyChanged += (s, e) => OnPropertyChanged(nameof(GroupedMenuItems));
+					}
 
-    public event PropertyChangedEventHandler? PropertyChanged;
+					// Group only PendingItems by MenuItemId, Topping, Ice, and Sugar and sum the quantities
+					var pendingItems = orderDetails
+						.Where(od => od.Status == null || od.Status == false)
+						.GroupBy(od => new { od.MenuItemId, od.Topping, od.Ice, od.Sugar, od.FinishedItem }) // Include FinishedItem
+						.Select(g => new OrderDetail
+						{
+							MenuItemId = g.Key.MenuItemId,
+							MenuItem = g.First().MenuItem,
+							Quantity = g.Sum(od => od.Quantity),
+							Status = g.First().Status,
+							Description = string.Join(", ", g.Select(od => od.Description)),
+							Topping = g.Key.Topping,
+							Ice = g.Key.Ice,
+							Sugar = g.Key.Sugar,
+							FinishedItem = g.Key.FinishedItem, // Access FinishedItem
+							Order = new Order
+							{
+								OrderDate = g.Min(od => od.Order?.OrderDate)
+							}
+						})
+						.OrderByDescending(od => od.Order?.OrderDate)
+						.ThenBy(od => od.MenuItem?.ItemName)
+						.ThenBy(od => od.Topping)
+						.Take(2)
+						.ToList();
 
-    protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = "")
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-    }
+					// Set IsCurrentItem property
+					if (pendingItems.Count > 0)
+					{
+						pendingItems[0].IsCurrentItem = true;
+					}
 
-    public class GroupedMenuItem
-    {
-        public string MenuItemName { get; set; } = string.Empty;
-        public List<OrderDetail> PendingItems { get; set; } = new List<OrderDetail>();
-        public List<OrderDetail> ProcessingItems { get; set; } = new List<OrderDetail>();
-        public List<OrderDetail> DoneItems { get; set; } = new List<OrderDetail>();
-    }
+					// Check if any item has Status = false and assign the first pendingItem's Status to false
+					if (pendingItems.Any(od => od.Status == false))
+					{
+						pendingItems[0].IsStartEnabled = false;
+						pendingItems[0].StatusText = "Processing";
+					}
+					else
+					{
+						pendingItems[0].IsStartEnabled = true;
+						pendingItems[0].StatusText = "Start Item";
+					}
+
+					// Group ProcessingItems by MenuItemId, Topping, Ice, and Sugar and sum the quantities
+					var processingItems = orderDetails
+						.Where(od => od.Status == false)
+						.GroupBy(od => new { od.MenuItemId, od.Topping, od.Ice, od.Sugar, od.FinishedItem })
+						.Select(g => new OrderDetail
+						{
+							MenuItemId = g.Key.MenuItemId,
+							MenuItem = g.First().MenuItem,
+							Quantity = g.Sum(od => od.Quantity),
+							Status = g.First().Status,
+							Description = string.Join(", ", g.Select(od => od.Description)),
+							Topping = g.Key.Topping,
+							Ice = g.Key.Ice,
+							Sugar = g.Key.Sugar,
+							FinishedItem = g.Sum(od => od.FinishedItem ?? 0),
+							Order = new Order
+							{
+								OrderDate = g.Min(od => od.Order?.OrderDate)
+							}
+						})
+						.ToList();
+
+					// Separate DoneItems without grouping
+					var doneItems = orderDetails.Where(od => od.Status == true && od.Order?.OrderDate?.Date == DateTime.Today).ToList();
+
+					GroupedMenuItems.Clear();
+					foreach (var groupedItem in pendingItems.GroupBy(o => o.MenuItem?.ItemName)
+						.Select(g => new GroupedMenuItem
+						{
+							//MenuItemName = g.Key ?? string.Empty,
+							PendingItems = g.ToList(),
+							ProcessingItems = processingItems.Where(o => o.MenuItem?.ItemName == g.Key).ToList()
+						}))
+					{
+						GroupedMenuItems.Add(groupedItem);
+					}
+
+					DoneItems.Clear();
+					foreach (var doneItem in doneItems)
+					{
+						DoneItems.Add(doneItem);
+					}
+				}
+			}
+		}
+		catch (Exception ex)
+		{
+			// Handle exceptions
+			Console.WriteLine($"Error fetching order details: {ex.Message}");
+		}
+	}
+
+	private void ParseOrderDetails(OrderDetail orderDetail)
+	{
+		string[] attributes = orderDetail.Description?.Split(',') ?? Array.Empty<string>();
+
+		// Retrieve matching items with the same properties
+		var finishedItem = GetOrderDetailsFromPreference()
+			.FirstOrDefault(detail => detail.Order.OrderDate == orderDetail.Order.OrderDate &&
+							 detail.Sugar == orderDetail.Sugar &&
+							 detail.Ice == orderDetail.Ice &&
+							 detail.Topping == orderDetail.Topping);
+		if (finishedItem == null || finishedItem.FinishedItem == null)
+		{
+			orderDetail.FinishedItem = 0;
+		}
+		else
+		{
+			orderDetail.FinishedItem = finishedItem.FinishedItem;
+		}
+
+		foreach (var attribute in attributes)
+		{
+			string trimmed = attribute.Trim(); // Remove any leading/trailing whitespace
+
+			if (trimmed.Contains("Ice", StringComparison.OrdinalIgnoreCase))
+			{
+				orderDetail.Ice = trimmed.Replace("Ice", "", StringComparison.OrdinalIgnoreCase).Trim();
+			}
+			else if (trimmed.Contains("Sugar", StringComparison.OrdinalIgnoreCase))
+			{
+				orderDetail.Sugar = trimmed.Replace("Sugar", "", StringComparison.OrdinalIgnoreCase).Trim();
+			}
+			else
+			{
+				orderDetail.Topping += (string.IsNullOrEmpty(orderDetail.Topping) ? "" : ", ") + trimmed;
+			}
+		}
+		orderDetail.Ice = string.IsNullOrEmpty(orderDetail.Ice) ? "normal" : orderDetail.Ice;
+		orderDetail.Sugar = string.IsNullOrEmpty(orderDetail.Sugar) ? "normal" : orderDetail.Sugar;
+		orderDetail.Topping = string.IsNullOrEmpty(orderDetail.Topping) ? "none" : orderDetail.Topping;
+	}
+
+	private List<OrderDetail> GetOrderDetailsFromPreference()
+	{
+		var serialized = Preferences.Get("OrderDetails", "[]");
+		return JsonConvert.DeserializeObject<List<OrderDetail>>(serialized);
+	}
+
+
+
+
+	public event PropertyChangedEventHandler? PropertyChanged;
+
+	protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = "")
+	{
+		PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+	}
+
+	public class GroupedMenuItem
+	{
+		//public string MenuItemName { get; set; } = string.Empty;
+		public List<OrderDetail> PendingItems { get; set; } = new List<OrderDetail>();
+		public List<OrderDetail> ProcessingItems { get; set; } = new List<OrderDetail>();
+	}
 }

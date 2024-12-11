@@ -4,9 +4,11 @@
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              xmlns:local="clr-namespace:OrderingAssistSystem_StaffApp"
              x:Class="OrderingAssistSystem_StaffApp.ItemToMake"
-             Title="ItemToMake">
+             Title="ItemToMake"
+             NavigationPage.HasNavigationBar="False">
 
     <Grid RowDefinitions="Auto,*">
+        <Entry Placeholder="OTP" x:Name="FinishedItemsEntry" Keyboard="Numeric"/>
         <!-- Navigation Bar -->
         <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto" Padding="10,5" BackgroundColor="LightGray">
             <!-- Navigation Links -->
@@ -16,20 +18,20 @@
                     Style="{StaticResource PrimaryButtonStyle}"
                     HeightRequest="40" />
                 <Button Text="To Make"
-    Clicked="OnItemToMakeClicked"
-    Style="{StaticResource PrimaryButtonStyle}"
-    HeightRequest="40" 
-    Margin="10,0,0,0" />
+                    Clicked="OnItemToMakeClicked"
+                    Style="{StaticResource PrimaryButtonStyle}"
+                    HeightRequest="40" 
+                    Margin="10,0,0,0" />
                 <Button Text="Menu"
                     Clicked="OnMenuItemsClicked"
                     Style="{StaticResource PrimaryButtonStyle}"
                     HeightRequest="40" 
                     Margin="10,0,0,0" />
                 <Button Text="Log Out"
-    Clicked="OnLogOutClicked"
-    Style="{StaticResource PrimaryButtonStyle}"
-    HeightRequest="40" 
-    Margin="10,0,0,0" />
+                    Clicked="OnLogOutClicked"
+                    Style="{StaticResource PrimaryButtonStyle}"
+                    HeightRequest="40" 
+                    Margin="10,0,0,0" />
             </StackLayout>
 
             <!-- Notification Bell Icon -->
@@ -43,71 +45,13 @@
                      Margin="0,0,-9,0" />
         </Grid>
 
-
         <!-- Scrollable Content -->
         <ScrollView Grid.Row="1">
             <StackLayout Padding="10">
                 <Label Text="Item To Make List"
-FontSize="20"
-FontAttributes="Bold"
-HorizontalOptions="Center" />
-
-                <!-- Grouped Menu Items -->
-                <Label Text="Pending" FontAttributes="Bold" FontSize="18" Margin="10,0,10,5" />
-                <CollectionView ItemsSource="{Binding GroupedMenuItems}">
-                    <CollectionView.ItemTemplate>
-                        <DataTemplate>
-                            <StackLayout Margin="0,10">
-                                <!-- Menu Item Header -->
-                                <Frame BorderColor="Gray" CornerRadius="5" Padding="10">
-                                    <VerticalStackLayout>
-                                        <CollectionView ItemsSource="{Binding PendingItems}">
-                                            <CollectionView.ItemTemplate>
-                                                <DataTemplate>
-                                                    <StackLayout Margin="0,5">
-                                                        <Grid ColumnDefinitions="2*,3*,3*,2*" RowDefinitions="Auto,Auto,Auto,Auto">
-                                                            <Label Text="OrderDetail ID:" FontAttributes="Bold" />
-                                                            <!-- Order Date -->
-                                                            <Label Grid.Row="1" Text="Order Date:" FontAttributes="Bold" />
-                                                            <Label Grid.Row="1" Grid.Column="1" Text="{Binding Order.OrderDate}" />
-
-                                                            <Label Grid.Row="1" Grid.Column="2" Text="Quantity:" FontAttributes="Bold" />
-                                                            <Label Grid.Row="1" Grid.Column="3" Text="{Binding Quantity}" />
-
-                                                            <Label Grid.Row="2" Grid.Column="0" Text="Table Name:" FontAttributes="Bold" />
-                                                            <Label Grid.Row="2" Grid.Column="1" Text="{Binding Order.Table.Qr}" />
-
-                                                            <!-- Ice -->
-                                                            <Label Grid.Row="4" Grid.Column="2" Text="Ice:" FontAttributes="Bold" />
-                                                            <Label Grid.Row="4" Grid.Column="3" Text="{Binding Ice}" />
-
-                                                            <!-- Topping -->
-                                                            <Label Grid.Row="5" Text="Topping:" FontAttributes="Bold" />
-                                                            <Label Grid.Row="5" Grid.Column="1" Text="{Binding Topping}" />
-                                                            <Label Grid.Column="1" Text="{Binding OrderDetailId}" />
-
-                                                            <Label Grid.Column="2" Text="Item Name:" FontAttributes="Bold" />
-                                                            <Label Grid.Column="3" Text="{Binding MenuItem.ItemName}" />
-
-                                                            <!-- Sugar -->
-                                                            <Label Grid.Row="2" Grid.Column="2" Text="Sugar:" FontAttributes="Bold" />
-                                                            <Label Grid.Row="2" Grid.Column="3" Text="{Binding Sugar}" />
-
-                                                            <!-- Topping -->
-                                                            <Label Grid.Row="3" Text="Topping:" FontAttributes="Bold" />
-                                                            <Label Grid.Row="3" Grid.Column="1" Text="{Binding Topping}" />
-                                                        </Grid>
-                                                        <Button Text="Start Item" Style="{StaticResource PrimaryButtonStyle}" Margin="0,10,0,0" CommandParameter="{Binding .}" Clicked="OnStartItemClicked" />
-                                                    </StackLayout>
-                                                </DataTemplate>
-                                            </CollectionView.ItemTemplate>
-                                        </CollectionView>
-                                    </VerticalStackLayout>
-                                </Frame>
-                            </StackLayout>
-                        </DataTemplate>
-                    </CollectionView.ItemTemplate>
-                </CollectionView>
+                       FontSize="20"
+                       FontAttributes="Bold"
+                       HorizontalOptions="Center" />
 
                 <Label Text="Processing" FontAttributes="Bold"  FontSize="18"  Margin="10,20,10,5" />
                 <CollectionView ItemsSource="{Binding GroupedMenuItems}">
@@ -115,102 +59,129 @@ HorizontalOptions="Center" />
                         <DataTemplate>
                             <StackLayout Margin="0,10">
                                 <!-- Menu Item Header -->
-                                <Frame BorderColor="Gray" CornerRadius="5" Padding="10">
-                                    <VerticalStackLayout>
-                                        <CollectionView ItemsSource="{Binding ProcessingItems}">
-                                            <CollectionView.ItemTemplate>
-                                                <DataTemplate>
-                                                    <StackLayout Margin="0,5">
-                                                        <Grid ColumnDefinitions="2*,3*,3*,2*" RowDefinitions="Auto,Auto,Auto,Auto">
-                                                            <Label Text="Order Detail ID:" FontAttributes="Bold" />
-                                                            <Label Grid.Column="1" Text="{Binding OrderDetailId}" />
+                                <CollectionView ItemsSource="{Binding ProcessingItems}">
+                                    <CollectionView.ItemTemplate>
+                                        <DataTemplate>
+                                            <Frame BorderColor="Gray" CornerRadius="5" Padding="10" Margin="0,0,0,10">
+                                                <StackLayout Margin="0,5">
+                                                    <Grid ColumnDefinitions="2*,3*,3*,2*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto">
 
-                                                            <Label Grid.Column="2" Text="Item Name:" FontAttributes="Bold" />
-                                                            <Label Grid.Column="3" Text="{Binding MenuItem.ItemName}" />
+                                                        <Label Grid.Column="0" Text="Item Name:" FontAttributes="Bold" />
+                                                        <Label Grid.Column="1" Text="{Binding MenuItem.ItemName}" />
 
-                                                            <Label Grid.Row="1" Text="Quantity:" FontAttributes="Bold" />
-                                                            <Label Grid.Row="1" Grid.Column="1" Text="{Binding Quantity}" />
+                                                        <Label Grid.Row="0" Grid.Column="2" Text="Quantity:" FontAttributes="Bold" />
+                                                        <Label Grid.Row="0" Grid.Column="3" Text="{Binding Quantity}" />
 
-                                                            <Label Grid.Row="2" Text="Sugar:" FontAttributes="Bold" />
-                                                            <Label Grid.Row="2" Grid.Column="1" Text="{Binding Sugar}" />
+                                                        <!-- Order Date -->
+                                                        <Label Grid.Row="2" Text="First Order:" FontAttributes="Bold" />
+                                                        <Label Grid.Row="2" Grid.Column="1" Text="{Binding Order.OrderDate}" />
 
-                                                            <!-- Ice -->
-                                                            <Label Grid.Row="2" Grid.Column="2" Text="Ice:" FontAttributes="Bold" />
-                                                            <Label Grid.Row="2" Grid.Column="3" Text="{Binding Ice}" />
+                                                        <Label Grid.Row="2" Grid.Column="2" Text="Sugar:" FontAttributes="Bold" />
+                                                        <Label Grid.Row="2" Grid.Column="3" Text="{Binding Sugar}" />
 
-                                                            <!-- Topping -->
-                                                            <Label Grid.Row="3" Text="Topping:" FontAttributes="Bold" />
-                                                            <Label Grid.Row="3" Grid.Column="1" Text="{Binding Topping}" />
-                                                        </Grid>
+                                                        <!-- Ice -->
+                                                        <Label Grid.Row="3" Grid.Column="0" Text="Ice:" FontAttributes="Bold" />
+                                                        <Label Grid.Row="3" Grid.Column="1" Text="{Binding Ice}" />
 
-                                                        <Button Text="Finish Item" 
-        Style="{StaticResource PrimaryButtonStyle}" 
-        Margin="0,10,0,0" 
-        CommandParameter="{Binding .}"
-        Clicked="OnFinishItemClicked" />
-                                                    </StackLayout>
-                                                </DataTemplate>
-                                            </CollectionView.ItemTemplate>
-                                        </CollectionView>
-                                    </VerticalStackLayout>
-                                </Frame>
+                                                        <!-- Topping -->
+                                                        <Label Grid.Row="3" Grid.Column="2" Text="Topping:" FontAttributes="Bold" />
+                                                        <Label Grid.Row="3" Grid.Column="3" Text="{Binding Topping}" />
+
+                                                        <!-- Member Name -->
+                                                        <Label Grid.Row="4" Grid.Column="0" Text="Member Name:" FontAttributes="Bold" />
+                                                        <Label Grid.Row="4" Grid.Column="1" Text="{Binding Order.Member.MemberName}" />
+
+                                                        <!-- Member Phone -->
+                                                        <Label Grid.Row="4" Grid.Column="2" Text="Phone:" FontAttributes="Bold" />
+                                                        <Label Grid.Row="4" Grid.Column="3" Text="{Binding Order.Member.Phone}" />
+
+                                                        <!-- Member Phone -->
+                                                        <Label Grid.Row="5" Grid.Column="0" Text="Finished:" FontAttributes="Bold" />
+                                                        <Label Grid.Row="5" Grid.Column="1" Text="{Binding FinishedItem}" />
+                                                    </Grid>
+
+                                                    <!-- Number Input for Finished Items -->
+                                                    <HorizontalStackLayout Margin="0,10,0,0">
+                                                        <Label Text="Items finished: " />
+                                                        <Button Text="-" 
+                                                                WidthRequest="40" 
+                                                                Clicked="OnDecrementClicked" 
+                                                                VerticalOptions="Center" />
+                                                        <Entry x:Name="FinishedItemsEntry" 
+                                                               Text="1"
+                                                               Keyboard="Numeric" 
+                                                               WidthRequest="40" 
+                                                               VerticalOptions="Center" 
+                                                               HorizontalTextAlignment="Center" />
+                                                        <Button Text="+" 
+                                                                WidthRequest="40" 
+                                                                Clicked="OnIncrementClicked" 
+                                                                VerticalOptions="Center" />
+                                                        <Button Text="Finish" 
+                                                                Style="{StaticResource PrimaryButtonStyle}" 
+                                                                Margin="5,0,0,0" 
+                                                                Clicked="OnFinishNumberOfItemsClicked" 
+                                                                CommandParameter="{Binding .}" />
+                                                    </HorizontalStackLayout>
+
+                                                    <Button Text="Finish All" 
+                                                            Style="{StaticResource PrimaryButtonStyle}" 
+                                                            Margin="0,10,0,0" 
+                                                            CommandParameter="{Binding .}"
+                                                            Clicked="OnFinishItemClicked" />
+                                                </StackLayout>
+                                            </Frame>
+                                        </DataTemplate>
+                                    </CollectionView.ItemTemplate>
+                                </CollectionView>
                             </StackLayout>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
                 </CollectionView>
 
                 <Label Text="Done Today" FontAttributes="Bold"  FontSize="18"  Margin="10,20,10,5" />
-                <CollectionView ItemsSource="{Binding GroupedMenuItems}">
+                <CollectionView ItemsSource="{Binding DoneItems}">
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
-                            <StackLayout Margin="0,10">
-                                <!-- Menu Item Header -->
-                                <Frame BorderColor="Gray" CornerRadius="5" Padding="10">
-                                    <VerticalStackLayout>
-                                        <CollectionView ItemsSource="{Binding DoneItems}">
-                                            <CollectionView.ItemTemplate>
-                                                <DataTemplate>
-                                                    <StackLayout Margin="0,5">
-                                                        <Grid ColumnDefinitions="2*,3*,3*,2*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto">
-                                                            
-                                                            <Label Text="Order Detail ID:" FontAttributes="Bold" />
-                                                            <Label Grid.Column="1" Text="{Binding OrderDetailId}" />
+                            <Frame BorderColor="Gray" CornerRadius="5" Padding="10" Margin="0,0,0,10">
+                                <StackLayout Margin="0,5">
+                                    <Grid ColumnDefinitions="2*,3*,3*,2*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto">
 
-                                                            <!-- Item Name -->
-                                                            <Label Grid.Column="2" Text="Item Name:" FontAttributes="Bold" />
-                                                            <Label Grid.Column="3" Text="{Binding ItemName}" />
+                                        <Label Grid.Column="0" Text="Item Name:" FontAttributes="Bold" />
+                                        <Label Grid.Column="1" Text="{Binding MenuItem.ItemName}" />
 
-                                                            <!-- Quantity -->
-                                                            <Label Grid.Row="1" Text="Quantity:" FontAttributes="Bold" />
-                                                            <Label Grid.Row="1" Grid.Column="1" Text="{Binding Quantity}" />
+                                        <Label Grid.Row="0" Grid.Column="2" Text="Quantity:" FontAttributes="Bold" />
+                                        <Label Grid.Row="0" Grid.Column="3" Text="{Binding Quantity}" />
 
-                                                            <!-- Sugar -->
-                                                            <Label Grid.Row="2" Text="Sugar:" FontAttributes="Bold" />
-                                                            <Label Grid.Row="2" Grid.Column="1" Text="{Binding Sugar}" />
+                                        <!-- Order Date -->
+                                        <Label Grid.Row="2" Text="Order Date:" FontAttributes="Bold" />
+                                        <Label Grid.Row="2" Grid.Column="1" Text="{Binding Order.OrderDate}" />
 
-                                                            <!-- Ice -->
-                                                            <Label Grid.Row="2" Grid.Column="2" Text="Ice:" FontAttributes="Bold" />
-                                                            <Label Grid.Row="2" Grid.Column="3" Text="{Binding Ice}" />
+                                        <Label Grid.Row="2" Grid.Column="2" Text="Sugar:" FontAttributes="Bold" />
+                                        <Label Grid.Row="2" Grid.Column="3" Text="{Binding Sugar}" />
 
-                                                            <!-- Topping -->
-                                                            <Label Grid.Row="3" Text="Topping:" FontAttributes="Bold" />
-                                                            <Label Grid.Row="3" Grid.Column="1" Text="{Binding Topping}" />
-                                                        </Grid>
+                                        <!-- Ice -->
+                                        <Label Grid.Row="3" Grid.Column="0" Text="Ice:" FontAttributes="Bold" />
+                                        <Label Grid.Row="3" Grid.Column="1" Text="{Binding Ice}" />
 
-                                                    </StackLayout>
-                                                </DataTemplate>
-                                            </CollectionView.ItemTemplate>
-                                        </CollectionView>
-                                    </VerticalStackLayout>
+                                        <!-- Topping -->
+                                        <Label Grid.Row="3" Grid.Column="2" Text="Topping:" FontAttributes="Bold" />
+                                        <Label Grid.Row="3" Grid.Column="3" Text="{Binding Topping}" />
 
-                                </Frame>
-                            </StackLayout>
+                                        <!-- Member Name -->
+                                        <Label Grid.Row="4" Grid.Column="0" Text="Member Name:" FontAttributes="Bold" />
+                                        <Label Grid.Row="4" Grid.Column="1" Text="{Binding Order.Member.MemberName}" />
+
+                                        <!-- Member Phone -->
+                                        <Label Grid.Row="4" Grid.Column="2" Text="Phone:" FontAttributes="Bold" />
+                                        <Label Grid.Row="4" Grid.Column="3" Text="{Binding Order.Member.Phone}" />
+                                    </Grid>
+                                </StackLayout>
+                            </Frame>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
                 </CollectionView>
-
             </StackLayout>
         </ScrollView>
     </Grid>
-
 </ContentPage>

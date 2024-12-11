@@ -15,8 +15,8 @@ namespace OrderingAssistSystem_StaffApp.Models
             MenuCategories = new HashSet<MenuCategory>();
             OrderDetails = new HashSet<OrderDetail>();
             AvailableToppings = new ObservableCollection<MenuItem>();
-            Sugar = "Normal";
-            Ice = "Normal";
+            Sugar = "normal";
+            Ice = "normal";
             Quantity = 1;
         }
 

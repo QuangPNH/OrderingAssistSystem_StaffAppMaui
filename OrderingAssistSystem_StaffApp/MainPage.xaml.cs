@@ -78,7 +78,7 @@ namespace OrderingAssistSystem_StaffApp
             Employee emp = JsonConvert.DeserializeObject<Employee>(loginInfoJson);
             if (emp?.Owner == null)
             {
-                DisplayAlert("Error", "Owner information is missing.", "Ok");
+                DisplayAlert("Error", "Owner's information is missing.", "Ok");
                 return;
             }
 
@@ -97,8 +97,6 @@ namespace OrderingAssistSystem_StaffApp
 
         public async Task Authoriz()
         {
-            //DisplayAlert("Status", Preferences.Get("LoginInfo", string.Empty), "OK");
-
             AuthorizeLogin authorizeLogin = new AuthorizeLogin(_client);
 
             var loginStatus = await authorizeLogin.CheckLogin();
@@ -198,7 +196,7 @@ namespace OrderingAssistSystem_StaffApp
 
             if (emp == null)
             {
-                await DisplayAlert("Error", phoneNumber + " is not found. Please enter an exist number.\n", "OK");
+                await DisplayAlert("Error", phoneNumber + " is not found. Please enter an existing number.\n", "OK");
             }
             else
             {

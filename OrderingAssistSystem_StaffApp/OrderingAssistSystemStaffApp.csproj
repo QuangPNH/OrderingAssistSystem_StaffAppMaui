@@ -107,6 +107,9 @@
 
 	<ItemGroup>
 	  <MauiXaml Update="ItemToMake.xaml">
+	    <Generator></Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="ItemToMakeBartender.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="MenuItemList.xaml">

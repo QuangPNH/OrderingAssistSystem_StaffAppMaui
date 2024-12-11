@@ -25,6 +25,7 @@ public partial class MenuItemList : ContentPage
 		ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => true
 	});
 	ConfigApi _config = new ConfigApi();
+	string role;
 	public ObservableCollection<CartItem> CartItems { get; set; } = new ObservableCollection<CartItem>();
 	public MenuItemList()
 	{
@@ -116,6 +117,7 @@ public partial class MenuItemList : ContentPage
 		var loginStatus = await authorizeLogin.CheckLogin();
 		if (loginStatus.Equals("staff") || loginStatus.Equals("bartender"))
 		{
+			role = loginStatus;
 		}
 		else if (loginStatus.Equals("employee expired"))
 		{
@@ -313,7 +315,7 @@ public partial class MenuItemList : ContentPage
 		catch (Exception ex)
 		{
 			// Handle exceptions
-			await DisplayAlert("Error", $"An error occurred: {ex.Message}", "OK");
+			await DisplayAlert("Error", $"Exception: {ex.Message}", "OK");
 		}
 	}
 
@@ -432,7 +434,14 @@ public partial class MenuItemList : ContentPage
 	private void OnItemToMakeClicked(object sender, EventArgs e)
 	{
 		CalculateRemainingDays();
-		SwitchToPage("ItemsToMake", () => new ItemToMake());
+		if (role.Equals("bartender"))
+		{
+			SwitchToPage("ItemToMakeBartender", () => new ItemToMakeBartender());
+		}
+		else if (role.Equals("staff"))
+		{
+			SwitchToPage("ItemsToMake", () => new ItemToMake());
+		}
 	}
 
 	private async void OnLogOutClicked(object sender, EventArgs e)
@@ -440,8 +449,19 @@ public partial class MenuItemList : ContentPage
 		LogOut();
 	}
 
+	protected override void OnSizeAllocated(double width, double height)
+	{
+		base.OnSizeAllocated(width, height);
 
-	
+		// Check if the orientation is vertical
+		if (width < height)
+		{
+			CalculateRemainingDays();
+			var viewModel = BindingContext as MenuItemListViewModel;
+			viewModel?.LoadMenuItems();
+		}
+	}
+
 
 
 	public event PropertyChangedEventHandler PropertyChanged;
@@ -464,8 +484,8 @@ public class CartItem
 {
 	public string ItemName { get; set; }
 	public int Quantity { get; set; }
-	public string Sugar { get; set; } = "Normal"; // Default value
-	public string Ice { get; set; } = "Normal";   // Default value
+	public string Sugar { get; set; } = "normal"; // Default value
+	public string Ice { get; set; } = "normal";   // Default value
 	public string Topping { get; set; } = string.Empty;
 	public string Description { get; set; } = string.Empty;
 	public double Price { get; set; }
@@ -665,8 +685,8 @@ public class MenuItemViewModel : INotifyPropertyChanged
 {
 
 	private int _quantity = 1;
-	private string _sugar = "Normal";
-	private string _ice = "Normal";
+	private string _sugar = "normal";
+	private string _ice = "normal";
 
 	public int MenuItemId { get; set; }
 	public string ItemName { get; set; }
@@ -724,8 +744,8 @@ public class MenuItemViewModel : INotifyPropertyChanged
 
 	public MenuItemViewModel()
 	{
-		_sugar = "Normal"; // Default value
-		_ice = "Normal";   // Default value
+		_sugar = "normal"; // Default value
+		_ice = "normal";   // Default value
 		AddToCartCommand = new Command<MenuItemViewModel>(AddToCart);
 	}
 

@@ -4,7 +4,8 @@
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              xmlns:local="clr-namespace:OrderingAssistSystem_StaffApp"
              x:Class="OrderingAssistSystem_StaffApp.MenuItemList"
-             Title="Menu Item List">
+             Title="Menu Item List"
+             NavigationPage.HasNavigationBar="False">
 
     
 
@@ -242,9 +243,9 @@
                                         <Label Text="Sugar:" FontAttributes="Bold" Grid.Row="0" Grid.Column="0" />
                                         <Picker Grid.Row="0" Grid.Column="1" SelectedItem="{Binding Sugar}" WidthRequest="100">
                                             <Picker.Items>
-                                                <x:String>Less</x:String>
-                                                <x:String>Normal</x:String>
-                                                <x:String>More</x:String>
+                                                <x:String>less</x:String>
+                                                <x:String>normal</x:String>
+                                                <x:String>more</x:String>
                                             </Picker.Items>
                                         </Picker>
 
@@ -252,9 +253,9 @@
                                         <Label Text="Ice:" FontAttributes="Bold" Grid.Row="0" Grid.Column="2" />
                                         <Picker Grid.Row="0" Grid.Column="3" SelectedItem="{Binding Ice}" WidthRequest="100">
                                             <Picker.Items>
-                                                <x:String>Less</x:String>
-                                                <x:String>Normal</x:String>
-                                                <x:String>More</x:String>
+                                                <x:String>less</x:String>
+                                                <x:String>normal</x:String>
+                                                <x:String>more</x:String>
                                             </Picker.Items>
                                         </Picker>
 
