@@ -10,7 +10,7 @@ namespace OrderingAssistSystem_StaffApp.Models
 
 		
 
-		private MenuItem()
+		public MenuItem()
         {
             MenuCategories = new HashSet<MenuCategory>();
             OrderDetails = new HashSet<OrderDetail>();

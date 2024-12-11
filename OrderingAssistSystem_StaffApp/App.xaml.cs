@@ -1,5 +1,4 @@
 ﻿using OrderingAssistSystem_StaffApp.Models;
-using OrderingAssistSystem_StaffApp.Models;
 using OrderingAssistSystem_StaffApp.Services;
 using Plugin.LocalNotification;
 namespace OrderingAssistSystem_StaffApp

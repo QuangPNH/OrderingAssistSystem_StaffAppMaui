@@ -28,7 +28,7 @@ public partial class ItemToMake : ContentPage
 		LoadNotifications();
 		Authoriz();
 		CalculateRemainingDays();
-		ClearOrderDetailsPreference();
+		//ClearOrderDetailsPreference();
 	}
 
 	private void OnDecrementClicked(object sender, EventArgs e)
@@ -185,21 +185,8 @@ public partial class ItemToMake : ContentPage
 		}
 	}
 
-	private void ClearOrderDetailsPreference()
-	{
-		// Remove the key "OrderDetails" from preferences
-		if (Preferences.ContainsKey("OrderDetails"))
-		{
-			Preferences.Remove("OrderDetails");
-			Console.WriteLine("OrderDetails preference cleared successfully.");
-		}
-		else
-		{
-			Console.WriteLine("No OrderDetails preference found to clear.");
-		}
-	}
-
-
+	//0395746221
+	//0388536414
 	private async void OnFinishNumberOfItemsClicked(object sender, EventArgs e)
 	{
 		var button = sender as Button;
@@ -217,65 +204,79 @@ public partial class ItemToMake : ContentPage
 
 		if (orderDetail != null && input > 0)
 		{
-			var orderDetails = GetOrderDetailsFromPreference();
-			bool isUpdated = false;
+			var viewModel = BindingContext as ItemToMakeListViewModel;
+			var matchingOrderDetails = viewModel?.AllOrderDetails
+				.Where(od => od.Order?.OrderDate == orderDetail.Order?.OrderDate &&
+							 od.MenuItem?.ItemName == orderDetail.MenuItem?.ItemName &&
+							 od.Sugar == orderDetail.Sugar &&
+							 od.Ice == orderDetail.Ice &&
+							 od.Topping == orderDetail.Topping && !(bool)od.Status)
+				.ToList();
 
-			foreach (var detail in orderDetails)
+			if (matchingOrderDetails != null)
 			{
-				// Match order detail by date, item name, sugar, ice, and topping
-				if (detail.Order.OrderDate == orderDetail.Order.OrderDate &&
-					detail.MenuItem.ItemName == orderDetail.MenuItem.ItemName &&
-					detail.Sugar == orderDetail.Sugar &&
-					detail.Ice == orderDetail.Ice &&
-					detail.Topping == orderDetail.Topping)
-				{
-					// Add input to FinishedItem
+				foreach (var detail in matchingOrderDetails)
+				{0395746221
 					detail.FinishedItem += input;
 
 					if (detail.FinishedItem < detail.Quantity)
 					{
-						// If less than quantity, do nothing else
 						SaveToPreference(detail);
-					}
-					else if (detail.FinishedItem == detail.Quantity)
-					{
-						// If exactly matches quantity, mark as finished and remove
-						detail.Status = true;
-						RemoveFromPreference(detail);
 					}
 					else
 					{
-						// If exceeds quantity, mark as finished and distribute the remainder
 						detail.Status = true;
 						int remainder = (int)(detail.FinishedItem - detail.Quantity);
 						RemoveFromPreference(detail);
 
-						// Distribute the remainder to subsequent matching items
-						DistributeRemainder(orderDetails, detail, remainder);
+						if (remainder > 0)
+						{
+							DistributeRemainder(matchingOrderDetails, detail, remainder);
+						}
+
+						var uri = new Uri(_config.BaseAddress + $"OrderDetail/{detail.OrderDetailId}");
+						var content = new StringContent(JsonConvert.SerializeObject(detail), Encoding.UTF8, "application/json");
+						HttpResponseMessage response = await _client.PutAsync(uri, content);
+
+						if (!response.IsSuccessStatusCode)
+						{
+							await DisplayAlert("Error", $"Failed to update item {detail.MenuItem?.ItemName}.", "OK");
+							return;
+						}
 					}
-
-					isUpdated = true;
-					break;
 				}
-			}
 
-			// If no matching detail was found, add the new order detail
-			if (!isUpdated)
-			{
-				orderDetail.FinishedItem = input;
-				if (orderDetail.FinishedItem >= orderDetail.Quantity)
+				var order = matchingOrderDetails.FirstOrDefault()?.Order;
+				if (order != null)
 				{
-					orderDetail.Status = true;
+					var uri = new Uri(_config.BaseAddress + $"Order/{order.OrderId}");
+					HttpResponseMessage response = await _client.GetAsync(uri);
+					if (response.IsSuccessStatusCode)
+					{
+						string data = await response.Content.ReadAsStringAsync();
+						order = JsonConvert.DeserializeObject<Order>(data);
+						order.OrderDate = DateTime.Now;
+						var orderDetails = order?.OrderDetails;
+						if (orderDetails != null && orderDetails.All(od => od.Status == true))
+						{
+							order.Status = true;
+							uri = new Uri(_config.BaseAddress + $"Order/{order.OrderId}");
+							var content = new StringContent(JsonConvert.SerializeObject(order), Encoding.UTF8, "application/json");
+							response = await _client.PutAsync(uri, content);
+						}
+					}
 				}
-				orderDetails.Add(orderDetail);
+
+				await DisplayAlert("Item Updated", $"Finished {input} items.", "OK");
+				viewModel?.LoadOrderDetails();
 			}
-
-			SaveAllToPreference(orderDetails);
-
-			// Reload the view model list
-			var viewModel = BindingContext as ItemToMakeListViewModel;
-			viewModel?.LoadOrderDetails();
 		}
+	}
+
+	// Method to display alerts
+	private Task DisplayAlert(string title, string message, string cancel)
+	{
+		return Application.Current.MainPage.DisplayAlert(title, message, cancel);
 	}
 
 	private void DistributeRemainder(List<OrderDetail> orderDetails, OrderDetail currentDetail, int remainder)
@@ -310,6 +311,20 @@ public partial class ItemToMake : ContentPage
 					remainder -= available;
 				}
 			}
+		}
+	}
+
+	private void ClearOrderDetailsPreference()
+	{
+		// Remove the key "OrderDetails" from preferences
+		if (Preferences.ContainsKey("OrderDetails"))
+		{
+			Preferences.Remove("OrderDetails");
+			Console.WriteLine("OrderDetails preference cleared successfully.");
+		}
+		else
+		{
+			Console.WriteLine("No OrderDetails preference found to clear.");
 		}
 	}
 
@@ -348,23 +363,64 @@ public partial class ItemToMake : ContentPage
 	private List<OrderDetail> GetOrderDetailsFromPreference()
 	{
 		var serialized = Preferences.Get("OrderDetails", "[]");
-		return JsonConvert.DeserializeObject<List<OrderDetail>>(serialized);
+		var anonymousObjects = JsonConvert.DeserializeObject<List<dynamic>>(serialized);
+
+		var orderDetails = new List<OrderDetail>();
+
+		foreach (var obj in anonymousObjects)
+		{
+			var orderDetail = new OrderDetail
+			{
+				FinishedItem = obj.FinishedItem,
+				Sugar = obj.Sugar,
+				Ice = obj.Ice,
+				Topping = obj.Topping,
+				IsCurrentItem = obj.IsCurrentItem,
+				Quantity = obj.Quantity,
+				Status = obj.Status,
+				Order = new Order { OrderDate = obj.OrderDate },
+				MenuItem = new Models.MenuItem { ItemName = obj.ItemName }
+			};
+
+			orderDetails.Add(orderDetail);
+		}
+
+		return orderDetails;
 	}
 
 	private void SaveAllToPreference(List<OrderDetail> orderDetails)
 	{
 		var settings = new JsonSerializerSettings
 		{
+			ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+			NullValueHandling = NullValueHandling.Ignore,
 			ContractResolver = new DefaultContractResolver
 			{
-				IgnoreSerializableAttribute = false
+				IgnoreSerializableAttribute = false,
 			}
 		};
 
-		// Serialize ignoring the [JsonIgnore] attribute
-		var serialized = JsonConvert.SerializeObject(orderDetails, settings);
+		// Create a list of anonymous objects for serialization
+		var serializedObjects = orderDetails.Select(detail => new
+		{
+			detail.FinishedItem,
+			detail.Sugar,
+			detail.Ice,
+			detail.Topping,
+			detail.IsCurrentItem,
+			detail.Quantity,
+			detail.Status,
+			OrderDate = detail.Order.OrderDate, // Extract nested property
+			ItemName = detail.MenuItem.ItemName // Extract nested property
+		}).ToList();
+
+		// Serialize the anonymous objects to JSON
+		var serialized = JsonConvert.SerializeObject(serializedObjects, settings);
+
+		// Save the JSON string to preferences
 		Preferences.Set("OrderDetails", serialized);
 	}
+
 
 
 	private async void LoadNotifications()
@@ -601,21 +657,6 @@ public class ItemToMakeListViewModel : INotifyPropertyChanged
 	{
 		string[] attributes = orderDetail.Description?.Split(',') ?? Array.Empty<string>();
 
-		// Retrieve matching items with the same properties
-		var finishedItem = GetOrderDetailsFromPreference()
-			.FirstOrDefault(detail => detail.Order.OrderDate == orderDetail.Order.OrderDate &&
-							 detail.Sugar == orderDetail.Sugar &&
-							 detail.Ice == orderDetail.Ice &&
-							 detail.Topping == orderDetail.Topping);
-		if (finishedItem == null || finishedItem.FinishedItem == null)
-		{
-			orderDetail.FinishedItem = 0;
-		}
-		else
-		{
-			orderDetail.FinishedItem = finishedItem.FinishedItem;
-		}
-
 		foreach (var attribute in attributes)
 		{
 			string trimmed = attribute.Trim(); // Remove any leading/trailing whitespace
@@ -636,12 +677,62 @@ public class ItemToMakeListViewModel : INotifyPropertyChanged
 		orderDetail.Ice = string.IsNullOrEmpty(orderDetail.Ice) ? "normal" : orderDetail.Ice;
 		orderDetail.Sugar = string.IsNullOrEmpty(orderDetail.Sugar) ? "normal" : orderDetail.Sugar;
 		orderDetail.Topping = string.IsNullOrEmpty(orderDetail.Topping) ? "none" : orderDetail.Topping;
+
+		var orderDetails = GetOrderDetailsFromPreference();
+
+		if (orderDetail != null && orderDetail.Order != null)
+		{
+			var finishedItem = orderDetails
+				.FirstOrDefault(detail => detail.Order != null &&
+										  detail.Order.OrderDate == orderDetail.Order.OrderDate &&
+										  detail.Sugar == orderDetail.Sugar &&
+										  detail.Ice == orderDetail.Ice &&
+										  detail.Topping == orderDetail.Topping);
+
+			if (finishedItem == null || finishedItem.FinishedItem == null)
+			{
+				orderDetail.FinishedItem = 0;
+			}
+			else
+			{
+				orderDetail.FinishedItem = finishedItem.FinishedItem;
+			}
+		}
+		else
+		{
+			// Handle the case where orderDetail or orderDetail.Order is null
+			orderDetail.FinishedItem = 0;
+		}
+
+
 	}
 
 	private List<OrderDetail> GetOrderDetailsFromPreference()
 	{
 		var serialized = Preferences.Get("OrderDetails", "[]");
-		return JsonConvert.DeserializeObject<List<OrderDetail>>(serialized);
+		var anonymousObjects = JsonConvert.DeserializeObject<List<dynamic>>(serialized);
+
+		var orderDetails = new List<OrderDetail>();
+
+		foreach (var obj in anonymousObjects)
+		{
+			var orderDetail = new OrderDetail
+			{
+				FinishedItem = obj.FinishedItem,
+				Sugar = obj.Sugar,
+				Ice = obj.Ice,
+				Topping = obj.Topping,
+				IsCurrentItem = obj.IsCurrentItem,
+				Quantity = obj.Quantity,
+				Status = obj.Status,
+				Order = new Order { OrderDate = obj.OrderDate },
+				MenuItem = new Models.MenuItem { ItemName = obj.ItemName }
+			};
+
+			orderDetails.Add(orderDetail);
+		}
+
+		return orderDetails;
 	}
 
 
