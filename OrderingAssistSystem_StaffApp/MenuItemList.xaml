@@ -23,23 +23,19 @@
             <StackLayout Orientation="Horizontal" HorizontalOptions="Start" VerticalOptions="Center">
                 <Button Text="Pending"
                     Clicked="OnPendingOrdersClicked"
-                    Style="{StaticResource PrimaryButtonStyle}"
                     HeightRequest="40" />
                 <Button Text="To Make"
     Clicked="OnItemToMakeClicked"
-    Style="{StaticResource PrimaryButtonStyle}"
     HeightRequest="40" 
     Margin="10,0,0,0" />
                 <Button Text="Menu"
                     Clicked="OnMenuItemsClicked"
-                    Style="{StaticResource PrimaryButtonStyle}"
                     HeightRequest="40" 
                     Margin="10,0,0,0" />
 
 
                 <Button Text="Log Out"
     Clicked="OnLogOutClicked"
-    Style="{StaticResource PrimaryButtonStyle}"
     HeightRequest="40" 
     Margin="10,0,0,0" />
             </StackLayout>

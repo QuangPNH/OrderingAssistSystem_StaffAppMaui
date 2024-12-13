@@ -216,7 +216,7 @@ public partial class ItemToMake : ContentPage
 			if (matchingOrderDetails != null)
 			{
 				foreach (var detail in matchingOrderDetails)
-				{0395746221
+				{
 					detail.FinishedItem += input;
 
 					if (detail.FinishedItem < detail.Quantity)

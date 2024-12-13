@@ -21,22 +21,18 @@
             <StackLayout Orientation="Horizontal" HorizontalOptions="Start" VerticalOptions="Center">
                 <Button Text="Pending"
                         Clicked="OnPendingOrdersClicked"
-                        Style="{StaticResource PrimaryButtonStyle}"
                         HeightRequest="40" />
                 <Button Text="To Make"
         Clicked="OnItemToMakeClicked"
-        Style="{StaticResource PrimaryButtonStyle}"
         HeightRequest="40" 
         Margin="10,0,0,0" />
                 <Button Text="Menu"
                         Clicked="OnMenuItemsClicked"
-                        Style="{StaticResource PrimaryButtonStyle}"
                         HeightRequest="40" 
                         Margin="10,0,0,0" />
 
                 <Button Text="Log Out"
         Clicked="OnLogOutClicked"
-        Style="{StaticResource PrimaryButtonStyle}"
         HeightRequest="40" 
         Margin="10,0,0,0" />
             </StackLayout>
@@ -94,8 +90,8 @@
                                         <!-- Buttons -->
                                         <HorizontalStackLayout Spacing="10"
                                                        Margin="0,10,0,0">
-                                            <Button Text="Confirm Order Paid" Style="{StaticResource PrimaryButtonStyle}" CommandParameter="{Binding .}" Clicked="OnConfirmOrderPaidClicked" />
-                                            <Button Text="Cancel Order" Style="{StaticResource DangerButtonStyle}" CommandParameter="{Binding .}" Clicked="OnCancelOrderClicked" />
+                                            <Button Text="Confirm Order Paid" CommandParameter="{Binding .}" Clicked="OnConfirmOrderPaidClicked" />
+                                            <Button Text="Cancel Order" CommandParameter="{Binding .}" Clicked="OnCancelOrderClicked" />
                                         </HorizontalStackLayout>
                                     </VerticalStackLayout>
                                 </Frame>
