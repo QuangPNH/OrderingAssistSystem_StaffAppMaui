@@ -1,3 +1,4 @@
+using AzzanOrder.Data.Models;
 using CommunityToolkit.Maui.Views;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
@@ -178,7 +179,7 @@ public partial class ItemToMake : ContentPage
 
 				// Handle the ProcessingItem object here
 				await DisplayAlert("Item Finished", $"Finished item {orderDetail.MenuItem?.ItemName}.", "OK");
-				await SendNotificationAsync($"Finished item {orderDetail.MenuItem?.ItemName}.");
+				await SendNotificationAsync(order.Table.Qr,$"Finished item {orderDetail.MenuItem?.ItemName}.");
 				viewModel?.LoadOrderDetails();
 			}
 		}
@@ -225,7 +226,7 @@ public partial class ItemToMake : ContentPage
 					else
 					{
 						detail.Status = true;
-						await SendNotificationAsync($"{detail.MenuItem?.ItemName} has been finished");
+						await SendNotificationAsync(orderDetail.Order.Table.Qr,$"{detail.MenuItem?.ItemName} has been finished");
 						int remainder = (int)(detail.FinishedItem - detail.Quantity);
 						RemoveFromPreference(detail);
 
@@ -260,7 +261,7 @@ public partial class ItemToMake : ContentPage
 						if (orderDetails != null && orderDetails.All(od => od.Status == true))
 						{
 							order.Status = true;
-							await SendNotificationAsync("Order has been finished !");
+							await SendNotificationAsync(order.Table.Qr,"Order has been finished !");
 							uri = new Uri(_config.BaseAddress + $"Order/{order.OrderId}");
 							var content = new StringContent(JsonConvert.SerializeObject(order), Encoding.UTF8, "application/json");
 							response = await _client.PutAsync(uri, content);
@@ -423,21 +424,39 @@ public partial class ItemToMake : ContentPage
 	}
 
 
-    private async Task SendNotificationAsync(string text)
+    private async Task<NotiChange> GetNotiChangeByTableNameAsync(string tableName)
     {
-        var requestBody = new
+        var uri = new Uri($"https://oas-main-api-cwf5hnd9apbhgnhn.southeastasia-01.azurewebsites.net/api/NotiChanges/tableName/{tableName}");
+        HttpResponseMessage response = await _client.GetAsync(uri);
+
+        if (response.IsSuccessStatusCode)
         {
-            text = text,
-            action = "action_b"
+            string data = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<NotiChange>(data);
+        }
+        else
+        {
+            Console.WriteLine($"Failed to fetch NotiChange. Status code: {response.StatusCode}");
+            return null;
+        }
+    }
+    private async Task SendNotificationAsync(string tableName, string message)
+    {
+        var notiChange = await GetNotiChangeByTableNameAsync(tableName);
+
+        var newnotiChange = new NotiChange
+        {
+            id = notiChange.id,
+            tableName = tableName, // Replace with actual table name if available
+            message = message,
+            isSent = true,
+            DateCreated = DateTime.Now
         };
 
-        var json = JsonConvert.SerializeObject(requestBody);
+        var json = JsonConvert.SerializeObject(notiChange);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-        _client.DefaultRequestHeaders.Clear();
-        _client.DefaultRequestHeaders.Add("apikey", "0624d820-6616-430d-92a5-e68265a08593");
-
-        var response = await _client.PostAsync("https://oas-noti-api-handling-hqb2gxavecakdtey.southeastasia-01.azurewebsites.net/api/notifications/requests", content);
+        var response = await _client.PutAsync($"https://oas-main-api-cwf5hnd9apbhgnhn.southeastasia-01.azurewebsites.net/api/NotiChanges/{notiChange.id}", content);
 
         if (response.IsSuccessStatusCode)
         {

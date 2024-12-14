@@ -1,3 +1,4 @@
+using AzzanOrder.Data.Models;
 using CommunityToolkit.Maui.Views;
 using Newtonsoft.Json;
 using OrderingAssistSystem_StaffApp.Models;
@@ -16,22 +17,39 @@ public partial class ItemToMakeBartender : ContentPage
 	});
 	Models.ConfigApi _config = new Models.ConfigApi();
 	string role;
-
-    private async Task SendNotificationAsync(string text)
+    private async Task<NotiChange> GetNotiChangeByTableNameAsync(string tableName)
     {
-        var requestBody = new
+        var uri = new Uri($"https://oas-main-api-cwf5hnd9apbhgnhn.southeastasia-01.azurewebsites.net/api/NotiChanges/tableName/{tableName}");
+        HttpResponseMessage response = await _client.GetAsync(uri);
+
+        if (response.IsSuccessStatusCode)
         {
-            text = text,
-            action = "action_b"
+            string data = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<NotiChange>(data);
+        }
+        else
+        {
+            Console.WriteLine($"Failed to fetch NotiChange. Status code: {response.StatusCode}");
+            return null;
+        }
+    }
+    private async Task SendNotificationAsync(string tableName, string message)
+    {
+        var notiChange = await GetNotiChangeByTableNameAsync(tableName);
+
+        var newnotiChange = new NotiChange
+        {
+            id = notiChange.id,
+            tableName = tableName, // Replace with actual table name if available
+            message = message,
+            isSent = true,
+            DateCreated = DateTime.Now
         };
 
-        var json = JsonConvert.SerializeObject(requestBody);
+        var json = JsonConvert.SerializeObject(notiChange);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-        _client.DefaultRequestHeaders.Clear();
-        _client.DefaultRequestHeaders.Add("apikey", "0624d820-6616-430d-92a5-e68265a08593");
-
-        var response = await _client.PostAsync("https://oas-noti-api-handling-hqb2gxavecakdtey.southeastasia-01.azurewebsites.net/api/notifications/requests", content);
+        var response = await _client.PutAsync($"https://oas-main-api-cwf5hnd9apbhgnhn.southeastasia-01.azurewebsites.net/api/NotiChanges/{notiChange.id}", content);
 
         if (response.IsSuccessStatusCode)
         {
@@ -161,7 +179,7 @@ public partial class ItemToMakeBartender : ContentPage
 
 			// Handle the PendingItem object here
 			await DisplayAlert("Item Started", $"Starting item {orderDetail.MenuItem?.ItemName}.", "OK");
-			await SendNotificationAsync($"Starting item {orderDetail.MenuItem?.ItemName}.");
+			await SendNotificationAsync(orderDetail.Order.Table.Qr,$"Starting item {orderDetail.MenuItem?.ItemName}.");
 
 			// Reload the to-make list
 			viewModel.LoadOrderDetails();
