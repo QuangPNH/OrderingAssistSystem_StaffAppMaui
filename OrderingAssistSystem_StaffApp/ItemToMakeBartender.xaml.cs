@@ -16,7 +16,33 @@ public partial class ItemToMakeBartender : ContentPage
 	});
 	Models.ConfigApi _config = new Models.ConfigApi();
 	string role;
-	public ItemToMakeBartender()
+
+    private async Task SendNotificationAsync(string text)
+    {
+        var requestBody = new
+        {
+            text = text,
+            action = "action_b"
+        };
+
+        var json = JsonConvert.SerializeObject(requestBody);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        _client.DefaultRequestHeaders.Clear();
+        _client.DefaultRequestHeaders.Add("apikey", "0624d820-6616-430d-92a5-e68265a08593");
+
+        var response = await _client.PostAsync("https://oas-noti-api-handling-hqb2gxavecakdtey.southeastasia-01.azurewebsites.net/api/notifications/requests", content);
+
+        if (response.IsSuccessStatusCode)
+        {
+            Console.WriteLine("Notification sent successfully.");
+        }
+        else
+        {
+            Console.WriteLine($"Failed to send notification. Status code: {response.StatusCode}");
+        }
+    }
+    public ItemToMakeBartender()
 	{
 		InitializeComponent();
 		BindingContext = new ItemToMakeListViewModel();
@@ -135,6 +161,7 @@ public partial class ItemToMakeBartender : ContentPage
 
 			// Handle the PendingItem object here
 			await DisplayAlert("Item Started", $"Starting item {orderDetail.MenuItem?.ItemName}.", "OK");
+			await SendNotificationAsync($"Starting item {orderDetail.MenuItem?.ItemName}.");
 
 			// Reload the to-make list
 			viewModel.LoadOrderDetails();

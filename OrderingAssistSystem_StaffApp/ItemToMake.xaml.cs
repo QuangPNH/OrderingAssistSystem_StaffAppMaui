@@ -178,8 +178,7 @@ public partial class ItemToMake : ContentPage
 
 				// Handle the ProcessingItem object here
 				await DisplayAlert("Item Finished", $"Finished item {orderDetail.MenuItem?.ItemName}.", "OK");
-
-				// Reload the to-make list
+				await SendNotificationAsync($"Finished item {orderDetail.MenuItem?.ItemName}.");
 				viewModel?.LoadOrderDetails();
 			}
 		}
@@ -226,6 +225,7 @@ public partial class ItemToMake : ContentPage
 					else
 					{
 						detail.Status = true;
+						await SendNotificationAsync($"{detail.MenuItem?.ItemName} has been finished");
 						int remainder = (int)(detail.FinishedItem - detail.Quantity);
 						RemoveFromPreference(detail);
 
@@ -260,6 +260,7 @@ public partial class ItemToMake : ContentPage
 						if (orderDetails != null && orderDetails.All(od => od.Status == true))
 						{
 							order.Status = true;
+							await SendNotificationAsync("Order has been finished !");
 							uri = new Uri(_config.BaseAddress + $"Order/{order.OrderId}");
 							var content = new StringContent(JsonConvert.SerializeObject(order), Encoding.UTF8, "application/json");
 							response = await _client.PutAsync(uri, content);
@@ -279,7 +280,7 @@ public partial class ItemToMake : ContentPage
 		return Application.Current.MainPage.DisplayAlert(title, message, cancel);
 	}
 
-	private void DistributeRemainder(List<OrderDetail> orderDetails, OrderDetail currentDetail, int remainder)
+	private async void DistributeRemainder(List<OrderDetail> orderDetails, OrderDetail currentDetail, int remainder)
 	{
 		foreach (var detail in orderDetails)
 		{
@@ -422,8 +423,32 @@ public partial class ItemToMake : ContentPage
 	}
 
 
+    private async Task SendNotificationAsync(string text)
+    {
+        var requestBody = new
+        {
+            text = text,
+            action = "action_b"
+        };
 
-	private async void LoadNotifications()
+        var json = JsonConvert.SerializeObject(requestBody);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        _client.DefaultRequestHeaders.Clear();
+        _client.DefaultRequestHeaders.Add("apikey", "0624d820-6616-430d-92a5-e68265a08593");
+
+        var response = await _client.PostAsync("https://oas-noti-api-handling-hqb2gxavecakdtey.southeastasia-01.azurewebsites.net/api/notifications/requests", content);
+
+        if (response.IsSuccessStatusCode)
+        {
+            Console.WriteLine("Notification sent successfully.");
+        }
+        else
+        {
+            Console.WriteLine($"Failed to send notification. Status code: {response.StatusCode}");
+        }
+    }
+    private async void LoadNotifications()
 	{
 		try
 		{

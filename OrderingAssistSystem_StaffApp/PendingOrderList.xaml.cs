@@ -45,7 +45,31 @@ public partial class PendingOrderList : ContentPage
             DisplayAlert("Info", "Nothing here.", "OK");
         }
     }
+    private async Task SendNotificationAsync(string text)
+    {
+        var requestBody = new
+        {
+            text = text,
+            action = "action_b"
+        };
 
+        var json = JsonConvert.SerializeObject(requestBody);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        _client.DefaultRequestHeaders.Clear();
+        _client.DefaultRequestHeaders.Add("apikey", "0624d820-6616-430d-92a5-e68265a08593");
+
+        var response = await _client.PostAsync("https://oas-noti-api-handling-hqb2gxavecakdtey.southeastasia-01.azurewebsites.net/api/notifications/requests", content);
+
+        if (response.IsSuccessStatusCode)
+        {
+            Console.WriteLine("Notification sent successfully.");
+        }
+        else
+        {
+            Console.WriteLine($"Failed to send notification. Status code: {response.StatusCode}");
+        }
+    }
     public async Task Authoriz()
     {
         //DisplayAlert("Status", Preferences.Get("LoginInfo", string.Empty), "OK");
@@ -107,6 +131,7 @@ public partial class PendingOrderList : ContentPage
                     viewModel?.PendingOrder.LoadOrders();
                     viewModel?.ItemToMake.LoadOrderDetails();
                     DisplayAlert("Confirmed", $"Order: {order.OrderId} has been confirmed paid.", "OK");
+                    await SendNotificationAsync($"Order: {order.OrderId} has been paid.");
                 }
             }
             catch (Exception ex)
@@ -140,6 +165,7 @@ public partial class PendingOrderList : ContentPage
                     viewModel?.PendingOrder.LoadOrders();
                     viewModel?.ItemToMake.LoadOrderDetails();
                     DisplayAlert("Cancelled", $"Order: {order.OrderId} has been cancelled.", "OK");
+                    await SendNotificationAsync($"Order: {order.OrderId} has been cancelled.");
                 }
             }
             catch (Exception ex)
