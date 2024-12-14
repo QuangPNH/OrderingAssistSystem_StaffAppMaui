@@ -57,7 +57,7 @@ namespace OrderingAssistSystem_StaffApp
 				});
 				itemToMakeListViewModel.LoadOrderDetails();
 			}
-			else
+			/*else
 			{
 				MainThread.BeginInvokeOnMainThread(() =>
 			{
@@ -70,7 +70,7 @@ namespace OrderingAssistSystem_StaffApp
 				};
 				LocalNotificationCenter.Current.Show(notification);
 			});
-			}
+			}*/
 		}
 	}
 }
