@@ -27,7 +27,6 @@ namespace OrderingAssistSystem_StaffApp.Services
             _client = new HttpClient();
             _client.DefaultRequestHeaders.Add("Accept", "application/json");
             _client.DefaultRequestHeaders.Add("apikey", apiKey);
-
             _baseApiUrl = baseApiUri;
         }
 

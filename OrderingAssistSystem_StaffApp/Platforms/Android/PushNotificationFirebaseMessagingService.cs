@@ -43,7 +43,9 @@ namespace OrderingAssistSystem_StaffApp.Platforms.Android
         public override void OnMessageReceived(RemoteMessage message)
         {
             base.OnMessageReceived(message);
-
+            var a = message.DescribeContents;
+            var b = message.GetRawData;
+            var c = message.GetNotification;
             if (message.Data.TryGetValue("action", out var messageAction))
                 NotificationActionService.TriggerAction(messageAction);
         }

@@ -8,38 +8,41 @@ using System.Threading.Tasks;
 namespace OrderingAssistSystem_StaffApp.Services
 {
 
-    public class PushDemoNotificationActionService : IPushDemoNotificationActionService
-    {
-        readonly Dictionary<string, OasStaffAppAction> _actionMappings = new Dictionary<string, OasStaffAppAction>
-    {
-        { "action_a", OasStaffAppAction.ActionA },
-        { "action_b", OasStaffAppAction.ActionB }
-    };
+	public class PushDemoNotificationActionService : IPushDemoNotificationActionService
+	{
+		readonly Dictionary<string, OasStaffAppAction> _actionMappings = new Dictionary<string, OasStaffAppAction>
+	{
+		{ "action_a", OasStaffAppAction.ActionA },
+		{ "action_b", OasStaffAppAction.ActionB },
+			{ "OrderSuccesses", OasStaffAppAction.OrderSuccesses },
+{ "Confirm", OasStaffAppAction.Confirm }
+	};
 
-        public event EventHandler<OasStaffAppAction> ActionTriggered = delegate { };
+		public event EventHandler<OasStaffAppAction> ActionTriggered = delegate { };
 
-        public void TriggerAction(string action)
-        {
-            if (!_actionMappings.TryGetValue(action, out var pushDemoAction))
-                return;
+		public void TriggerAction(string action)
+		{
 
-            List<Exception> exceptions = new List<Exception>();
 
-            foreach (var handler in ActionTriggered?.GetInvocationList())
-            {
-                try
-                {
-                    handler.DynamicInvoke(this, pushDemoAction);
-                }
-                catch (Exception ex)
-                {
-                    exceptions.Add(ex);
-                }
-            }
+			if (!_actionMappings.TryGetValue(action, out var pushDemoAction))
+				return;
+			List<Exception> exceptions = new List<Exception>();
 
-            if (exceptions.Any())
-                throw new AggregateException(exceptions);
-        }
-    }
+			foreach (var handler in ActionTriggered?.GetInvocationList())
+			{
+				try
+				{
+					handler.DynamicInvoke(this, pushDemoAction);
+				}
+				catch (Exception ex)
+				{
+					exceptions.Add(ex);
+				}
+			}
+
+			if (exceptions.Any())
+				throw new AggregateException(exceptions);
+		}
+	}
 
 }
