@@ -209,6 +209,7 @@ namespace OrderingAssistSystem_StaffApp
                 MessageResource.Create(messageOptions);*/
 
                 // Redirect to the OTP input page
+                emp.Image = null;
                 var empJson = JsonConvert.SerializeObject(emp);
                 Preferences.Set("TempLoginInfo", empJson);
 
