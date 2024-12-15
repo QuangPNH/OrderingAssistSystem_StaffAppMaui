@@ -6,14 +6,6 @@
     <StackLayout Padding="20" VerticalOptions="CenterAndExpand">
         <Entry Placeholder="Enter Phone Number" x:Name="PhoneNumberEntry"/>
         <Button Text="Send OTP" Clicked="OnSendOtpClicked"/>
-        <Button x:Name="registerButton"
-            Text="Register"
-            Clicked="OnRegisterButtonClicked"
-            IsVisible="False" />
-        <Button x:Name="deregisterButton"
-            Text="Deregister"
-            Clicked="OnDeregisterButtonClicked"
-            IsVisible="False" />
     </StackLayout>
 
 </ContentPage>
