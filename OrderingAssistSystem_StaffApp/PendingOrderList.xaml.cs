@@ -13,6 +13,7 @@ using Task = System.Threading.Tasks.Task;
 using OrderingAssistSystem_StaffApp.Services;
 using System.Windows.Input;
 using System.Text;
+using AzzanOrder.Data.Models;
 
 namespace OrderingAssistSystem_StaffApp;
 
@@ -45,21 +46,39 @@ public partial class PendingOrderList : ContentPage
             DisplayAlert("Info", "Nothing here.", "OK");
         }
     }
-    private async Task SendNotificationAsync(string text)
+    private async Task<NotiChange> GetNotiChangeByTableNameAsync(string tableName)
     {
-        var requestBody = new
+        var uri = new Uri($"https://oas-main-api-cwf5hnd9apbhgnhn.southeastasia-01.azurewebsites.net/api/NotiChanges/tableName/{tableName}");
+        HttpResponseMessage response = await _client.GetAsync(uri);
+
+        if (response.IsSuccessStatusCode)
         {
-            text = text,
-            action = "action_b"
+            string data = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<NotiChange>(data);
+        }
+        else
+        {
+            Console.WriteLine($"Failed to fetch NotiChange. Status code: {response.StatusCode}");
+            return null;
+        }
+    }
+    private async Task SendNotificationAsync(string tableName, string message)
+    {
+        var notiChange = await GetNotiChangeByTableNameAsync(tableName);
+
+        var newnotiChange = new NotiChange
+        {
+            id = notiChange.id,
+            tableName = tableName, // Replace with actual table name if available
+            message = message,
+            isSent = true,
+            DateCreated = DateTime.Now
         };
 
-        var json = JsonConvert.SerializeObject(requestBody);
+        var json = JsonConvert.SerializeObject(notiChange);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-        _client.DefaultRequestHeaders.Clear();
-        _client.DefaultRequestHeaders.Add("apikey", "0624d820-6616-430d-92a5-e68265a08593");
-
-        var response = await _client.PostAsync("https://oas-noti-api-handling-hqb2gxavecakdtey.southeastasia-01.azurewebsites.net/api/notifications/requests", content);
+        var response = await _client.PutAsync($"https://oas-main-api-cwf5hnd9apbhgnhn.southeastasia-01.azurewebsites.net/api/NotiChanges/{notiChange.id}", content);
 
         if (response.IsSuccessStatusCode)
         {
@@ -70,6 +89,7 @@ public partial class PendingOrderList : ContentPage
             Console.WriteLine($"Failed to send notification. Status code: {response.StatusCode}");
         }
     }
+    /*
     public async Task Authoriz()
     {
         //DisplayAlert("Status", Preferences.Get("LoginInfo", string.Empty), "OK");
@@ -94,6 +114,42 @@ public partial class PendingOrderList : ContentPage
         else
         {
             await DisplayAlert("Status", "Something went wrong.", "OK");
+        }
+    }
+    */
+    public async Task Authoriz()
+    {
+        // Get login info from shared preferences
+        var loginInfoJson = Preferences.Get("LoginInfo", string.Empty);
+        var employee = JsonConvert.DeserializeObject<Employee>(loginInfoJson);
+
+        if (employee != null)
+        {
+            switch (employee.RoleId)
+            {
+                case 1:
+                    role = "manager";
+                    break;
+                case 2:
+                    role = "staff";
+                    break;
+                default:
+                    await DisplayAlert("Status", "Something went wrong.", "OK");
+                    return;
+            }
+        }
+        else
+        {
+            await DisplayAlert("Status", "Login info not found.", "OK");
+            INotificationRegistrationService notificationRegistrationService = DependencyService.Get<INotificationRegistrationService>();
+            Application.Current.MainPage = new NavigationPage(new MainPage(notificationRegistrationService));
+            return;
+        }
+
+        // Additional logic for expired employee
+        if (employee.IsDelete == true)
+        {
+            LogOut();
         }
     }
 
@@ -131,7 +187,7 @@ public partial class PendingOrderList : ContentPage
                     viewModel?.PendingOrder.LoadOrders();
                     viewModel?.ItemToMake.LoadOrderDetails();
                     DisplayAlert("Confirmed", $"Order: {order.OrderId} has been confirmed paid.", "OK");
-                    await SendNotificationAsync($"Order: {order.OrderId} has been paid.");
+                    await SendNotificationAsync(order.Table.Qr , $"Order: {order.OrderId} has been paid.");
                 }
             }
             catch (Exception ex)
@@ -165,7 +221,7 @@ public partial class PendingOrderList : ContentPage
                     viewModel?.PendingOrder.LoadOrders();
                     viewModel?.ItemToMake.LoadOrderDetails();
                     DisplayAlert("Cancelled", $"Order: {order.OrderId} has been cancelled.", "OK");
-                    await SendNotificationAsync($"Order: {order.OrderId} has been cancelled.");
+                    await SendNotificationAsync(order.Table.Qr,$"Order: {order.OrderId} has been cancelled.");
                 }
             }
             catch (Exception ex)
@@ -377,41 +433,44 @@ public class PendingOrderViewModel
         LoadOrders();
     }
 
-	public async void LoadOrders()
-	{
-		try
-		{
-			var loginInfoJson = Preferences.Get("LoginInfo", string.Empty);
-			var employee = JsonConvert.DeserializeObject<Employee>(loginInfoJson);
-			var managerId = employee?.ManagerId ?? 0;
+    public async void LoadOrders()
+    {
+        try
+        {
+            var employeeInfoJson = Preferences.Get("EmployeeInfo", string.Empty);
+            var employee = JsonConvert.DeserializeObject<Employee>(employeeInfoJson);
+            var managerId = employee?.ManagerId ?? 0;
 
-			var uri = new Uri(_config.BaseAddress + $"Order/Employee/{managerId}");
-			HttpResponseMessage response = await _client.GetAsync(uri);
-			if (response.IsSuccessStatusCode)
-			{
-				string data = await response.Content.ReadAsStringAsync();
-				var orders = JsonConvert.DeserializeObject<List<Order>>(data);
-			orders = orders.Where(o => o.Status == null).OrderByDescending(o => o.OrderDate).ToList(); 
-				Orders.Clear();
-				if (orders != null)
-				{
-					foreach (var order in orders)
-					{
-						Orders.Add(order);
-						foreach (var orderDetail in order.OrderDetails)
-						{
-							ParseOrderDetails(orderDetail);
-						}
-					}
-				}
-			}
-		}
-		catch (Exception ex)
-		{
-			// Handle exceptions
-			Console.WriteLine($"Error fetching orders: {ex.Message}");
-		}
-	}
+            var uri = new Uri(_config.BaseAddress + $"Order/Employee/{managerId}");
+            HttpResponseMessage response = await _client.GetAsync(uri);
+            if (response.IsSuccessStatusCode)
+            {
+                string data = await response.Content.ReadAsStringAsync();
+                var orders = JsonConvert.DeserializeObject<List<Order>>(data)
+                    ?.Where(o => o.Status == null)
+                    .OrderByDescending(o => o.OrderDate)
+                    .ToList();
+
+                Orders.Clear();
+                if (orders != null)
+                {
+                    foreach (var order in orders)
+                    {
+                        Orders.Add(order);
+                        foreach (var orderDetail in order.OrderDetails)
+                        {
+                            ParseOrderDetails(orderDetail);
+                        }
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            // Handle exceptions
+            Console.WriteLine($"Error fetching orders: {ex.Message}");
+        }
+    }
 
     private void ParseOrderDetails(OrderDetail orderDetail)
     {

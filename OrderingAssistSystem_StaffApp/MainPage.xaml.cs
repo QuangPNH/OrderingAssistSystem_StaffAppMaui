@@ -94,33 +94,26 @@ namespace OrderingAssistSystem_StaffApp
             }
         }
 
-
+        
         public async Task Authoriz()
         {
-            AuthorizeLogin authorizeLogin = new AuthorizeLogin(_client);
+            // Get login info from shared preferences
+            var loginInfoJson = Preferences.Get("LoginInfo", string.Empty);
+            var employee = JsonConvert.DeserializeObject<Employee>(loginInfoJson);
 
-            var loginStatus = await authorizeLogin.CheckLogin();
-            if (loginStatus.Equals("staff"))
+            if (employee != null && employee.RoleId == 2)
             {
 				//Application.Current.MainPage = new NavigationPage(new ContentPage());
 				await Navigation.PushAsync(new PendingOrderList());
 			}
-            else if (loginStatus.Equals("bartender"))
+            else if (employee != null && employee.RoleId == 3)
             {
 				//Application.Current.MainPage = new NavigationPage(new ContentPage());
 				await Navigation.PushAsync(new PendingOrderList());
 			}
-            else if (loginStatus.Equals("employee expired"))
-            {
-				await DisplayAlert("Status", "The owner's subscription has been over for over a week. Contact for more info.", "OK");
-            }
-            else if(loginStatus.Equals("null"))
-            {
-				
-            }
             else
             {
-                await DisplayAlert("Status", "Something went wrong.", "OK");
+                await DisplayAlert("Status", "Something went wrong.The owner's subscription may have been over for over a week. Contact for more info.", "OK");
             }
         }
         void OnRegisterButtonClicked(object sender, EventArgs e)
@@ -218,7 +211,7 @@ namespace OrderingAssistSystem_StaffApp
                 var empJson = JsonConvert.SerializeObject(emp);
                 Preferences.Set("TempLoginInfo", empJson);
 
-                await Navigation.PushAsync(new OTPPage(phoneNumber));
+                await Navigation.PushAsync(new OTPPage(phoneNumber, emp));
             }
         }
     }
