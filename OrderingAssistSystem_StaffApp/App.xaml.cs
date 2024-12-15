@@ -10,12 +10,10 @@ namespace OrderingAssistSystem_StaffApp
 		public App(IPushDemoNotificationActionService service)
 		{
 			InitializeComponent();
-
 			_actionService = service;
 			_actionService.ActionTriggered += NotificationActionTriggered;
 			INotificationRegistrationService serviceNoti = DependencyService.Get<INotificationRegistrationService>();
 			MainPage = new AppShell();
-			//MainPage = new AppTabbedPage();
 		}
 		void NotificationActionTriggered(object sender, OasStaffAppAction e)
 		{
