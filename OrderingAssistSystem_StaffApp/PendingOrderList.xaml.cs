@@ -410,7 +410,7 @@ public class PendingOrderViewModel
 			{
 				string data = await response.Content.ReadAsStringAsync();
 				var orders = JsonConvert.DeserializeObject<List<Order>>(data);
-				orders = orders.Where(o => o.Status == null).OrderByDescending(o => o.OrderDate).ToList(); // Sort by OrderDate descending
+			orders = orders.Where(o => o.Status == null).OrderByDescending(o => o.OrderDate).ToList(); // Sort by OrderDate descending
 				Orders.Clear();
 				if (orders != null)
 				{

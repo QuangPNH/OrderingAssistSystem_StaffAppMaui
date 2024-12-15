@@ -9,6 +9,8 @@ namespace OrderingAssistSystem_StaffApp.Models
     public enum OasStaffAppAction
     {
         ActionA,
-        ActionB
-    }
+        ActionB,
+		OrderSuccesses,
+		Confirm
+	}
 }

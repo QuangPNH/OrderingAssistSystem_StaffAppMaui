@@ -74,7 +74,6 @@ namespace OrderingAssistSystem_StaffApp
                 //DisplayAlert("Error", "Login information is missing.", "Ok");
                 return;
             }
-
             Employee emp = JsonConvert.DeserializeObject<Employee>(loginInfoJson);
             if (emp?.Owner == null)
             {
