@@ -207,7 +207,7 @@ namespace OrderingAssistSystem_StaffApp
                 var empJson = JsonConvert.SerializeObject(emp);
                 Preferences.Set("TempLoginInfo", empJson);
 
-                await Navigation.PushAsync(new OTPPage(phoneNumber));
+                await Navigation.PushAsync(new OTPPage(phoneNumber, emp));
             }
         }
     }

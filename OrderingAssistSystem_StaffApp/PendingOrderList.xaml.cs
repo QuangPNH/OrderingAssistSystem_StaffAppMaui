@@ -89,6 +89,7 @@ public partial class PendingOrderList : ContentPage
             Console.WriteLine($"Failed to send notification. Status code: {response.StatusCode}");
         }
     }
+    /*
     public async Task Authoriz()
     {
         //DisplayAlert("Status", Preferences.Get("LoginInfo", string.Empty), "OK");
@@ -113,6 +114,42 @@ public partial class PendingOrderList : ContentPage
         else
         {
             await DisplayAlert("Status", "Something went wrong.", "OK");
+        }
+    }
+    */
+    public async Task Authoriz()
+    {
+        // Get login info from shared preferences
+        var loginInfoJson = Preferences.Get("EmployeeInfo", string.Empty);
+        var employee = JsonConvert.DeserializeObject<Employee>(loginInfoJson);
+
+        if (employee != null)
+        {
+            switch (employee.RoleId)
+            {
+                case 1:
+                    role = "manager";
+                    break;
+                case 2:
+                    role = "staff";
+                    break;
+                default:
+                    await DisplayAlert("Status", "Something went wrong.", "OK");
+                    return;
+            }
+        }
+        else
+        {
+            await DisplayAlert("Status", "Login info not found.", "OK");
+            INotificationRegistrationService notificationRegistrationService = DependencyService.Get<INotificationRegistrationService>();
+            Application.Current.MainPage = new NavigationPage(new MainPage(notificationRegistrationService));
+            return;
+        }
+
+        // Additional logic for expired employee
+        if (employee.IsDelete == true)
+        {
+            LogOut();
         }
     }
 
