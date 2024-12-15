@@ -8,6 +8,7 @@ using System.Text.Json;
 using OrderingAssistSystem_StaffApp.Services;
 using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Core;
+using System.Net.Http;
 namespace OrderingAssistSystem_StaffApp
 {
     public partial class MainPage : ContentPage
@@ -181,7 +182,6 @@ namespace OrderingAssistSystem_StaffApp
             {
                 var uri = new Uri($"{config.BaseAddress}Employee/Staff/Phone/{phoneNumber}");
                 HttpResponseMessage response = await _client.GetAsync(uri);
-
                 if (response.IsSuccessStatusCode)
                 {
                     string content = await response.Content.ReadAsStringAsync();
@@ -202,6 +202,17 @@ namespace OrderingAssistSystem_StaffApp
                 string otp = new Random().Next(000000, 999999).ToString();
                 otp = "123456"; // For testing only, remove this line in production
                 Preferences.Set("otp", otp);
+
+                /*var accountSid = Environment.GetEnvironmentVariable("ACCOUNTSID");
+                var authToken = Environment.GetEnvironmentVariable("AUTHTOKEN");
+
+                TwilioClient.Init(accountSid, authToken);
+                var messageOptions = new CreateMessageOptions(new PhoneNumber("+84" + phoneNumber.Split("0")[1]))
+                {
+                    From = new PhoneNumber("+13204336563"),
+                    Body = "Your OTP is " + otp
+                };
+                MessageResource.Create(messageOptions);*/
 
                 // Redirect to the OTP input page
                 var empJson = JsonConvert.SerializeObject(emp);
