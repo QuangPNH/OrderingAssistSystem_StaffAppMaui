@@ -61,7 +61,6 @@ namespace OrderingAssistSystem_StaffApp.Models
             {
                 
             }
-
             return "null";
         }
     }

@@ -437,10 +437,9 @@ public class PendingOrderViewModel
     {
         try
         {
-            var employeeInfoJson = Preferences.Get("EmployeeInfo", string.Empty);
+            var employeeInfoJson = Preferences.Get("LoginInfo", string.Empty);
             var employee = JsonConvert.DeserializeObject<Employee>(employeeInfoJson);
             var managerId = employee?.ManagerId ?? 0;
-
             var uri = new Uri(_config.BaseAddress + $"Order/Employee/{managerId}");
             HttpResponseMessage response = await _client.GetAsync(uri);
             if (response.IsSuccessStatusCode)
@@ -450,7 +449,6 @@ public class PendingOrderViewModel
                     ?.Where(o => o.Status == null)
                     .OrderByDescending(o => o.OrderDate)
                     .ToList();
-
                 Orders.Clear();
                 if (orders != null)
                 {

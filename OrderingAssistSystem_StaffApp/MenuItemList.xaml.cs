@@ -47,6 +47,15 @@ public partial class MenuItemList : ContentPage
 		}
 	}
 
+	private void OnSearchButtonPressed(object sender, EventArgs e)
+	{
+		var viewModel = BindingContext as MenuItemListViewModel;
+		if (viewModel != null)
+		{
+			viewModel.FilterMenuItems();
+		}
+	}
+
 	private async void HandleIsAvailableChanged(MenuItem menuItem)
 	{
 		try
@@ -86,9 +95,7 @@ public partial class MenuItemList : ContentPage
 				await Application.Current.MainPage.DisplayAlert("Error", $"Exception: {ex.Message}", "OK");
 			}
 		}
-
 	}
-
 
 	public void CalculateRemainingDays()
 	{
@@ -107,7 +114,7 @@ public partial class MenuItemList : ContentPage
 			}
 		}
 	}
-    /*
+	/*
 	public async Task Authoriz()
 	{
 		//DisplayAlert("Status", Preferences.Get("LoginInfo", string.Empty), "OK");
@@ -136,43 +143,43 @@ public partial class MenuItemList : ContentPage
 	}
 	*/
 
-    public async Task Authoriz()
-    {
-        // Get login info from shared preferences
-        var loginInfoJson = Preferences.Get("LoginInfo", string.Empty);
-        var employee = JsonConvert.DeserializeObject<Employee>(loginInfoJson);
+	public async Task Authoriz()
+	{
+		// Get login info from shared preferences
+		var loginInfoJson = Preferences.Get("LoginInfo", string.Empty);
+		var employee = JsonConvert.DeserializeObject<Employee>(loginInfoJson);
 
-        if (employee != null)
-        {
-            switch (employee.RoleId)
-            {
-                case 1:
-                    role = "manager";
-                    break;
-                case 2:
-                    role = "staff";
-                    break;
-                default:
-                    await DisplayAlert("Status", "Something went wrong.", "OK");
-                    return;
-            }
-        }
-        else
-        {
-            await DisplayAlert("Status", "Login info not found.", "OK");
-            INotificationRegistrationService notificationRegistrationService = DependencyService.Get<INotificationRegistrationService>();
-            Application.Current.MainPage = new NavigationPage(new MainPage(notificationRegistrationService));
-            return;
-        }
+		if (employee != null)
+		{
+			switch (employee.RoleId)
+			{
+				case 1:
+					role = "manager";
+					break;
+				case 2:
+					role = "staff";
+					break;
+				default:
+					await DisplayAlert("Status", "Something went wrong.", "OK");
+					return;
+			}
+		}
+		else
+		{
+			await DisplayAlert("Status", "Login info not found.", "OK");
+			INotificationRegistrationService notificationRegistrationService = DependencyService.Get<INotificationRegistrationService>();
+			Application.Current.MainPage = new NavigationPage(new MainPage(notificationRegistrationService));
+			return;
+		}
 
-        // Additional logic for expired employee
-        if (employee.IsDelete == true)
-        {
-            LogOut();
-        }
-    }
+		// Additional logic for expired employee
+		if (employee.IsDelete == true)
+		{
+			LogOut();
+		}
+	}
 
-    private async void LogOut()
+	private async void LogOut()
 	{
 		Preferences.Remove("LoginInfo");
 		INotificationRegistrationService notificationRegistrationService = DependencyService.Get<INotificationRegistrationService>();
@@ -499,8 +506,6 @@ public partial class MenuItemList : ContentPage
 		}
 	}
 
-
-
 	public event PropertyChangedEventHandler PropertyChanged;
 
 	protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
@@ -578,6 +583,8 @@ public class MenuItemListViewModel : INotifyPropertyChanged
 	public ObservableCollection<ItemCategory> Categories { get; set; }
 	public ObservableCollection<MenuItem> FilteredMenuItems { get; set; }
 	public ICommand AddToCartCommand { get; set; }
+	private CancellationTokenSource _debounceCts;
+
 
 	public string SearchText
 	{
@@ -585,8 +592,6 @@ public class MenuItemListViewModel : INotifyPropertyChanged
 		set
 		{
 			_searchText = value;
-			OnPropertyChanged();
-			FilterMenuItems();
 		}
 	}
 
@@ -597,7 +602,7 @@ public class MenuItemListViewModel : INotifyPropertyChanged
 		{
 			_selectedCategory = value;
 			OnPropertyChanged();
-			FilterMenuItems();
+			DebounceFilterMenuItems();
 		}
 	}
 
@@ -685,11 +690,8 @@ public class MenuItemListViewModel : INotifyPropertyChanged
 						menuItem.AvailableToppings = AvailableToppings;
 					}
 				}
-
-
-				FilterMenuItems();
-				// Add this line where the error occurs
 			}
+			FilterMenuItems();
 		}
 		catch (Exception ex)
 		{
@@ -698,14 +700,32 @@ public class MenuItemListViewModel : INotifyPropertyChanged
 		}
 	}
 
-	private void FilterMenuItems()
+	private async void DebounceFilterMenuItems()
 	{
-		var filtered = MenuItems.Where(mi => (string.IsNullOrWhiteSpace(SearchText) || mi.ItemName.ToLower().Contains(SearchText.ToLower())) &&
-			(SelectedCategory == null || SelectedCategory.ItemCategoryName == "None" || mi.MenuCategories.Any(mc => mc.ItemCategory.ItemCategoryName == SelectedCategory.ItemCategoryName)));
+		_debounceCts?.Cancel();
+		_debounceCts = new CancellationTokenSource();
+
+		try
+		{
+			await Task.Delay(1500, _debounceCts.Token); // Adjust the delay as needed
+			FilterMenuItems();
+		}
+		catch (TaskCanceledException)
+		{
+
+		}
+	}
+
+	public void FilterMenuItems()
+	{
+		List<MenuItem> filtered = MenuItems.Where(mi => (string.IsNullOrWhiteSpace(SearchText) || mi.ItemName.ToLower().Contains(SearchText.ToLower())) &&
+			(SelectedCategory == null || SelectedCategory.ItemCategoryName == "None" || mi.MenuCategories.Any(mc => mc.ItemCategory.ItemCategoryName == SelectedCategory.ItemCategoryName))).Take(5).ToList();
 		FilteredMenuItems.Clear();
 		foreach (var item in filtered)
 			FilteredMenuItems.Add(item);
-		
+		/*FilteredMenuItems = new ObservableCollection<MenuItem>(MenuItems);*/
+
+		int a = 1;
 	}
 
 	public event PropertyChangedEventHandler PropertyChanged;
@@ -734,7 +754,7 @@ public class MenuItemViewModel : INotifyPropertyChanged
 
 	private bool _isAvailable;
 	public bool IsAvailable
-	{get;set;}
+	{ get; set; }
 
 	public event PropertyChangedEventHandler PropertyChanged;
 

@@ -7,7 +7,7 @@
              Title="Menu Item List"
              NavigationPage.HasNavigationBar="False">
 
-    
+
 
     <ContentPage.Resources>
         <ResourceDictionary>
@@ -186,8 +186,10 @@
                 <!-- Search and Category Selection -->
                 <Grid ColumnDefinitions="3*,2*" RowDefinitions="Auto" Margin="0,0,0,10">
                     <SearchBar Placeholder="Search Item Name" 
-                           Text="{Binding SearchText}" 
-                           Grid.Column="0" />
+           Text="{Binding SearchText}" 
+           Grid.Column="0" 
+           SearchButtonPressed="OnSearchButtonPressed" />
+
                     <Picker Title="Category" ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory}" ItemDisplayBinding="{Binding ItemCategoryName}" Grid.Column="1" HorizontalOptions="End" />
                 </Grid>
                 <CollectionView ItemsSource="{Binding FilteredMenuItems}" SelectionMode="None">
@@ -276,7 +278,7 @@
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
                 </CollectionView>
-
+                
             </StackLayout>
         </ScrollView>
     </Grid>
