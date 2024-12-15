@@ -139,7 +139,7 @@ public partial class MenuItemList : ContentPage
     public async Task Authoriz()
     {
         // Get login info from shared preferences
-        var loginInfoJson = Preferences.Get("EmployeeInfo", string.Empty);
+        var loginInfoJson = Preferences.Get("LoginInfo", string.Empty);
         var employee = JsonConvert.DeserializeObject<Employee>(loginInfoJson);
 
         if (employee != null)

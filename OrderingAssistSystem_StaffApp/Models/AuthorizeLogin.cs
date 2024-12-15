@@ -52,6 +52,7 @@ namespace OrderingAssistSystem_StaffApp.Models
                     }
                     if (emp.Owner.SubscribeEndDate < DateTime.Now.AddDays(7))
                     {
+                        Preferences.Remove("LoginInfo");
                         return "employee expired";
                     }
                 }

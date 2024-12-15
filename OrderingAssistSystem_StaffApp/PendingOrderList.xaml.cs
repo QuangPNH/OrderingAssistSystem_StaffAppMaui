@@ -120,7 +120,7 @@ public partial class PendingOrderList : ContentPage
     public async Task Authoriz()
     {
         // Get login info from shared preferences
-        var loginInfoJson = Preferences.Get("EmployeeInfo", string.Empty);
+        var loginInfoJson = Preferences.Get("LoginInfo", string.Empty);
         var employee = JsonConvert.DeserializeObject<Employee>(loginInfoJson);
 
         if (employee != null)
@@ -433,41 +433,44 @@ public class PendingOrderViewModel
         LoadOrders();
     }
 
-	public async void LoadOrders()
-	{
-		try
-		{
-			var loginInfoJson = Preferences.Get("LoginInfo", string.Empty);
-			var employee = JsonConvert.DeserializeObject<Employee>(loginInfoJson);
-			var managerId = employee?.ManagerId ?? 0;
+    public async void LoadOrders()
+    {
+        try
+        {
+            var employeeInfoJson = Preferences.Get("EmployeeInfo", string.Empty);
+            var employee = JsonConvert.DeserializeObject<Employee>(employeeInfoJson);
+            var managerId = employee?.ManagerId ?? 0;
 
-			var uri = new Uri(_config.BaseAddress + $"Order/Employee/{managerId}");
-			HttpResponseMessage response = await _client.GetAsync(uri);
-			if (response.IsSuccessStatusCode)
-			{
-				string data = await response.Content.ReadAsStringAsync();
-				var orders = JsonConvert.DeserializeObject<List<Order>>(data);
-			orders = orders.Where(o => o.Status == null).OrderByDescending(o => o.OrderDate).ToList(); // Sort by OrderDate descending
-				Orders.Clear();
-				if (orders != null)
-				{
-					foreach (var order in orders)
-					{
-						Orders.Add(order);
-						foreach (var orderDetail in order.OrderDetails)
-						{
-							ParseOrderDetails(orderDetail);
-						}
-					}
-				}
-			}
-		}
-		catch (Exception ex)
-		{
-			// Handle exceptions
-			Console.WriteLine($"Error fetching orders: {ex.Message}");
-		}
-	}
+            var uri = new Uri(_config.BaseAddress + $"Order/Employee/{managerId}");
+            HttpResponseMessage response = await _client.GetAsync(uri);
+            if (response.IsSuccessStatusCode)
+            {
+                string data = await response.Content.ReadAsStringAsync();
+                var orders = JsonConvert.DeserializeObject<List<Order>>(data)
+                    ?.Where(o => o.Status == null)
+                    .OrderByDescending(o => o.OrderDate)
+                    .ToList();
+
+                Orders.Clear();
+                if (orders != null)
+                {
+                    foreach (var order in orders)
+                    {
+                        Orders.Add(order);
+                        foreach (var orderDetail in order.OrderDetails)
+                        {
+                            ParseOrderDetails(orderDetail);
+                        }
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            // Handle exceptions
+            Console.WriteLine($"Error fetching orders: {ex.Message}");
+        }
+    }
 
     private void ParseOrderDetails(OrderDetail orderDetail)
     {
