@@ -89,7 +89,7 @@ public partial class PendingOrderList : ContentPage
             Console.WriteLine($"Failed to send notification. Status code: {response.StatusCode}");
         }
     }
-    /*
+
     public async Task Authoriz()
     {
         //DisplayAlert("Status", Preferences.Get("LoginInfo", string.Empty), "OK");
@@ -99,8 +99,8 @@ public partial class PendingOrderList : ContentPage
         var loginStatus = await authorizeLogin.CheckLogin();
         if (loginStatus.Equals("staff") || loginStatus.Equals("bartender"))
         {
-			role = loginStatus;
-		}
+            role = loginStatus;
+        }
         else if (loginStatus.Equals("employee expired"))
         {
             LogOut();
@@ -116,8 +116,8 @@ public partial class PendingOrderList : ContentPage
             await DisplayAlert("Status", "Something went wrong.", "OK");
         }
     }
-    */
-    public async Task Authoriz()
+
+    /*public async Task Authoriz()
     {
         // Get login info from shared preferences
         var loginInfoJson = Preferences.Get("LoginInfo", string.Empty);
@@ -151,7 +151,7 @@ public partial class PendingOrderList : ContentPage
         {
             LogOut();
         }
-    }
+    }*/
 
     private async void LogOut()
     {

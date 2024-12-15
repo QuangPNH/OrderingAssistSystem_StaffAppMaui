@@ -83,7 +83,7 @@ public partial class ItemToMake : ContentPage
 			}
 		}
 	}
-    /*
+
 	public async Task Authoriz()
 	{
 		//DisplayAlert("Status", Preferences.Get("LoginInfo", string.Empty), "OK");
@@ -110,8 +110,8 @@ public partial class ItemToMake : ContentPage
 			await DisplayAlert("Status", "Something went wrong.", "OK");
 		}
 	}
-	*/
-    public async Task Authoriz()
+
+	/*public async Task Authoriz()
     {
         // Get login info from shared preferences
         var loginInfoJson = Preferences.Get("LoginInfo", string.Empty);
@@ -145,9 +145,9 @@ public partial class ItemToMake : ContentPage
         {
             LogOut();
         }
-    }
+    }*/
 
-    private async void LogOut()
+	private async void LogOut()
 	{
 		Preferences.Remove("LoginInfo");
 		INotificationRegistrationService notificationRegistrationService = DependencyService.Get<INotificationRegistrationService>();

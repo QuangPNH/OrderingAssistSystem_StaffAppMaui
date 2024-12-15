@@ -116,6 +116,7 @@ namespace OrderingAssistSystem_StaffApp
                 await DisplayAlert("Status", "Something went wrong.The owner's subscription may have been over for over a week. Contact for more info.", "OK");
             }
         }
+
         void OnRegisterButtonClicked(object sender, EventArgs e)
         {
             _notificationRegistrationService.RegisterDeviceAsync()
