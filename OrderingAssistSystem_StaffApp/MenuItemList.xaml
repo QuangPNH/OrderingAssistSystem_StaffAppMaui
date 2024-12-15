@@ -272,13 +272,16 @@
                                             </CollectionView.ItemTemplate>
                                         </CollectionView>
                                     </Grid>
-
                                 </StackLayout>
                             </Frame>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
                 </CollectionView>
-                
+                <StackLayout Orientation="Horizontal" HorizontalOptions="Center" Spacing="20">
+                    <Button Text="Previous" Clicked="OnPreviousPageClicked" />
+                    <Label Text="{Binding CurrentPage}" FontAttributes="Bold" VerticalOptions="Center" />
+                    <Button Text="Next" Clicked="OnNextPageClicked" />
+                </StackLayout>
             </StackLayout>
         </ScrollView>
     </Grid>

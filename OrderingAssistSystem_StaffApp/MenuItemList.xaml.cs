@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Views;
+﻿
+using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Controls;
 using Newtonsoft.Json;
 using OrderingAssistSystem_StaffApp.Models;
@@ -27,6 +28,30 @@ public partial class MenuItemList : ContentPage
 	ConfigApi _config = new ConfigApi();
 	string role;
 	public ObservableCollection<CartItem> CartItems { get; set; } = new ObservableCollection<CartItem>();
+
+	private int _currentPage = 1;
+	private const int _itemsPerPage = 5;
+
+	private void OnNextPageClicked(object sender, EventArgs e)
+	{
+		var viewModel = BindingContext as MenuItemListViewModel;
+		_currentPage++;
+		Preferences.Set("CurrentPage", _currentPage);
+		viewModel.FilterMenuItems();
+	}
+
+	private void OnPreviousPageClicked(object sender, EventArgs e)
+	{
+		var viewModel = BindingContext as MenuItemListViewModel;
+		if (_currentPage > 1)
+		{
+			_currentPage--;
+			Preferences.Set("CurrentPage", _currentPage);
+			viewModel.FilterMenuItems();
+		}
+	}
+
+
 	public MenuItemList()
 	{
 		InitializeComponent();
@@ -34,6 +59,8 @@ public partial class MenuItemList : ContentPage
 		Authoriz();
 		CalculateRemainingDays();
 		BindingContext = new MenuItemListViewModel();
+		Preferences.Set("CurrentPage", _currentPage);
+		Preferences.Set("ItemsPerPage", _itemsPerPage);
 	}
 
 
@@ -661,6 +688,7 @@ public class MenuItemListViewModel : INotifyPropertyChanged
 			{
 				string data = await response.Content.ReadAsStringAsync();
 				var menuItems = JsonConvert.DeserializeObject<List<MenuItem>>(data);
+				menuItems = menuItems.OrderBy(item => item.ItemName).ToList();
 
 				MenuItems.Clear();
 				AvailableToppings.Clear();
@@ -682,7 +710,6 @@ public class MenuItemListViewModel : INotifyPropertyChanged
 						}
 					}
 				}
-
 				foreach (var menuItem in menuItems)
 				{
 					if (menuItem != null)
@@ -716,16 +743,35 @@ public class MenuItemListViewModel : INotifyPropertyChanged
 		}
 	}
 
-	public void FilterMenuItems()
+	/*public void FilterMenuItems()
 	{
 		List<MenuItem> filtered = MenuItems.Where(mi => (string.IsNullOrWhiteSpace(SearchText) || mi.ItemName.ToLower().Contains(SearchText.ToLower())) &&
 			(SelectedCategory == null || SelectedCategory.ItemCategoryName == "None" || mi.MenuCategories.Any(mc => mc.ItemCategory.ItemCategoryName == SelectedCategory.ItemCategoryName))).Take(5).ToList();
 		FilteredMenuItems.Clear();
 		foreach (var item in filtered)
 			FilteredMenuItems.Add(item);
-		/*FilteredMenuItems = new ObservableCollection<MenuItem>(MenuItems);*/
+		*//*FilteredMenuItems = new ObservableCollection<MenuItem>(MenuItems);*//*
 
 		int a = 1;
+	}*/
+
+	public void FilterMenuItems()
+	{
+		int pageNumber = Preferences.Get("CurrentPage", 1);
+		int pageSize = Preferences.Get("ItemsPerPage", 5);
+
+		var filtered = MenuItems
+			.Where(mi => (string.IsNullOrWhiteSpace(SearchText) || mi.ItemName.ToLower().Contains(SearchText.ToLower())) &&
+						 (SelectedCategory == null || SelectedCategory.ItemCategoryName == "None" || mi.MenuCategories.Any(mc => mc.ItemCategory.ItemCategoryName == SelectedCategory.ItemCategoryName)))
+			.Skip((pageNumber - 1) * pageSize)
+			.Take(pageSize)
+			.ToList();
+
+		FilteredMenuItems.Clear();
+		foreach (var item in filtered)
+		{
+			FilteredMenuItems.Add(item);
+		}
 	}
 
 	public event PropertyChangedEventHandler PropertyChanged;
