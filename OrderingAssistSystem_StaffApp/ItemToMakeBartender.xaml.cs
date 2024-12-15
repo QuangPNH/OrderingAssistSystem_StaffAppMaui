@@ -19,7 +19,7 @@ public partial class ItemToMakeBartender : ContentPage
 	string role;
     private async Task<NotiChange> GetNotiChangeByTableNameAsync(string tableName)
     {
-        var uri = new Uri($"https://oas-main-api-cwf5hnd9apbhgnhn.southeastasia-01.azurewebsites.net/api/NotiChanges/tableName/{tableName}");
+        var uri = new Uri(_config._apiUrl + $"NotiChanges/tableName/{tableName}");
         HttpResponseMessage response = await _client.GetAsync(uri);
 
         if (response.IsSuccessStatusCode)
@@ -49,7 +49,7 @@ public partial class ItemToMakeBartender : ContentPage
         var json = JsonConvert.SerializeObject(notiChange);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-        var response = await _client.PutAsync($"https://oas-main-api-cwf5hnd9apbhgnhn.southeastasia-01.azurewebsites.net/api/NotiChanges/{notiChange.id}", content);
+        var response = await _client.PutAsync(_config._apiUrl + $"NotiChanges/{notiChange.id}", content);
 
         if (response.IsSuccessStatusCode)
         {
