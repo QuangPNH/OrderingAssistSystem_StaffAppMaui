@@ -62,11 +62,12 @@ public partial class ItemToMakeBartender : ContentPage
     }
     public ItemToMakeBartender()
 	{
-		InitializeComponent();
+        Authoriz();
+        InitializeComponent();
 		BindingContext = new ItemToMakeListViewModel();
 		// Mock Notifications
 		LoadNotifications();
-		Authoriz();
+		
 		CalculateRemainingDays();
 	}
 

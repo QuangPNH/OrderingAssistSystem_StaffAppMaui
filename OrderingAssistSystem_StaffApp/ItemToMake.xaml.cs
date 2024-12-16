@@ -23,11 +23,12 @@ public partial class ItemToMake : ContentPage
 	string role;
 	public ItemToMake()
 	{
-		InitializeComponent();
+        Authoriz();
+        InitializeComponent();
 		BindingContext = new ItemToMakeListViewModel();
 		// Mock Notifications
 		LoadNotifications();
-		Authoriz();
+		
 		CalculateRemainingDays();
 		//ClearOrderDetailsPreference();
 	}

@@ -178,11 +178,24 @@
         TextColor="White"
         CornerRadius="5"
         Clicked="OnCreateOrderClicked" />
-
                         </StackLayout>
                     </Frame>
                 </Grid>
 
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
                 <!-- Search and Category Selection -->
                 <Grid ColumnDefinitions="3*,2*" RowDefinitions="Auto" Margin="0,0,0,10">
                     <SearchBar Placeholder="Search Item Name" 
@@ -275,6 +288,18 @@
                                 </StackLayout>
                             </Frame>
                         </DataTemplate>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
                     </CollectionView.ItemTemplate>
                 </CollectionView>
                 <StackLayout Orientation="Horizontal" HorizontalOptions="Center" Spacing="20">

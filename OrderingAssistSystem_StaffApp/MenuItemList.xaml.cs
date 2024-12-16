@@ -54,9 +54,9 @@ public partial class MenuItemList : ContentPage
 
 	public MenuItemList()
 	{
-		InitializeComponent();
+        Authoriz();
+        InitializeComponent();
 		LoadNotifications();
-		Authoriz();
 		CalculateRemainingDays();
 		BindingContext = new MenuItemListViewModel();
 		Preferences.Set("CurrentPage", _currentPage);
@@ -249,9 +249,31 @@ public partial class MenuItemList : ContentPage
 
 			if (existingCartItem != null)
 			{
+                string cartJson = Preferences.Get("Cart", "[]");
+                var cartItems = JsonConvert.DeserializeObject<ObservableCollection<CartItem>>(cartJson);
+
 				// If it exists, increase the quantity
-				existingCartItem.Quantity += 1;
-			}
+				existingCartItem.Quantity = (int)menuItem.Quantity;
+
+
+
+
+				CartItems.Remove(existingCartItem);
+                CartItems.Add(new CartItem
+                {
+                    id = menuItem.MenuItemId,
+                    ItemName = menuItem.ItemName,
+                    Quantity = (int)menuItem.Quantity,
+                    Sugar = menuItem.Sugar,
+                    Ice = menuItem.Ice,
+                    Topping = toppingsList,
+                    Description = combinedPreferences,
+                    Price = menuItem.Price ?? 0
+                });
+                RemoveCartItem(existingCartItem);
+                UpdateTotalPrice();
+                SaveCartToPreferences();
+            }
 			else
 			{
 				// If it doesn't exist, add a new item to the cart

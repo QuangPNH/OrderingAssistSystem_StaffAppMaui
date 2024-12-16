@@ -24,17 +24,17 @@ public partial class PendingOrderList : ContentPage
     {
         ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => true
     });
-    string role;
+    string role = "";
     ConfigApi _config = new ConfigApi();
     public PendingOrderList()
     {
+        Authoriz();
         InitializeComponent();
         BindingContext = new CombinedViewModel();
         var viewModel = BindingContext as CombinedViewModel;
         viewModel?.PendingOrder.LoadOrders();
         viewModel?.ItemToMake.LoadOrderDetails();
         LoadNotifications();
-        Authoriz();
         CheckEmptyLists();
     }
 
