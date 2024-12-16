@@ -48,7 +48,7 @@ public partial class PendingOrderList : ContentPage
     }
     private async Task<NotiChange> GetNotiChangeByTableNameAsync(string tableName)
     {
-        var uri = new Uri($"https://oas-main-api-cwf5hnd9apbhgnhn.southeastasia-01.azurewebsites.net/api/NotiChanges/tableName/{tableName}");
+        var uri = new Uri(_config._apiUrl + $"NotiChanges/tableName/{tableName}");
         HttpResponseMessage response = await _client.GetAsync(uri);
 
         if (response.IsSuccessStatusCode)
@@ -78,7 +78,7 @@ public partial class PendingOrderList : ContentPage
         var json = JsonConvert.SerializeObject(notiChange);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-        var response = await _client.PutAsync($"https://oas-main-api-cwf5hnd9apbhgnhn.southeastasia-01.azurewebsites.net/api/NotiChanges/{notiChange.id}", content);
+        var response = await _client.PutAsync(_config._apiUrl + $"NotiChanges/{notiChange.id}", content);
 
         if (response.IsSuccessStatusCode)
         {
@@ -187,6 +187,7 @@ public partial class PendingOrderList : ContentPage
                     viewModel?.PendingOrder.LoadOrders();
                     viewModel?.ItemToMake.LoadOrderDetails();
                     DisplayAlert("Confirmed", $"Order: {order.OrderId} has been confirmed paid.", "OK");
+                    await SendOrderConfirmationNotificationAsync();
                     await SendNotificationAsync(order.Table.Qr , $"Order: {order.OrderId} has been paid.");
                 }
             }
@@ -315,8 +316,41 @@ public partial class PendingOrderList : ContentPage
     {
         LogOut();
     }
+    private async Task SendOrderConfirmationNotificationAsync()
+    {
+        var requestBody = new
+        {
+            text = "Order Confirmed !",
+            action = "OrderSuccesses"
+        };
 
-	protected override void OnSizeAllocated(double width, double height)
+        var json = JsonConvert.SerializeObject(requestBody);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        _client.DefaultRequestHeaders.Clear();
+        _client.DefaultRequestHeaders.Add("apikey", "0624d820-6616-430d-92a5-e68265a08593");
+
+        var uri = new Uri("https://oas-noti-api-handling-hqb2gxavecakdtey.southeastasia-01.azurewebsites.net/api/notifications/requests");
+
+        try
+        {
+            HttpResponseMessage response = await _client.PostAsync(uri, content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                Console.WriteLine("Notification sent successfully.");
+            }
+            else
+            {
+                Console.WriteLine($"Failed to send notification. Status code: {response.StatusCode}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error sending notification: {ex.Message}");
+        }
+    }
+    protected override void OnSizeAllocated(double width, double height)
 	{
 		base.OnSizeAllocated(width, height);
 
@@ -352,7 +386,7 @@ public class CombinedViewModel : INotifyPropertyChanged
             OnPropertyChanged();
         }
     }
-
+    
     public void CalculateRemainingDays()
     {
         string loginInfoJson = Preferences.Get("LoginInfo", string.Empty);
