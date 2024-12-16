@@ -15,7 +15,9 @@ namespace OrderingAssistSystem_StaffApp.Services
         { "action_a", OasStaffAppAction.ActionA },
         { "action_b", OasStaffAppAction.ActionB },
         { "OrderSuccesses", OasStaffAppAction.OrderSuccesses },
-        { "Confirm", OasStaffAppAction.Confirm }
+        { "Confirm", OasStaffAppAction.Confirm },
+        { "OrderSuccessesStaff", OasStaffAppAction.OrderSuccessesStaff },
+        { "OrderSuccessesSToBartendFinished", OasStaffAppAction.OrderSuccessesSToBartendFinished }
     };
 
         public event EventHandler<OasStaffAppAction> ActionTriggered = delegate { };

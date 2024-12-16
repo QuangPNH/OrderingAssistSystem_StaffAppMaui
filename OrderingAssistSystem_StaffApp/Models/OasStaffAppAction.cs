@@ -11,6 +11,8 @@ namespace OrderingAssistSystem_StaffApp.Models
         ActionA,
         ActionB,
 		OrderSuccesses,
-		Confirm
-	}
+		Confirm,
+        OrderSuccessesStaff,
+        OrderSuccessesSToBartendFinished
+    }
 }

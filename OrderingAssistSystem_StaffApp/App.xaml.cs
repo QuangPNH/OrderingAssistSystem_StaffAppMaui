@@ -4,6 +4,7 @@ using OrderingAssistSystem_StaffApp.Models;
 using OrderingAssistSystem_StaffApp.Services;
 using Plugin.LocalNotification;
 using System.Net.Http.Json;
+using static Android.Net.Wifi.WifiEnterpriseConfig;
 namespace OrderingAssistSystem_StaffApp
 {
     public partial class App : Application
@@ -36,6 +37,7 @@ namespace OrderingAssistSystem_StaffApp
             PendingOrderViewModel _pendingOrderViewModel = new PendingOrderViewModel();
             ItemToMakeListViewModel itemToMakeListViewModel = new ItemToMakeListViewModel();
             var a = action.ToString();
+            //Channel from client to both
             if (action.ToString().Equals("Confirm"))
             {
                 var loginInfo = Preferences.Get("LoginInfo", string.Empty);
@@ -43,7 +45,7 @@ namespace OrderingAssistSystem_StaffApp
                 if (emp != null)
                 {
                     StaffNotiChannel _latestStaffNoti = await GetLatestStaffNotiChannelAsync(emp.ManagerId.Value);
-                    if (_latestStaffNoti != null && _latestStaffNoti.IsSent == false)
+                    if (_latestStaffNoti != null && _latestStaffNoti.IsSent == false && emp.ManagerId == _latestStaffNoti.ManagerId)
                     {
                         MainThread.BeginInvokeOnMainThread(() =>
                         {
@@ -60,7 +62,33 @@ namespace OrderingAssistSystem_StaffApp
                 }
                 _pendingOrderViewModel.LoadOrders();
             }
+            //channel from client to bartend
             else if (action.ToString().Equals("OrderSuccesses"))
+            {
+                var loginInfo = Preferences.Get("LoginInfo", string.Empty);
+                Employee emp = JsonConvert.DeserializeObject<Employee>(loginInfo);
+                if (emp != null && emp.RoleId == 3)
+                {
+                    StaffNotiChannel _latestStaffNoti = await GetLatestStaffNotiChannelAsync(emp.ManagerId.Value);
+                    if (_latestStaffNoti != null && _latestStaffNoti.IsSent == false && emp.ManagerId == _latestStaffNoti.ManagerId)
+                    {
+                        MainThread.BeginInvokeOnMainThread(() =>
+                        {
+                            var notification = new NotificationRequest
+                            {
+                                Title = "Notice",
+                                Description = _latestStaffNoti.Message,
+                                ReturningData = "Dummy data",
+                                NotificationId = 1337
+                            };
+                            LocalNotificationCenter.Current.Show(notification);
+                        });
+                    }
+                }
+                itemToMakeListViewModel.LoadOrderDetails();
+            }
+            //From bartend to staff
+            else if (action.ToString().Equals("OrderSuccessesStaff"))
             {
                 var loginInfo = Preferences.Get("LoginInfo", string.Empty);
                 Employee emp = JsonConvert.DeserializeObject<Employee>(loginInfo);
@@ -71,16 +99,35 @@ namespace OrderingAssistSystem_StaffApp
                         var notification = new NotificationRequest
                         {
                             Title = "Notice",
-                            Description = "New Order Being Made !.",
+                            Description = "New Order being added by Staff Manually",
                             ReturningData = "Dummy data",
                             NotificationId = 1337
                         };
                         LocalNotificationCenter.Current.Show(notification);
                     });
                 }
-                itemToMakeListViewModel.LoadOrderDetails();
             }
-			/*else
+            //From staff to bartend (note: call to this to find where staff create order)
+            else if (action.ToString().Equals("OrderSuccessesSToBartendFinished"))
+            {
+                var loginInfo = Preferences.Get("LoginInfo", string.Empty);
+                Employee emp = JsonConvert.DeserializeObject<Employee>(loginInfo);
+                if (emp != null && emp.RoleId == 3)
+                {
+                    MainThread.BeginInvokeOnMainThread(() =>
+                    {
+                        var notification = new NotificationRequest
+                        {
+                            Title = "Notice",
+                            Description = "Order(s) are finished !",
+                            ReturningData = "Dummy data",
+                            NotificationId = 1337
+                        };
+                        LocalNotificationCenter.Current.Show(notification);
+                    });
+                }
+            }
+            /*else
             {
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
@@ -93,7 +140,7 @@ namespace OrderingAssistSystem_StaffApp
                     };
                     LocalNotificationCenter.Current.Show(notification);
                 });
-			}*/
+            }*/
         }
     }
 }

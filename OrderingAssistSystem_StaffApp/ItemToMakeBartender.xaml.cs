@@ -216,7 +216,9 @@ public partial class ItemToMakeBartender : ContentPage
 
 			// Handle the PendingItem object here
 			await DisplayAlert("Item Started", $"Starting item {orderDetail.MenuItem?.ItemName}.", "OK");
-			await SendNotificationAsync(matchingOrderDetails.FirstOrDefault().Order.Table.Qr,$"Starting item {orderDetail.MenuItem?.ItemName}.");
+
+			//Noti when item starts to make bartender (CLient)
+			await SendNotificationAsync(orderDetail.Order.Table.Qr,$"Starting to make item {orderDetail.MenuItem?.ItemName}.");
 
 			// Reload the to-make list
 			viewModel.LoadOrderDetails();

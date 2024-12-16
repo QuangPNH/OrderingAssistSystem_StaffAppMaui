@@ -24,7 +24,7 @@
 		<ApplicationTitle>OrderingAssistSystem_StaffApp</ApplicationTitle>
 
 		<!-- App Identifier -->
-		<ApplicationId>com.OAS.OrderingAssistSystemStaffApp</ApplicationId>
+		<ApplicationId>com.AOS.AzzanOrderingSystem</ApplicationId>
 
 		<!-- Versions -->
 		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
