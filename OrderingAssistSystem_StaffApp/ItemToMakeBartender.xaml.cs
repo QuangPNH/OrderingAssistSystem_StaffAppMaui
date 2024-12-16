@@ -16,7 +16,7 @@ public partial class ItemToMakeBartender : ContentPage
 		ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => true
 	});
 	Models.ConfigApi _config = new Models.ConfigApi();
-	string role;
+	string role = "";
     private async Task<NotiChange> GetNotiChangeByTableNameAsync(string tableName)
     {
         var uri = new Uri(_config._apiUrl + $"NotiChanges/tableName/{tableName}");
@@ -216,7 +216,7 @@ public partial class ItemToMakeBartender : ContentPage
 
 			// Handle the PendingItem object here
 			await DisplayAlert("Item Started", $"Starting item {orderDetail.MenuItem?.ItemName}.", "OK");
-			await SendNotificationAsync(orderDetail.Order.Table.Qr,$"Starting item {orderDetail.MenuItem?.ItemName}.");
+			await SendNotificationAsync(matchingOrderDetails.FirstOrDefault().Order.Table.Qr,$"Starting item {orderDetail.MenuItem?.ItemName}.");
 
 			// Reload the to-make list
 			viewModel.LoadOrderDetails();

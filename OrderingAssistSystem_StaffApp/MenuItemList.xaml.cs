@@ -26,8 +26,8 @@ public partial class MenuItemList : ContentPage
 		ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => true
 	});
 	ConfigApi _config = new ConfigApi();
-	string role;
-	public ObservableCollection<CartItem> CartItems { get; set; } = new ObservableCollection<CartItem>();
+	string role = "";
+    public ObservableCollection<CartItem> CartItems { get; set; } = new ObservableCollection<CartItem>();
 
 	private int _currentPage = 1;
 	private const int _itemsPerPage = 5;
