@@ -141,7 +141,7 @@ public partial class MenuItemList : ContentPage
 			}
 		}
 	}
-	/*
+
 	public async Task Authoriz()
 	{
 		//DisplayAlert("Status", Preferences.Get("LoginInfo", string.Empty), "OK");
@@ -168,9 +168,9 @@ public partial class MenuItemList : ContentPage
 			await DisplayAlert("Status", "Something went wrong.", "OK");
 		}
 	}
-	*/
 
-	public async Task Authoriz()
+
+	/*public async Task Authoriz()
 	{
 		// Get login info from shared preferences
 		var loginInfoJson = Preferences.Get("LoginInfo", string.Empty);
@@ -187,7 +187,7 @@ public partial class MenuItemList : ContentPage
 					role = "staff";
 					break;
 				default:
-					await DisplayAlert("Status", "Something went wrong.", "OK");
+					//await DisplayAlert("Status", "Something went wrong.", "OK");
 					return;
 			}
 		}
@@ -205,7 +205,7 @@ public partial class MenuItemList : ContentPage
 			LogOut();
 		}
 	}
-
+*/
 	private async void LogOut()
 	{
 		Preferences.Remove("LoginInfo");

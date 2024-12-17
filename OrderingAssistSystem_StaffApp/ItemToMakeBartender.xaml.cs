@@ -112,7 +112,7 @@ public partial class ItemToMakeBartender : ContentPage
 		}
 		else
 		{
-			await DisplayAlert("Status", "Something went wrong.", "OK");
+			//await DisplayAlert("Status", "Something went wrong.", "OK");
 		}
 	}
 
@@ -161,69 +161,74 @@ public partial class ItemToMakeBartender : ContentPage
 		await Task.CompletedTask; // Ensure the method is still async.
 	}
 
-	private async void OnStartItemClicked(object sender, EventArgs e)
-	{
-		var button = sender as Button;
-		var orderDetail = button?.CommandParameter as OrderDetail; // Cast to your Order type
-		if (orderDetail != null)
-		{
-			var viewModel = BindingContext as ItemToMakeListViewModel;
-			if (viewModel == null) return;
+    private async void OnStartItemClicked(object sender, EventArgs e)
+    {
+        var button = sender as Button;
+        //pending items here
+        var itemToMake = button?.CommandParameter as OrderDetail; // Cast to your Order type
+        if (itemToMake != null)
+        {
+            var viewModel = BindingContext as ItemToMakeListViewModel;
+            if (viewModel == null) return;
 
-			// Get all matching order details with the same order date, menu item name, sugar, ice, and topping
-			var matchingOrderDetails = viewModel.AllOrderDetails
-				.Where(od => od.Order?.OrderDate == orderDetail.Order?.OrderDate &&
-							 od.MenuItem?.ItemName == orderDetail.MenuItem?.ItemName &&
-							 od.Sugar == orderDetail.Sugar &&
-							 od.Ice == orderDetail.Ice &&
-							 od.Topping == orderDetail.Topping)
-				.ToList();
+            // Get all matching order details with the same order date, menu item name, sugar, ice, and topping
+            var matchingOrderDetails = viewModel.AllOrderDetails
+                .Where(od => od.Order?.OrderDate == itemToMake.Order?.OrderDate &&
+                             od.MenuItem?.ItemName == itemToMake.MenuItem?.ItemName &&
+                             od.Sugar == itemToMake.Sugar &&
+                             od.Ice == itemToMake.Ice &&
+                             od.Topping == itemToMake.Topping)
+                .ToList();
 
-			// Update the status of the matching order details
-			foreach (var detail in matchingOrderDetails)
-			{
-				detail.Status = false;
-				detail.IsStartEnabled = true;
-			}
+            // Update the status of the matching order details
+            foreach (var detail in matchingOrderDetails)
+            {
+                detail.Status = false;
+                detail.IsStartEnabled = true;
+            }
 
-			// Check for other order details with the same item name but different sugar, ice, and topping
-			var otherOrderDetails = viewModel.AllOrderDetails
-				.Where(od => od.MenuItem?.ItemName == orderDetail.MenuItem?.ItemName &&
-							 (od.Sugar != orderDetail.Sugar || od.Ice != orderDetail.Ice || od.Topping != orderDetail.Topping))
-				.ToList();
+            // Check for other order details with the same item name but different sugar, ice, and topping
+            var otherOrderDetails = viewModel.AllOrderDetails
+                .Where(od => od.MenuItem?.ItemName == itemToMake.MenuItem?.ItemName &&
+                             (od.Sugar != itemToMake.Sugar || od.Ice != itemToMake.Ice || od.Topping != itemToMake.Topping))
+                .ToList();
 
-			foreach (var detail in otherOrderDetails)
-			{
-				// Check if there are no other order details with an order date further from now than the current order details
-				var hasLaterOrder = viewModel.AllOrderDetails
-					.Any(od => od.MenuItem?.ItemName == detail.MenuItem?.ItemName &&
-							   od.Order?.OrderDate > detail.Order?.OrderDate);
+            foreach (var detail in otherOrderDetails)
+            {
+                // Check if there are no other order details with an order date further from now than the current order details
+                var hasLaterOrder = viewModel.AllOrderDetails
+                    .Any(od => od.MenuItem?.ItemName == detail.MenuItem?.ItemName &&
+                               od.Order?.OrderDate > detail.Order?.OrderDate);
 
-				if (!hasLaterOrder)
-				{
-					detail.Status = false;
-					detail.IsStartEnabled = true;
-				}
-			}
+                if (!hasLaterOrder)
+                {
+                    detail.Status = false;
+                    detail.IsStartEnabled = true;
+                }
+            }
 
-			// Update the status of the order details in the backend
-			foreach (var detail in matchingOrderDetails.Concat(otherOrderDetails))
-			{
-				var uri = new Uri(_config.BaseAddress + $"OrderDetail/{detail.OrderDetailId}");
-				var content = new StringContent(JsonConvert.SerializeObject(detail), Encoding.UTF8, "application/json");
-				await _client.PutAsync(uri, content);
-			}
+            // Update the status of the order details in the backend
+            foreach (var detail in matchingOrderDetails.Concat(otherOrderDetails))
+            {
+                var uri = new Uri(_config.BaseAddress + $"OrderDetail/{detail.OrderDetailId}");
+                var content = new StringContent(JsonConvert.SerializeObject(detail), Encoding.UTF8, "application/json");
+                await _client.PutAsync(uri, content);
+            }
 
-			// Handle the PendingItem object here
-			await DisplayAlert("Item Started", $"Starting item {orderDetail.MenuItem?.ItemName}.", "OK");
-			await SendNotificationAsync(matchingOrderDetails.FirstOrDefault().Order.Table.Qr,$"Starting item {orderDetail.MenuItem?.ItemName}.");
+            string jsonStartedItems = JsonConvert.SerializeObject(itemToMake);
+            Preferences.Set("IStartedThis", jsonStartedItems);
 
-			// Reload the to-make list
-			viewModel.LoadOrderDetails();
-		}
-	}
+            // Handle the PendingItem object here
+            await DisplayAlert("Item Started", $"Starting item {itemToMake.MenuItem?.ItemName}.", "OK");
+            await SendNotificationAsync(matchingOrderDetails.FirstOrDefault().Order.Table.Qr, $"Starting item {itemToMake.MenuItem?.ItemName}.");
 
-	private async void LoadNotifications()
+            // Reload the to-make list
+            viewModel.LoadOrderDetails();
+        }
+    }
+
+
+    private async void LoadNotifications()
 	{
 		try
 		{

@@ -94,6 +94,9 @@ namespace OrderingAssistSystem_StaffApp
             }
         }
 
+
+
+
         
         public async Task Authoriz()
         {
@@ -113,7 +116,7 @@ namespace OrderingAssistSystem_StaffApp
 			}
             else
             {
-                await DisplayAlert("Status", "Something went wrong.The owner's subscription may have been over for over a week. Contact for more info.", "OK");
+                //await DisplayAlert("Status", "Something went wrong. The owner's subscription may have been over for over a week. Contact for more info.", "OK");
             }
         }
 

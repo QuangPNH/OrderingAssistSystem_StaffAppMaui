@@ -108,7 +108,7 @@ public partial class ItemToMake : ContentPage
         }
         else
         {
-            await DisplayAlert("Status", "Something went wrong.", "OK");
+            //await DisplayAlert("Status", "Something went wrong.", "OK");
         }
     }
 
@@ -616,6 +616,8 @@ public class ItemToMakeListViewModel : INotifyPropertyChanged
         LoadOrderDetails();
     }
 
+
+
     public async void LoadOrderDetails()
     {
         try
@@ -648,6 +650,16 @@ public class ItemToMakeListViewModel : INotifyPropertyChanged
                         orderDetail.PropertyChanged += (s, e) => OnPropertyChanged(nameof(GroupedMenuItems));
                     }
 
+                    // Get the saved started item from Preferences
+                    string jsonStartedItems = Preferences.Get("IStartedThis", string.Empty);
+                    OrderDetail startedItem = null;
+
+                    if (!string.IsNullOrEmpty(jsonStartedItems))
+                    {
+                        // Deserialize the JSON back to OrderDetail
+                        startedItem = JsonConvert.DeserializeObject<OrderDetail>(jsonStartedItems);
+                    }
+
                     // Group only PendingItems by MenuItemId, Topping, Ice, and Sugar and sum the quantities
                     var pendingItems = orderDetails
                         .Where(od => od.Status == null || od.Status == false)
@@ -671,8 +683,64 @@ public class ItemToMakeListViewModel : INotifyPropertyChanged
                         .OrderByDescending(od => od.Order?.OrderDate)
                         .ThenBy(od => od.MenuItem?.ItemName)
                         .ThenBy(od => od.Topping)
-                        .Take(2)
+                        .Take(3) // Take 3 items first
                         .ToList();
+
+                    // Check if the first pending item matches the saved started item and skip if not
+                    var firstPendingItem = pendingItems.First();
+                    if (startedItem != null && pendingItems.Any())
+                    {
+
+                        if (!(firstPendingItem.MenuItem?.ItemName != startedItem.MenuItem?.ItemName ||
+                            firstPendingItem.Description != startedItem.Description ||
+                            firstPendingItem.Order?.OrderDate != startedItem.Order?.OrderDate) && firstPendingItem.Status == false)
+                        {
+                            // Skip the first item if it doesn't match
+                            pendingItems.RemoveAt(0);
+                        }
+                    }
+                    else
+                    {
+                        if (firstPendingItem.Status == false)
+                            pendingItems.RemoveAt(0);
+                    }
+
+                    // Ensure there are always exactly 2 items in the pendingItems list
+                    if (pendingItems.Count < 2)
+                    {
+                        // If fewer than 2 items after removal, add more from the original collection
+                        var additionalItems = orderDetails
+                            .Where(od => (od.Status == null || od.Status == false) && !pendingItems.Contains(od))
+                            .GroupBy(od => new { od.MenuItemId, od.Topping, od.Ice, od.Sugar, od.FinishedItem })
+                            .Select(g => new OrderDetail
+                            {
+                                MenuItemId = g.Key.MenuItemId,
+                                MenuItem = g.First().MenuItem,
+                                Quantity = g.Sum(od => od.Quantity),
+                                Status = g.First().Status,
+                                Description = string.Join(", ", g.Select(od => od.Description)),
+                                Topping = g.Key.Topping,
+                                Ice = g.Key.Ice,
+                                Sugar = g.Key.Sugar,
+                                FinishedItem = g.Key.FinishedItem,
+                                Order = new Order
+                                {
+                                    OrderDate = g.Min(od => od.Order?.OrderDate)
+                                }
+                            })
+                            .OrderByDescending(od => od.Order?.OrderDate)
+                            .ThenBy(od => od.MenuItem?.ItemName)
+                            .ThenBy(od => od.Topping)
+                            .Take(2 - pendingItems.Count) // Add enough to make the list size 2
+                            .ToList();
+
+                        // Add the additional items to pendingItems
+                        pendingItems.AddRange(additionalItems);
+                    }
+
+                    // Ensure there are exactly 2 items
+                    pendingItems = pendingItems.Take(2).ToList();
+
 
                     // Set IsCurrentItem property
                     if (pendingItems.Count > 0)
@@ -743,6 +811,8 @@ public class ItemToMakeListViewModel : INotifyPropertyChanged
             Console.WriteLine($"Error fetching order details: {ex.Message}");
         }
     }
+
+
 
     private void ParseOrderDetails(OrderDetail orderDetail)
     {

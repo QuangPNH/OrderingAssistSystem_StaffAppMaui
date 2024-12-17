@@ -113,7 +113,7 @@ public partial class PendingOrderList : ContentPage
         }
         else
         {
-            await DisplayAlert("Status", "Something went wrong.", "OK");
+            //await DisplayAlert("Status", "Something went wrong.", "OK");
         }
     }
 
