@@ -587,6 +587,7 @@ public partial class ItemToMake : ContentPage
     {
         // Create and display the popup
         /*var popup = new NotificationPopup(Notifications);
+         * 
         this.ShowPopup(popup);*/
     }
 
