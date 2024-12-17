@@ -404,16 +404,53 @@ public partial class MenuItemList : ContentPage
 
 			ClearCartPreferences();
 			await DisplayAlert("Success", "Order created successfully.", "OK");
-		}
+			SendOrderConfirmationNotificationAsync();
+
+
+        }
 		catch (Exception ex)
 		{
 			// Handle exceptions
 			await DisplayAlert("Error", $"Exception: {ex.Message}", "OK");
 		}
 	}
+    //Send from staff to bartend
+    private async Task SendOrderConfirmationNotificationAsync()
+    {
+        var requestBody = new
+        {
+            text = "New Order Created Manually by staff !",
+            action = "OrderSuccessesSToBartendFinished"
+        };
 
+        var json = JsonConvert.SerializeObject(requestBody);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-	private void ClearCartPreferences()
+        _client.DefaultRequestHeaders.Clear();
+        _client.DefaultRequestHeaders.Add("apikey", "0624d820-6616-430d-92a5-e68265a08593");
+
+        var uri = new Uri("https://oas-noti-api-handling-hqb2gxavecakdtey.southeastasia-01.azurewebsites.net/api/notifications/requests");
+
+        try
+        {
+            HttpResponseMessage response = await _client.PostAsync(uri, content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                Console.WriteLine("Notification sent successfully.");
+            }
+            else
+            {
+                Console.WriteLine($"Failed to send notification. Status code: {response.StatusCode}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error sending notification: {ex.Message}");
+        }
+    }
+
+    private void ClearCartPreferences()
 	{
 		Preferences.Remove("Cart");
 		CartItems.Clear();
