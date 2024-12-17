@@ -214,13 +214,16 @@ public partial class ItemToMake : ContentPage
                     }
                 }
 
-                // Handle the ProcessingItem object here
-                await DisplayAlert("Item Finished", $"Finished item {orderDetail.MenuItem?.ItemName}.", "OK");
-                await SendNotificationAsync(order.Table.Qr, $"Finished item {orderDetail.MenuItem?.ItemName}.");
+				// Handle the ProcessingItem object here
+				await DisplayAlert("Item Finished", $"Finished item {orderDetail.MenuItem?.ItemName}.", "OK");
+
+				//Send to client when order finished
+				await SendNotificationAsync(order.Table.Qr,$"Finished item {orderDetail.MenuItem?.ItemName}.");
+                SendOrderConfirmationNotificationAsync();
                 viewModel?.LoadOrderDetails();
-            }
-        }
-    }
+			}
+		}
+	}
 
     //0395746221
     //0388536414
@@ -256,16 +259,15 @@ public partial class ItemToMake : ContentPage
                 {
                     detail.FinishedItem += input;
 
-                    if (detail.FinishedItem < detail.Quantity)
-                    {
-                        SaveToPreference(detail);
-                    }
-                    else
-                    {
-                        detail.Status = true;
-
-                        int remainder = (int)(detail.FinishedItem - detail.Quantity);
-                        RemoveFromPreference(detail);
+					if (detail.FinishedItem < detail.Quantity)
+					{
+						SaveToPreference(detail);
+					}
+					else
+					{
+						detail.Status = true;
+						int remainder = (int)(detail.FinishedItem - detail.Quantity);
+						RemoveFromPreference(detail);
 
                         if (remainder > 0)
                         {
@@ -316,17 +318,52 @@ public partial class ItemToMake : ContentPage
                     }
                 }
 
-                await DisplayAlert("Item Updated", $"Finished {input} items.", "OK");
+				await DisplayAlert("Item Updated", $"Finished {input} items.", "OK");
+				SendOrderConfirmationNotificationAsync();
                 viewModel?.LoadOrderDetails();
+			}
+		}
+	}
+    //Send from staff to bartend
+    private async Task SendOrderConfirmationNotificationAsync()
+    {
+        var requestBody = new
+        {
+            text = "Order Finished !",
+            action = "OrderSuccessesSToBartendFinished"
+        };
+
+        var json = JsonConvert.SerializeObject(requestBody);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        _client.DefaultRequestHeaders.Clear();
+        _client.DefaultRequestHeaders.Add("apikey", "0624d820-6616-430d-92a5-e68265a08593");
+
+        var uri = new Uri("https://oas-noti-api-handling-hqb2gxavecakdtey.southeastasia-01.azurewebsites.net/api/notifications/requests");
+
+        try
+        {
+            HttpResponseMessage response = await _client.PostAsync(uri, content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                Console.WriteLine("Notification sent successfully.");
+            }
+            else
+            {
+                Console.WriteLine($"Failed to send notification. Status code: {response.StatusCode}");
             }
         }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error sending notification: {ex.Message}");
+        }
     }
-
     // Method to display alerts
     private Task DisplayAlert(string title, string message, string cancel)
-    {
-        return Application.Current.MainPage.DisplayAlert(title, message, cancel);
-    }
+	{
+		return Application.Current.MainPage.DisplayAlert(title, message, cancel);
+	}
 
     private async void DistributeRemainder(List<OrderDetail> orderDetails, OrderDetail currentDetail, int remainder)
     {
@@ -496,7 +533,7 @@ public partial class ItemToMake : ContentPage
             id = notiChange.id,
             tableName = tableName, // Replace with actual table name if available
             message = message,
-            isSent = true,
+            isSent = false,
             DateCreated = DateTime.Now
         };
 

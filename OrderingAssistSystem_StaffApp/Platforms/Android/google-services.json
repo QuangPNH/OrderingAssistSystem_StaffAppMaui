@@ -7,6 +7,25 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:284008896133:android:899b6757fc15b5101bbbec",
+        "android_client_info": {
+          "package_name": "com.AOS.AzzanOrderingSystem"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBVcMFyOO7W1ORzXUGOCP7d5_fu_KBMrVE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:284008896133:android:48ca9a01d242ef2a1bbbec",
         "android_client_info": {
           "package_name": "com.OAS.OrderingAssistSystemStaffApp"

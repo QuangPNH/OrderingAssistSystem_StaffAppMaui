@@ -62,6 +62,8 @@ public partial class PendingOrderList : ContentPage
             return null;
         }
     }
+
+    //SendToClient
     private async Task SendNotificationAsync(string tableName, string message)
     {
         var notiChange = await GetNotiChangeByTableNameAsync(tableName);
@@ -71,7 +73,7 @@ public partial class PendingOrderList : ContentPage
             id = notiChange.id,
             tableName = tableName, // Replace with actual table name if available
             message = message,
-            isSent = true,
+            isSent = false,
             DateCreated = DateTime.Now
         };
 
@@ -187,8 +189,11 @@ public partial class PendingOrderList : ContentPage
                     viewModel?.PendingOrder.LoadOrders();
                     viewModel?.ItemToMake.LoadOrderDetails();
                     DisplayAlert("Confirmed", $"Order: {order.OrderId} has been confirmed paid.", "OK");
+
+
                     await SendOrderConfirmationNotificationAsync();
-                    await SendNotificationAsync(order.Table.Qr , $"Order: {order.OrderId} has been paid.");
+                    //Sent Noti to client
+                    await SendNotificationAsync(order.Table.Qr , $"Order: {order.OrderId} has been confirmed paid.");
                 }
             }
             catch (Exception ex)
@@ -222,6 +227,8 @@ public partial class PendingOrderList : ContentPage
                     viewModel?.PendingOrder.LoadOrders();
                     viewModel?.ItemToMake.LoadOrderDetails();
                     DisplayAlert("Cancelled", $"Order: {order.OrderId} has been cancelled.", "OK");
+
+                    //Sent Noti to client
                     await SendNotificationAsync(order.Table.Qr,$"Order: {order.OrderId} has been cancelled.");
                 }
             }
@@ -316,12 +323,14 @@ public partial class PendingOrderList : ContentPage
     {
         LogOut();
     }
+
+    //Send from staff to bartend
     private async Task SendOrderConfirmationNotificationAsync()
     {
         var requestBody = new
         {
             text = "Order Confirmed !",
-            action = "OrderSuccesses"
+            action = "OrderSuccessesSToBartend"
         };
 
         var json = JsonConvert.SerializeObject(requestBody);
