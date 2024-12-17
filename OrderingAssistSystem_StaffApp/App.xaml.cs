@@ -99,7 +99,7 @@ namespace OrderingAssistSystem_StaffApp
                         var notification = new NotificationRequest
                         {
                             Title = "Notice",
-                            Description = "New Order being added by Staff Manually",
+                            Description = "",
                             ReturningData = "Dummy data",
                             NotificationId = 1337
                         };
@@ -119,7 +119,7 @@ namespace OrderingAssistSystem_StaffApp
                         var notification = new NotificationRequest
                         {
                             Title = "Notice",
-                            Description = "Order(s) are finished !",
+                            Description = "New Order being added by Staff Manually",
                             ReturningData = "Dummy data",
                             NotificationId = 1337
                         };
