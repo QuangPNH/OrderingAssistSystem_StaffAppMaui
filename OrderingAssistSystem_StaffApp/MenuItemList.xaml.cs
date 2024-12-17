@@ -500,8 +500,8 @@ public partial class MenuItemList : ContentPage
 
 	private void OnBellIconClicked(object sender, EventArgs e)
 	{
-		var popup = new NotificationPopup(Notifications);
-		this.ShowPopup(popup);
+		/*var popup = new NotificationPopup(Notifications);
+		this.ShowPopup(popup);*/
 	}
 
 	private void SwitchToPage(string pageKey, Func<Page> createPage)

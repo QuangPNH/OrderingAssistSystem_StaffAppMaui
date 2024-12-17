@@ -586,8 +586,8 @@ public partial class ItemToMake : ContentPage
     private void OnBellIconClicked(object sender, EventArgs e)
     {
         // Create and display the popup
-        var popup = new NotificationPopup(Notifications);
-        this.ShowPopup(popup);
+        /*var popup = new NotificationPopup(Notifications);
+        this.ShowPopup(popup);*/
     }
 
     private void SwitchToPage(string pageKey, Func<Page> createPage)
