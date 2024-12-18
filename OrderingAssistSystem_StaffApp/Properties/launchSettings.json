@@ -9,7 +9,7 @@
       "dotnetRunMessages": true,
       "launchBrowser": true,
       "launchUrl": "api/Employee",
-      "applicationUrl": "https://oas-main-api-cwf5hnd9apbhgnhn.southeastasia-01.azurewebsites.net",
+      "applicationUrl": "https://oas-api-main-cxhua5dqh7dueqhz.southeastasia-01.azurewebsites.net",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
