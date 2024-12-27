@@ -1,6 +1,8 @@
 using Newtonsoft.Json;
 using OrderingAssistSystem_StaffApp.Models;
 using System.Text;
+using Twilio.Rest.Verify.V2.Service;
+using Twilio;
 
 namespace OrderingAssistSystem_StaffApp;
 
@@ -39,5 +41,41 @@ public partial class OTPPage : ContentPage
         {
             await DisplayAlert("Error", "Invalid OTP. Please try again.", "OK");
         }
+
+
+        /*if (VerifySms(otpInput, _phoneNumber))
+        {
+            Preferences.Set("LoginInfo", Preferences.Get("TempLoginInfo", string.Empty));
+            Preferences.Remove("TempLoginInfo");
+
+            await Navigation.PushAsync(new PendingOrderList());
+            await DisplayAlert("Success", "OTP verified!", "OK");
+        }
+        else
+        {
+            await DisplayAlert("Error", "Invalid OTP. Please try again.", "OK");
+        }*/
+    }
+
+    private bool VerifySms(string code, string phone)
+    {
+        string[] parts = phone.Split(new char[] { '0' }, 2);
+        string result = parts[1];
+        /*var accountSid = nameof(settings.AccountSid);
+        var authToken = nameof(settings.AuthToken);*/
+        var accountSid = "";
+        var authToken = "";
+        TwilioClient.Init(accountSid, authToken);
+
+        var verificationCheck = VerificationCheckResource.Create(
+            to: "+84" + result,
+            code: code,
+            pathServiceSid: "VA3c15cbc73df12d2ada324b4b96781ba7"
+        );
+        if (verificationCheck.Valid != true)
+        {
+            return false;
+        }
+        return true;
     }
 }

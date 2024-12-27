@@ -165,50 +165,42 @@ public partial class ItemToMakeBartender : ContentPage
     {
         var button = sender as Button;
         //pending items here
+
         var itemToMake = button?.CommandParameter as OrderDetail; // Cast to your Order type
         if (itemToMake != null)
         {
             var viewModel = BindingContext as ItemToMakeListViewModel;
+            //viewModel.LoadOrderDetails();
+
             if (viewModel == null) return;
+
+            viewModel.LoadOrderDetails();
 
             // Get all matching order details with the same order date, menu item name, sugar, ice, and topping
             var matchingOrderDetails = viewModel.AllOrderDetails
-                .Where(od => od.Order?.OrderDate == itemToMake.Order?.OrderDate &&
+                .Where(od => /*od.Order?.OrderDate == itemToMake.Order?.OrderDate &&*/ //Not supposed to care about time though when start any item
                              od.MenuItem?.ItemName == itemToMake.MenuItem?.ItemName &&
                              od.Sugar == itemToMake.Sugar &&
                              od.Ice == itemToMake.Ice &&
-                             od.Topping == itemToMake.Topping)
+                             od.Topping == itemToMake.Topping &&
+                             od.Status == null)
                 .ToList();
+
+            if (matchingOrderDetails.Count == 0)
+            {
+                await DisplayAlert("Conflict", "Item may has already been started by other bartenders.", "OK");
+                return;
+            }
 
             // Update the status of the matching order details
             foreach (var detail in matchingOrderDetails)
             {
                 detail.Status = false;
-                detail.IsStartEnabled = true;
-            }
-
-            // Check for other order details with the same item name but different sugar, ice, and topping
-            var otherOrderDetails = viewModel.AllOrderDetails
-                .Where(od => od.MenuItem?.ItemName == itemToMake.MenuItem?.ItemName &&
-                             (od.Sugar != itemToMake.Sugar || od.Ice != itemToMake.Ice || od.Topping != itemToMake.Topping))
-                .ToList();
-
-            foreach (var detail in otherOrderDetails)
-            {
-                // Check if there are no other order details with an order date further from now than the current order details
-                var hasLaterOrder = viewModel.AllOrderDetails
-                    .Any(od => od.MenuItem?.ItemName == detail.MenuItem?.ItemName &&
-                               od.Order?.OrderDate > detail.Order?.OrderDate);
-
-                if (!hasLaterOrder)
-                {
-                    detail.Status = false;
-                    detail.IsStartEnabled = true;
-                }
+                detail.IsStartEnabled = false;
             }
 
             // Update the status of the order details in the backend
-            foreach (var detail in matchingOrderDetails.Concat(otherOrderDetails))
+            foreach (var detail in matchingOrderDetails)
             {
                 var uri = new Uri(_config.BaseAddress + $"OrderDetail/{detail.OrderDetailId}");
                 var content = new StringContent(JsonConvert.SerializeObject(detail), Encoding.UTF8, "application/json");
@@ -221,12 +213,46 @@ public partial class ItemToMakeBartender : ContentPage
             // Handle the PendingItem object here
             await DisplayAlert("Item Started", $"Starting item {itemToMake.MenuItem?.ItemName}.", "OK");
             await SendNotificationAsync(matchingOrderDetails.FirstOrDefault().Order.Table.Qr, $"Starting item {itemToMake.MenuItem?.ItemName}.");
-
+            await SendOrderConfirmationNotificationAsync();
             // Reload the to-make list
             viewModel.LoadOrderDetails();
         }
     }
 
+    private async Task SendOrderConfirmationNotificationAsync()
+    {
+        var requestBody = new
+        {
+            text = "Order Finished !",
+            action = "OrderSuccessesStaff"
+        };
+
+        var json = JsonConvert.SerializeObject(requestBody);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        _client.DefaultRequestHeaders.Clear();
+        _client.DefaultRequestHeaders.Add("apikey", "0624d820-6616-430d-92a5-e68265a08593");
+
+        var uri = new Uri("https://oas-noti-api-handling-hqb2gxavecakdtey.southeastasia-01.azurewebsites.net/api/notifications/requests");
+
+        try
+        {
+            HttpResponseMessage response = await _client.PostAsync(uri, content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                Console.WriteLine("Notification sent successfully.");
+            }
+            else
+            {
+                Console.WriteLine($"Failed to send notification. Status code: {response.StatusCode}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error sending notification: {ex.Message}");
+        }
+    }
 
     private async void LoadNotifications()
 	{

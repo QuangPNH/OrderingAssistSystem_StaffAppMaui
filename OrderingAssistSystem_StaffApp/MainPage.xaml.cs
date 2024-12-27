@@ -9,6 +9,7 @@ using OrderingAssistSystem_StaffApp.Services;
 using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Core;
 using System.Net.Http;
+using Twilio.Rest.Verify.V2.Service;
 namespace OrderingAssistSystem_StaffApp
 {
     public partial class MainPage : ContentPage
@@ -197,28 +198,35 @@ namespace OrderingAssistSystem_StaffApp
             else
             {
                 string otp = new Random().Next(000000, 999999).ToString();
-                otp = "123456"; // For testing only, remove this line in production
+                otp = "123456";
                 Preferences.Set("otp", otp);
-
-                /*var accountSid = Environment.GetEnvironmentVariable("ACCOUNTSID");
-                var authToken = Environment.GetEnvironmentVariable("AUTHTOKEN");
-
-                TwilioClient.Init(accountSid, authToken);
-                var messageOptions = new CreateMessageOptions(new PhoneNumber("+84" + phoneNumber.Split("0")[1]))
-                {
-                    From = new PhoneNumber("+13204336563"),
-                    Body = "Your OTP is " + otp
-                };
-                MessageResource.Create(messageOptions);*/
+                //SendSms(phoneNumber);
 
                 // Redirect to the OTP input page
                 emp.Image = null;
                 var empJson = JsonConvert.SerializeObject(emp);
                 Preferences.Set("TempLoginInfo", empJson);
 
-                await Navigation.PushAsync(new OTPPage(phoneNumber, emp));
+                await Navigation.PushAsync(new OTPPage(phoneNumber, emp/*, _twilioSettings*/));
             }
         }
-    }
 
+
+
+        private void SendSms(string phone)
+        {
+            string[] parts = phone.Split(new char[] { '0' }, 2);
+            string result = parts[1];
+            /*var accountSid = nameof(settings.AccountSid);
+            var authToken = nameof(settings.AuthToken);*/
+            var accountSid = "";
+            var authToken = "";
+            TwilioClient.Init(accountSid, authToken);
+            var verification = VerificationResource.Create(
+                to: "+84" + result,
+                channel: "sms",
+                pathServiceSid: "VA3c15cbc73df12d2ada324b4b96781ba7"
+            );
+        }
+    }
 }

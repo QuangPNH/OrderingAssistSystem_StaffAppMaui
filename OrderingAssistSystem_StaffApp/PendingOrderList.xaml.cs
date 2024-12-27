@@ -188,12 +188,12 @@ public partial class PendingOrderList : ContentPage
                     var viewModel = BindingContext as CombinedViewModel;
                     viewModel?.PendingOrder.LoadOrders();
                     viewModel?.ItemToMake.LoadOrderDetails();
-                    DisplayAlert("Confirmed", $"Order: {order.OrderId} has been confirmed paid.", "OK");
+                    DisplayAlert("Confirmed", $"Order {order.OrderId} has been confirmed paid.", "OK");
 
 
                     await SendOrderConfirmationNotificationAsync();
                     //Sent Noti to client
-                    await SendNotificationAsync(order.Table.Qr , $"Order: {order.OrderId} has been confirmed paid.");
+                    await SendNotificationAsync(order.Table.Qr, $"Order {order.OrderId} has been confirmed paid.");
                 }
             }
             catch (Exception ex)
@@ -202,8 +202,8 @@ public partial class PendingOrderList : ContentPage
                 Console.WriteLine($"Error updating order status: {ex.Message}");
             }
         }
-		CheckEmptyLists();
-	}
+        CheckEmptyLists();
+    }
 
     private async void OnCancelOrderClicked(object sender, EventArgs e)
     {

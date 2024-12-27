@@ -48,7 +48,6 @@
                        FontSize="20"
                        FontAttributes="Bold"
                        HorizontalOptions="Center" />
-
                 <Label Text="Processing" FontAttributes="Bold"  FontSize="18"  Margin="10,20,10,5" />
                 <CollectionView ItemsSource="{Binding GroupedMenuItems}">
                     <CollectionView.ItemTemplate>
@@ -133,7 +132,10 @@
                     </CollectionView.ItemTemplate>
                 </CollectionView>
 
-                <Label Text="Done Today" FontAttributes="Bold"  FontSize="18"  Margin="10,20,10,5" />
+                <!-- Display notFinished -->
+                <Label Text="{Binding notFinished, StringFormat='Not finished: {0}'}" FontSize="20" HorizontalOptions="Center"/>
+
+                <Label Text="Done 24h ago" FontAttributes="Bold"  FontSize="18"  Margin="10,20,10,5" />
                 <CollectionView ItemsSource="{Binding DoneItems}">
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
@@ -175,6 +177,7 @@
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
                 </CollectionView>
+
             </StackLayout>
         </ScrollView>
     </Grid>

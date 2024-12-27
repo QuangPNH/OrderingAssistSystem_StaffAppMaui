@@ -165,13 +165,22 @@ public partial class ItemToMake : ContentPage
         {
             // Get the order details with the same order date, item name, sugar, ice, and topping
             var viewModel = BindingContext as ItemToMakeListViewModel;
+
+            viewModel.LoadOrderDetails();
+
             var matchingOrderDetails = viewModel?.AllOrderDetails
                 .Where(od => od.Order?.OrderDate == orderDetail.Order?.OrderDate &&
                              od.MenuItem?.ItemName == orderDetail.MenuItem?.ItemName &&
                              od.Sugar == orderDetail.Sugar &&
                              od.Ice == orderDetail.Ice &&
-                             od.Topping == orderDetail.Topping && !(bool)od.Status)
-                .ToList();
+                             od.Topping == orderDetail.Topping &&
+                             (bool)od.Status == false).ToList();
+
+            if (matchingOrderDetails.Count == 0)
+            {
+                await DisplayAlert("Conflict", "Item may has already been confirmed finish by other staffs.", "OK");
+                return;
+            }
 
             if (matchingOrderDetails != null)
             {
@@ -179,14 +188,13 @@ public partial class ItemToMake : ContentPage
                 {
                     // Update the status of each matching order detail
                     detail.Status = true;
-
                     var uri = new Uri(_config.BaseAddress + $"OrderDetail/{detail.OrderDetailId}");
                     var content = new StringContent(JsonConvert.SerializeObject(detail), Encoding.UTF8, "application/json");
                     HttpResponseMessage response = await _client.PutAsync(uri, content);
 
                     if (!response.IsSuccessStatusCode)
                     {
-                        await DisplayAlert("Error", $"Failed to update item {detail.MenuItem?.ItemName}.", "OK");
+                        DisplayAlert("Error", $"Failed to update item {detail.MenuItem?.ItemName}.", "OK");
                         return;
                     }
                 }
@@ -196,10 +204,10 @@ public partial class ItemToMake : ContentPage
                 if (order != null)
                 {
                     var uri = new Uri(_config.BaseAddress + $"Order/{order.OrderId}");
-                    HttpResponseMessage response = await _client.GetAsync(uri);
-                    if (response.IsSuccessStatusCode)
+                    HttpResponseMessage response1 = await _client.GetAsync(uri);
+                    if (response1.IsSuccessStatusCode)
                     {
-                        string data = await response.Content.ReadAsStringAsync();
+                        string data = await response1.Content.ReadAsStringAsync();
                         order = JsonConvert.DeserializeObject<Order>(data);
                         order.OrderDate = DateTime.Now;
                         var orderDetails = order?.OrderDetails;
@@ -209,21 +217,36 @@ public partial class ItemToMake : ContentPage
                             order.Status = true;
                             uri = new Uri(_config.BaseAddress + $"Order/{order.OrderId}");
                             var content = new StringContent(JsonConvert.SerializeObject(order), Encoding.UTF8, "application/json");
-                            response = await _client.PutAsync(uri, content);
+                            response1 = await _client.PutAsync(uri, content);
                         }
                     }
                 }
 
-				// Handle the ProcessingItem object here
-				await DisplayAlert("Item Finished", $"Finished item {orderDetail.MenuItem?.ItemName}.", "OK");
+                // Handle the ProcessingItem object here
+                await DisplayAlert("Item Finished", $"Finished item {orderDetail.MenuItem?.ItemName}.", "OK");
 
-				//Send to client when order finished
-				await SendNotificationAsync(order.Table.Qr,$"Finished item {orderDetail.MenuItem?.ItemName}.");
+
+                if (matchingOrderDetails.Count() != 0)
+                {
+                    var order2 = matchingOrderDetails.FirstOrDefault()?.Order;
+                    var uri1 = new Uri(_config.BaseAddress + $"Order/{order2.OrderId}");
+                    var response2 = await _client.GetAsync(uri1);
+                    if (response2.IsSuccessStatusCode)
+                    {
+                        string data = await response2.Content.ReadAsStringAsync();
+                        var order1 = JsonConvert.DeserializeObject<Order>(data);
+                        //Send to client when order finished
+                        if (matchingOrderDetails.Count > 0)
+                        {
+                            await SendNotificationAsync(order.Table.Qr, $"Finished item {orderDetail.MenuItem?.ItemName}.");
+                        }
+                    }
+                }
                 SendOrderConfirmationNotificationAsync();
                 viewModel?.LoadOrderDetails();
-			}
-		}
-	}
+            }
+        }
+    }
 
     //0395746221
     //0388536414
@@ -245,6 +268,9 @@ public partial class ItemToMake : ContentPage
         if (orderDetail != null && input > 0)
         {
             var viewModel = BindingContext as ItemToMakeListViewModel;
+
+            viewModel.LoadOrderDetails();
+
             var matchingOrderDetails = viewModel?.AllOrderDetails
                 .Where(od => od.Order?.OrderDate == orderDetail.Order?.OrderDate &&
                              od.MenuItem?.ItemName == orderDetail.MenuItem?.ItemName &&
@@ -253,21 +279,27 @@ public partial class ItemToMake : ContentPage
                              od.Topping == orderDetail.Topping && !(bool)od.Status)
                 .ToList();
 
+            if (matchingOrderDetails.Count == 0)
+            {
+                await DisplayAlert("Conflict", "Item may has already been confirmed finish by other staffs.", "OK");
+                return;
+            }
+
             if (matchingOrderDetails != null)
             {
                 foreach (var detail in matchingOrderDetails)
                 {
                     detail.FinishedItem += input;
 
-					if (detail.FinishedItem < detail.Quantity)
-					{
-						SaveToPreference(detail);
-					}
-					else
-					{
-						detail.Status = true;
-						int remainder = (int)(detail.FinishedItem - detail.Quantity);
-						RemoveFromPreference(detail);
+                    if (detail.FinishedItem < detail.Quantity)
+                    {
+                        SaveToPreference(detail);
+                    }
+                    else
+                    {
+                        detail.Status = true;
+                        int remainder = (int)(detail.FinishedItem - detail.Quantity);
+                        RemoveFromPreference(detail);
 
                         if (remainder > 0)
                         {
@@ -282,20 +314,23 @@ public partial class ItemToMake : ContentPage
                             await DisplayAlert("Error", $"Failed to update item {detail.MenuItem?.ItemName}.", "OK");
                             return;
                         }
-
-                        var order2 = matchingOrderDetails.FirstOrDefault()?.Order;
-                        uri = new Uri(_config.BaseAddress + $"Order/{order2.OrderId}");
-                        response = await _client.GetAsync(uri);
-                        if (response.IsSuccessStatusCode)
+                        else
                         {
-                            string data = await response.Content.ReadAsStringAsync();
-                            var order1 = JsonConvert.DeserializeObject<Order>(data);
-                            await SendNotificationAsync(order1.Table.Qr, $"{detail.MenuItem?.ItemName} has been finished");
+                            await DisplayAlert("Item Updated", $"Finished item " + detail.MenuItem.ItemName, "OK");
+                            var order2 = matchingOrderDetails.FirstOrDefault()?.Order;
+                            uri = new Uri(_config.BaseAddress + $"Order/{order2.OrderId}");
+                            response = await _client.GetAsync(uri);
+                            if (response.IsSuccessStatusCode)
+                            {
+                                string data = await response.Content.ReadAsStringAsync();
+                                var order1 = JsonConvert.DeserializeObject<Order>(data);
+                                await SendNotificationAsync(order1.Table.Qr, "Order has been finished !");
+                            }
                         }
-
                     }
                 }
 
+                //check if the entire order is finished
                 var order = matchingOrderDetails.FirstOrDefault()?.Order;
                 if (order != null)
                 {
@@ -318,12 +353,16 @@ public partial class ItemToMake : ContentPage
                     }
                 }
 
-				await DisplayAlert("Item Updated", $"Finished {input} items.", "OK");
-				SendOrderConfirmationNotificationAsync();
+                if (matchingOrderDetails.Count > 0)
+                {
+                    await SendNotificationAsync(order.Table.Qr, $"{matchingOrderDetails.FirstOrDefault()?.MenuItem?.ItemName} has been finished");
+                    SendOrderConfirmationNotificationAsync();
+                }
                 viewModel?.LoadOrderDetails();
-			}
-		}
-	}
+            }
+        }
+    }
+
     //Send from staff to bartend
     private async Task SendOrderConfirmationNotificationAsync()
     {
@@ -646,8 +685,26 @@ public class ItemToMakeListViewModel : INotifyPropertyChanged
     private readonly ConfigApi _config = new ConfigApi();
 
     public ObservableCollection<GroupedMenuItem> GroupedMenuItems { get; set; } = new ObservableCollection<GroupedMenuItem>();
+
+    public ObservableCollection<OrderDetail> FirstItemToMake { get; set; } = new ObservableCollection<OrderDetail>();
+    public ObservableCollection<OrderDetail> SecondItemToMake { get; set; } = new ObservableCollection<OrderDetail>();
+
     public ObservableCollection<OrderDetail> DoneItems { get; set; } = new ObservableCollection<OrderDetail>();
     public List<OrderDetail> AllOrderDetails { get; set; } = new List<OrderDetail>(); // New list to store all order details
+
+    private int _notFinished;
+    public int notFinished
+    {
+        get => _notFinished;
+        set
+        {
+            if (_notFinished != value)
+            {
+                _notFinished = value;
+                OnPropertyChanged(nameof(notFinished));
+            }
+        }
+    }
 
     public ItemToMakeListViewModel()
     {
@@ -669,17 +726,19 @@ public class ItemToMakeListViewModel : INotifyPropertyChanged
             if (response.IsSuccessStatusCode)
             {
                 string data = await response.Content.ReadAsStringAsync();
-                var orderDetails = JsonConvert.DeserializeObject<List<OrderDetail>>(data);
+                var orderDetails = JsonConvert.DeserializeObject<List<OrderDetail>>(data)
+                    .OrderBy(od => od.Order?.OrderDate)
+                    .ThenBy(od => od.MenuItemId)
+                    .ThenBy(od => od.Sugar)
+                    .ThenBy(od => od.Ice)
+                    .ThenBy(od => od.Topping).ToList();
 
                 if (orderDetails != null)
                 {
-                    // Parse each OrderDetail to set Topping, Ice, and Sugar properties
                     foreach (var orderDetail in orderDetails)
                     {
                         ParseOrderDetails(orderDetail);
                     }
-
-                    // Store all order details in the new list
                     AllOrderDetails.Clear();
                     AllOrderDetails.AddRange(orderDetails);
 
@@ -691,15 +750,11 @@ public class ItemToMakeListViewModel : INotifyPropertyChanged
                     // Get the saved started item from Preferences
                     string jsonStartedItems = Preferences.Get("IStartedThis", string.Empty);
                     OrderDetail startedItem = null;
-
                     if (!string.IsNullOrEmpty(jsonStartedItems))
-                    {
-                        // Deserialize the JSON back to OrderDetail
                         startedItem = JsonConvert.DeserializeObject<OrderDetail>(jsonStartedItems);
-                    }
 
-                    // Group only PendingItems by MenuItemId, Topping, Ice, and Sugar and sum the quantities
-                    var pendingItems = orderDetails
+                    // Group only ItemToMake by MenuItemId, Topping, Ice, and Sugar and sum the quantities
+                    var firstPendingItems = orderDetails
                         .Where(od => od.Status == null || od.Status == false)
                         .GroupBy(od => new { od.MenuItemId, od.Topping, od.Ice, od.Sugar, od.FinishedItem }) // Include FinishedItem
                         .Select(g => new OrderDetail
@@ -717,31 +772,67 @@ public class ItemToMakeListViewModel : INotifyPropertyChanged
                             {
                                 OrderDate = g.Min(od => od.Order?.OrderDate)
                             }
-                        })
-                        .OrderByDescending(od => od.Order?.OrderDate)
-                        .ThenBy(od => od.MenuItem?.ItemName)
-                        .ThenBy(od => od.Topping)
-                        .Take(3) // Take 3 items first
-                        .ToList();
+                        }).Take(1).ToList(); // Only take the first item
+
+                    var subsequentPendingItems = orderDetails
+                        .Where(od => od.Status == null /*&& !firstPendingItems.Contains(od)*/)
+                        .GroupBy(od => new { od.MenuItemId, od.Topping, od.Ice, od.Sugar, od.FinishedItem }) // Include FinishedItem
+                        .Select(g => new OrderDetail
+                        {
+                            MenuItemId = g.Key.MenuItemId,
+                            MenuItem = g.First().MenuItem,
+                            Quantity = g.Sum(od => od.Quantity),
+                            Status = g.First().Status,
+                            Description = string.Join(", ", g.Select(od => od.Description)),
+                            Topping = g.Key.Topping,
+                            Ice = g.Key.Ice,
+                            Sugar = g.Key.Sugar,
+                            FinishedItem = g.Key.FinishedItem, // Access FinishedItem
+                            Order = new Order
+                            {
+                                OrderDate = g.Min(od => od.Order?.OrderDate)
+                            }
+                        }).ToList();
+
+                    if (firstPendingItems.Count > 0)
+                    {
+                        subsequentPendingItems.RemoveAll(od => od.MenuItemId == firstPendingItems[0].MenuItemId && od.Order.OrderDate == firstPendingItems[0].Order.OrderDate && od.Sugar == firstPendingItems[0].Sugar && od.Ice == firstPendingItems[0].Ice && od.Topping == firstPendingItems[0].Topping);
+                    }
+
+
+                    // Combine the two lists
+                    var pendingItems = firstPendingItems.Concat(subsequentPendingItems).ToList();
+                    notFinished = pendingItems.Count();
+
+
+
+                    if (pendingItems.Count() > 3)
+                    {
+                        pendingItems = pendingItems.Take(3).ToList();
+                    }
 
                     // Check if the first pending item matches the saved started item and skip if not
-                    var firstPendingItem = pendingItems.First();
-                    if (startedItem != null && pendingItems.Any())
+                    if (startedItem != null)
                     {
-
-                        if (!(firstPendingItem.MenuItem?.ItemName != startedItem.MenuItem?.ItemName ||
-                            firstPendingItem.Description != startedItem.Description ||
-                            firstPendingItem.Order?.OrderDate != startedItem.Order?.OrderDate) && firstPendingItem.Status == false)
+                        if (pendingItems.Any())
                         {
-                            // Skip the first item if it doesn't match
-                            pendingItems.RemoveAt(0);
+                            var firstPendingItem = pendingItems.First();
+                            if ((firstPendingItem.MenuItem?.ItemName != startedItem.MenuItem?.ItemName ||
+                                firstPendingItem.Description != startedItem.Description ||
+                                firstPendingItem.Order?.OrderDate != startedItem.Order?.OrderDate) &&
+                                firstPendingItem.Status == false)
+                            {
+                                if (pendingItems.Count > 0)
+                                    pendingItems.RemoveAt(0);
+                            }
                         }
                     }
                     else
                     {
-                        if (firstPendingItem.Status == false)
+                        if (pendingItems.Count > 0)
                             pendingItems.RemoveAt(0);
                     }
+
 
                     // Ensure there are always exactly 2 items in the pendingItems list
                     if (pendingItems.Count < 2)
@@ -766,18 +857,18 @@ public class ItemToMakeListViewModel : INotifyPropertyChanged
                                     OrderDate = g.Min(od => od.Order?.OrderDate)
                                 }
                             })
-                            .OrderByDescending(od => od.Order?.OrderDate)
-                            .ThenBy(od => od.MenuItem?.ItemName)
-                            .ThenBy(od => od.Topping)
-                            .Take(2 - pendingItems.Count) // Add enough to make the list size 2
+                            .Take(2 - pendingItems.Count)
                             .ToList();
-
                         // Add the additional items to pendingItems
-                        pendingItems.AddRange(additionalItems);
+                        if (pendingItems.Count > 0)
+                            if (pendingItems[0].MenuItemId != additionalItems[0].MenuItemId && pendingItems[0].Sugar != additionalItems[0].Sugar && pendingItems[0].Ice != additionalItems[0].Ice && pendingItems[0].Topping != additionalItems[0].Topping && pendingItems[0].Order.OrderDate != additionalItems[0].Order.OrderDate)
+                                pendingItems.AddRange(additionalItems);
                     }
 
-                    // Ensure there are exactly 2 items
-                    pendingItems = pendingItems.Take(2).ToList();
+                    if (pendingItems.Count() > 2)
+                    {
+                        pendingItems = pendingItems.Take(2).ToList();
+                    }
 
 
                     // Set IsCurrentItem property
@@ -787,15 +878,21 @@ public class ItemToMakeListViewModel : INotifyPropertyChanged
                     }
 
                     // Check if any item has Status = false and assign the first pendingItem's Status to false
-                    if (pendingItems.Any(od => od.Status == false))
+                    if (pendingItems.Any(od => od.Status == false) || pendingItems.Any(od => od.Status == null))
                     {
-                        pendingItems[0].IsStartEnabled = false;
-                        pendingItems[0].StatusText = "Processing";
-                    }
-                    else
-                    {
-                        pendingItems[0].IsStartEnabled = true;
-                        pendingItems[0].StatusText = "Start Item";
+                        if (pendingItems.Count > 0)
+                        {
+                            if (pendingItems[0].Status == false)
+                            {
+                                pendingItems[0].IsStartEnabled = false;
+                                pendingItems[0].StatusText = "Processing";
+                            }
+                            else if (pendingItems[0].Status == null)
+                            {
+                                pendingItems[0].IsStartEnabled = true;
+                                pendingItems[0].StatusText = "Start Item";
+                            }
+                        }
                     }
 
                     // Group ProcessingItems by MenuItemId, Topping, Ice, and Sugar and sum the quantities
@@ -817,22 +914,34 @@ public class ItemToMakeListViewModel : INotifyPropertyChanged
                             {
                                 OrderDate = g.Min(od => od.Order?.OrderDate)
                             }
-                        })
-                        .ToList();
+                        }).ToList();
 
                     // Separate DoneItems without grouping
-                    var doneItems = orderDetails.Where(od => od.Status == true && od.Order?.OrderDate?.Date == DateTime.Today).ToList();
+                    //var doneItems = orderDetails.Where(od => od.Status == true && od.Order?.OrderDate?.Date == DateTime.Today).ToList();
+                    var doneItems = orderDetails.Where(od => od.Status == true && od.Order?.OrderDate >= DateTime.Now.AddHours(-24)).ToList();
 
                     GroupedMenuItems.Clear();
-                    foreach (var groupedItem in pendingItems.GroupBy(o => o.MenuItem?.ItemName)
-                        .Select(g => new GroupedMenuItem
-                        {
-                            //MenuItemName = g.Key ?? string.Empty,
-                            PendingItems = g.ToList(),
-                            ProcessingItems = processingItems.Where(o => o.MenuItem?.ItemName == g.Key).ToList()
-                        }))
+
+                    var allItems = pendingItems.Concat(processingItems);
+
+                    foreach (var groupedItem in allItems.GroupBy(o => o.MenuItem?.ItemName).Select(g => new GroupedMenuItem
+                    {
+                        ItemToMake = g.Where(o => pendingItems.Contains(o)).ToList(),
+                        ProcessingItems = g.Where(o => processingItems.Contains(o)).ToList()
+                    }))
                     {
                         GroupedMenuItems.Add(groupedItem);
+                    }
+
+                    if (pendingItems.Count > 0)
+                    {
+                        FirstItemToMake.Clear();
+                        FirstItemToMake.Add(pendingItems[0]);
+                    }
+                    if (pendingItems.Count > 1)
+                    {
+                        SecondItemToMake.Clear();
+                        SecondItemToMake.Add(pendingItems[1]);
                     }
 
                     DoneItems.Clear();
@@ -845,7 +954,6 @@ public class ItemToMakeListViewModel : INotifyPropertyChanged
         }
         catch (Exception ex)
         {
-            // Handle exceptions
             Console.WriteLine($"Error fetching order details: {ex.Message}");
         }
     }
@@ -902,8 +1010,6 @@ public class ItemToMakeListViewModel : INotifyPropertyChanged
             // Handle the case where orderDetail or orderDetail.Order is null
             orderDetail.FinishedItem = 0;
         }
-
-
     }
 
     private List<OrderDetail> GetOrderDetailsFromPreference()
@@ -946,8 +1052,7 @@ public class ItemToMakeListViewModel : INotifyPropertyChanged
 
     public class GroupedMenuItem
     {
-        //public string MenuItemName { get; set; } = string.Empty;
-        public List<OrderDetail> PendingItems { get; set; } = new List<OrderDetail>();
+        public List<OrderDetail> ItemToMake { get; set; } = new List<OrderDetail>();
         public List<OrderDetail> ProcessingItems { get; set; } = new List<OrderDetail>();
     }
 }
