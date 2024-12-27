@@ -215,12 +215,13 @@ namespace OrderingAssistSystem_StaffApp
 
         private void SendSms(string phone)
         {
+            ConfigApi config = new ConfigApi();
             string[] parts = phone.Split(new char[] { '0' }, 2);
             string result = parts[1];
             /*var accountSid = nameof(settings.AccountSid);
             var authToken = nameof(settings.AuthToken);*/
-            var accountSid = "";
-            var authToken = "";
+            var accountSid = config.accId;
+            var authToken = config.accToken;
             TwilioClient.Init(accountSid, authToken);
             var verification = VerificationResource.Create(
                 to: "+84" + result,

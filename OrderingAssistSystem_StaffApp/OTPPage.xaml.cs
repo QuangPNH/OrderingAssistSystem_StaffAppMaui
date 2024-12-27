@@ -3,6 +3,7 @@ using OrderingAssistSystem_StaffApp.Models;
 using System.Text;
 using Twilio.Rest.Verify.V2.Service;
 using Twilio;
+using Twilio.TwiML.Voice;
 
 namespace OrderingAssistSystem_StaffApp;
 
@@ -59,12 +60,13 @@ public partial class OTPPage : ContentPage
 
     private bool VerifySms(string code, string phone)
     {
+        ConfigApi config = new ConfigApi();
         string[] parts = phone.Split(new char[] { '0' }, 2);
         string result = parts[1];
         /*var accountSid = nameof(settings.AccountSid);
         var authToken = nameof(settings.AuthToken);*/
-        var accountSid = "";
-        var authToken = "";
+        var accountSid = config.accId;
+        var authToken = config.accToken;
         TwilioClient.Init(accountSid, authToken);
 
         var verificationCheck = VerificationCheckResource.Create(
