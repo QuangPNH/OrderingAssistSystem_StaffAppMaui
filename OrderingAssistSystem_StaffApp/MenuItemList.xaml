@@ -251,29 +251,53 @@
                                     <!-- Preferences: Sugar, Ice, Toppings -->
                                     <Grid ColumnDefinitions="Auto,*,Auto,*,Auto,*" RowDefinitions="Auto,Auto" Margin="0,10,0,0">
                                         <!-- Sugar Options -->
-                                        <Label Text="Sugar:" FontAttributes="Bold" Grid.Row="0" Grid.Column="0" />
+                                        <Label Text="Sugar:" FontAttributes="Bold" Grid.Row="0" Grid.Column="0">
+                                            <Label.Triggers>
+                                                <DataTrigger TargetType="Label" Binding="{Binding isDrink}" Value="False">
+                                                    <Setter Property="IsVisible" Value="False" />
+                                                </DataTrigger>
+                                            </Label.Triggers>
+                                        </Label>
                                         <Picker Grid.Row="0" Grid.Column="1" SelectedItem="{Binding Sugar}" WidthRequest="100">
                                             <Picker.Items>
+                                                <x:String>none</x:String>
                                                 <x:String>less</x:String>
                                                 <x:String>normal</x:String>
                                                 <x:String>more</x:String>
                                             </Picker.Items>
+                                            <Picker.Triggers>
+                                                <DataTrigger TargetType="Picker" Binding="{Binding isDrink}" Value="False">
+                                                    <Setter Property="IsVisible" Value="False" />
+                                                </DataTrigger>
+                                            </Picker.Triggers>
                                         </Picker>
 
                                         <!-- Ice Options -->
-                                        <Label Text="Ice:" FontAttributes="Bold" Grid.Row="0" Grid.Column="2" />
+                                        <Label Text="Ice:" FontAttributes="Bold" Grid.Row="0" Grid.Column="2">
+                                            <Label.Triggers>
+                                                <DataTrigger TargetType="Label" Binding="{Binding isDrink}" Value="False">
+                                                    <Setter Property="IsVisible" Value="False" />
+                                                </DataTrigger>
+                                            </Label.Triggers>
+                                        </Label>
                                         <Picker Grid.Row="0" Grid.Column="3" SelectedItem="{Binding Ice}" WidthRequest="100">
                                             <Picker.Items>
+                                                <x:String>none</x:String>
                                                 <x:String>less</x:String>
                                                 <x:String>normal</x:String>
                                                 <x:String>more</x:String>
                                             </Picker.Items>
+                                            <Picker.Triggers>
+                                                <DataTrigger TargetType="Picker" Binding="{Binding isDrink}" Value="False">
+                                                    <Setter Property="IsVisible" Value="False" />
+                                                </DataTrigger>
+                                            </Picker.Triggers>
                                         </Picker>
 
                                         <!-- Toppings -->
                                         <Label Text="Toppings:" FontAttributes="Bold" Grid.Row="1" Grid.Column="0" />
                                         <CollectionView Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="4" 
-                                                    ItemsSource="{Binding AvailableToppings}" 
+                                                    ItemsSource="{Binding AvailableDrinkToppings}" 
                                                     SelectionMode="Multiple">
                                             <CollectionView.ItemTemplate>
                                                 <DataTemplate>

@@ -87,9 +87,9 @@ public partial class MenuItemList : ContentPage
 	{
 		try
 		{
-			var a = menuItem.AvailableToppings;
+			var a = menuItem.AvailableDrinkToppings;
 			var b = menuItem.MenuCategories;
-			menuItem.AvailableToppings = null;
+			menuItem.AvailableDrinkToppings = null;
 			menuItem.MenuCategories = null;
 			var httpClient = new HttpClient();
 			var json = JsonConvert.SerializeObject(menuItem, new JsonSerializerSettings
@@ -97,7 +97,7 @@ public partial class MenuItemList : ContentPage
 				ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
 				NullValueHandling = NullValueHandling.Ignore
 			});
-			menuItem.AvailableToppings = a;
+			menuItem.AvailableDrinkToppings = a;
 			menuItem.MenuCategories = b;
 			var content = new StringContent(json, Encoding.UTF8, "application/json");
 			var response = await _client.PutAsync(_config.BaseAddress + "MenuItem/Update", content);
@@ -231,7 +231,7 @@ public partial class MenuItemList : ContentPage
 			string ice = string.IsNullOrEmpty(menuItem.Ice?.ToLower()) ? "normal Ice" : $"{menuItem.Ice} Ice";
 
 			// Get selected toppings
-			var selectedToppings = menuItem.AvailableToppings
+			var selectedToppings = menuItem.AvailableDrinkToppings
 				.Where(topping => topping.IsSelected)
 				.Select(topping => topping.ItemName)
 				.ToList();
@@ -659,8 +659,9 @@ public class MenuItemListViewModel : INotifyPropertyChanged
 {
 	private string _searchText;
 	private ItemCategory _selectedCategory;
-	public ObservableCollection<MenuItem> AvailableToppings { get; set; } = new ObservableCollection<MenuItem>();
-	private readonly Models.ConfigApi _config = new Models.ConfigApi();
+	public ObservableCollection<MenuItem> AvailableDrinkToppings { get; set; } = new ObservableCollection<MenuItem>();
+    public ObservableCollection<MenuItem> AvailableFoodToppings { get; set; } = new ObservableCollection<MenuItem>();
+    private readonly Models.ConfigApi _config = new Models.ConfigApi();
 	private readonly HttpClient _client = new HttpClient(new HttpClientHandler
 	{
 		ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => true
@@ -750,9 +751,10 @@ public class MenuItemListViewModel : INotifyPropertyChanged
 				menuItems = menuItems.OrderBy(item => item.ItemName).ToList();
 
 				MenuItems.Clear();
-				AvailableToppings.Clear();
+				AvailableDrinkToppings.Clear();
+                AvailableFoodToppings.Clear();
 
-				if (menuItems != null)
+                if (menuItems != null)
 				{
 					foreach (var menuItem in menuItems)
 					{
@@ -760,12 +762,20 @@ public class MenuItemListViewModel : INotifyPropertyChanged
 						{
 							if (!menuItem.MenuCategories.Any(mc => mc.ItemCategory.Description == "TOPPING" || mc.ItemCategory.ItemCategoryName == "L?P PH?"))
 							{
-								MenuItems.Add(menuItem);
-							}
+								
+                                if (menuItem.Description.Contains("food/"))
+                                    menuItem.isDrink = false;
+                                else
+                                    menuItem.isDrink = true;
+                                MenuItems.Add(menuItem);
+                            }
 							else
 							{
-								AvailableToppings.Add(menuItem);
-							}
+                                if (menuItem.Description.Contains("food/"))
+                                    AvailableFoodToppings.Add(menuItem);
+                                else
+                                    AvailableDrinkToppings.Add(menuItem);
+                            }
 						}
 					}
 				}
@@ -773,8 +783,11 @@ public class MenuItemListViewModel : INotifyPropertyChanged
 				{
 					if (menuItem != null)
 					{
-						menuItem.AvailableToppings = AvailableToppings;
-					}
+                        if (menuItem.Description.Contains("food/"))
+                            menuItem.AvailableFoodToppings = AvailableFoodToppings;
+                        else
+                            menuItem.AvailableDrinkToppings = AvailableDrinkToppings;
+                    }
 				}
 			}
 			FilterMenuItems();
@@ -900,7 +913,7 @@ public class MenuItemViewModel : INotifyPropertyChanged
 		}
 	}
 
-	public ObservableCollection<ToppingViewModel> AvailableToppings { get; set; }
+	public ObservableCollection<ToppingViewModel> AvailableDrinkToppings { get; set; }
 
 	public ICommand AddToCartCommand { get; set; }
 
@@ -924,7 +937,7 @@ public class MenuItemViewModel : INotifyPropertyChanged
 	private void UpdateDescription()
 	{
 		// Combine Sugar, Ice, and Toppings into Description
-		var selectedToppings = AvailableToppings.Where(t => t.IsSelected).Select(t => t.ItemName);
+		var selectedToppings = AvailableDrinkToppings.Where(t => t.IsSelected).Select(t => t.ItemName);
 		Description = $"{Ice} Ice, {Sugar} Sugar, {string.Join(", ", selectedToppings)}";
 		OnPropertyChanged(nameof(Description));
 	}

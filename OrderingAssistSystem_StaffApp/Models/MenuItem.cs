@@ -14,7 +14,7 @@ namespace OrderingAssistSystem_StaffApp.Models
         {
             MenuCategories = new HashSet<MenuCategory>();
             OrderDetails = new HashSet<OrderDetail>();
-            AvailableToppings = new ObservableCollection<MenuItem>();
+            AvailableDrinkToppings = new ObservableCollection<MenuItem>();
             Sugar = "normal";
             Ice = "normal";
             Quantity = 1;
@@ -38,9 +38,13 @@ namespace OrderingAssistSystem_StaffApp.Models
 		[JsonIgnore]
 		public string? Ice { get; set; }
 		[JsonIgnore]
-		public ObservableCollection<MenuItem> AvailableToppings { get; set; }
+		public ObservableCollection<MenuItem> AvailableDrinkToppings { get; set; }
+        [JsonIgnore]
+        public ObservableCollection<MenuItem> AvailableFoodToppings { get; set; }
         [JsonIgnore]
         public bool IsSelected { get; set; } // Add this property to track selection
+        [JsonIgnore]
+        public bool isDrink { get; set; }
 
         public virtual Employee? Employee { get; set; }
         public virtual ICollection<MenuCategory> MenuCategories { get; set; }

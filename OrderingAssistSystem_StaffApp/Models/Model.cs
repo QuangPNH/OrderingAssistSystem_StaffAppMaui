@@ -28,8 +28,6 @@ namespace OrderingAssistSystem_StaffApp.Models
         public IEnumerable<Table> tables { get; set; }
         public IEnumerable<Voucher> vouchers { get; set; }
         public IEnumerable<VoucherDetail> voucherDetails { get; set; }
-        public IEnumerable<Api.Bank> bankData { get; set; }
-        public IEnumerable<Api.Datum> bankDatums{ get; set; }
 
         public About about { get; set; }
         public Bank bank { get; set; }
@@ -46,8 +44,6 @@ namespace OrderingAssistSystem_StaffApp.Models
         public Table table { get; set; }
         public Voucher voucher { get; set; }
         public VoucherDetail voucherDetail { get; set; }
-        public Api.Bank theBank { get; set; }
-        public Api.Datum bankDatum { get; set; }
 
 
 
