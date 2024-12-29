@@ -755,7 +755,7 @@ public class ItemToMakeListViewModel : INotifyPropertyChanged
 
                     // Group only ItemToMake by MenuItemId, Topping, Ice, and Sugar and sum the quantities
                     var firstPendingItems = orderDetails
-                        .Where(od => od.Status == null || od.Status == false)
+                        .Where(od => (od.Status == null || od.Status == false) && od.Order.Status == false )
                         .GroupBy(od => new { od.MenuItemId, od.Topping, od.Ice, od.Sugar, od.FinishedItem }) // Include FinishedItem
                         .Select(g => new OrderDetail
                         {
@@ -775,7 +775,7 @@ public class ItemToMakeListViewModel : INotifyPropertyChanged
                         }).Take(1).ToList(); // Only take the first item
 
                     var subsequentPendingItems = orderDetails
-                        .Where(od => od.Status == null /*&& !firstPendingItems.Contains(od)*/)
+                        .Where(od => (od.Status == null /*&& !firstPendingItems.Contains(od)*/  && od.Order.Status == false))
                         .GroupBy(od => new { od.MenuItemId, od.Topping, od.Ice, od.Sugar, od.FinishedItem }) // Include FinishedItem
                         .Select(g => new OrderDetail
                         {
@@ -839,7 +839,7 @@ public class ItemToMakeListViewModel : INotifyPropertyChanged
                     {
                         // If fewer than 2 items after removal, add more from the original collection
                         var additionalItems = orderDetails
-                            .Where(od => (od.Status == null || od.Status == false) && !pendingItems.Contains(od))
+                            .Where(od => ((od.Status == null || od.Status == false) && !pendingItems.Contains(od) && od.Order.Status == false))
                             .GroupBy(od => new { od.MenuItemId, od.Topping, od.Ice, od.Sugar, od.FinishedItem })
                             .Select(g => new OrderDetail
                             {
@@ -869,6 +869,40 @@ public class ItemToMakeListViewModel : INotifyPropertyChanged
                     {
                         pendingItems = pendingItems.Take(2).ToList();
                     }
+
+                    if (pendingItems.Count > 1)
+                    {
+                        var firstItem = pendingItems[0];
+                        var secondItem = pendingItems[1];
+
+                        bool areSimilar = firstItem.MenuItemId == secondItem.MenuItemId &&
+                                          firstItem.Sugar == secondItem.Sugar &&
+                                          firstItem.Ice == secondItem.Ice &&
+                                          firstItem.Topping == secondItem.Topping &&
+                                          firstItem.Status == secondItem.Status;
+
+                        if (areSimilar)
+                        {
+                            pendingItems.RemoveAt(1);
+                        }
+                    }
+
+                    /*foreach (var pendingItem in pendingItems)
+                    {
+                        var oldestOrderDetail = AllOrderDetails
+                            .Where(od => od.MenuItemId == pendingItem.MenuItemId &&
+                                         od.Sugar == pendingItem.Sugar &&
+                                         od.Ice == pendingItem.Ice &&
+                                         od.Topping == pendingItem.Topping &&
+                                         od.Status == pendingItem.Status)
+                            .OrderBy(od => od.Order.OrderDate)
+                            .FirstOrDefault();
+
+                        if (oldestOrderDetail != null)
+                        {
+                            pendingItem.Order.OrderDate = oldestOrderDetail.Order.OrderDate;
+                        }
+                    }*/
 
 
                     // Set IsCurrentItem property
@@ -933,14 +967,15 @@ public class ItemToMakeListViewModel : INotifyPropertyChanged
                         GroupedMenuItems.Add(groupedItem);
                     }
 
+                    FirstItemToMake.Clear();
+                    SecondItemToMake.Clear();
+
                     if (pendingItems.Count > 0)
                     {
-                        FirstItemToMake.Clear();
                         FirstItemToMake.Add(pendingItems[0]);
                     }
                     if (pendingItems.Count > 1)
                     {
-                        SecondItemToMake.Clear();
                         SecondItemToMake.Add(pendingItems[1]);
                     }
 
