@@ -92,7 +92,7 @@ namespace OrderingAssistSystem_StaffApp
             {
                 var loginInfo = Preferences.Get("LoginInfo", string.Empty);
                 Employee emp = JsonConvert.DeserializeObject<Employee>(loginInfo);
-                if (emp != null && emp.RoleId == 3)
+                if (emp != null && emp.RoleId == 2)
                 {
                     MainThread.BeginInvokeOnMainThread(() =>
                     {
