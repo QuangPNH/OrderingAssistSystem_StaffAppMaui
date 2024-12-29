@@ -122,21 +122,21 @@
                                                             <Label Grid.Row="1" Text="Quantity: " FontAttributes="Bold" />
                                                             <Label Grid.Row="1" Grid.Column="1" Text="{Binding Quantity}" Padding="0,0,50,0" />
 
-                                                            <!-- Status -->
+                                                            <!-- Status 
                                                             <Label Grid.Row="1" Grid.Column="2" Text="Status: " FontAttributes="Bold" />
-                                                            <Label Grid.Row="1" Grid.Column="3" Text="{Binding Status, Converter={StaticResource DetailStatusToTextConverter}}" />
+                                                            <Label Grid.Row="1" Grid.Column="3" Text="{Binding Status, Converter={StaticResource DetailStatusToTextConverter}}" /> -->
 
                                                             <!-- Sugar -->
-                                                            <Label Grid.Row="2" Text="Sugar: " FontAttributes="Bold" />
-                                                            <Label Grid.Row="2" Grid.Column="1" Text="{Binding Sugar}" />
+                                                            <Label Grid.Row="1" Grid.Column="2" Text="Sugar: " FontAttributes="Bold" />
+                                                            <Label Grid.Row="1" Grid.Column="3" Text="{Binding Sugar}" />
 
                                                             <!-- Ice -->
-                                                            <Label Grid.Row="2" Grid.Column="2" Text="Ice: " FontAttributes="Bold" />
-                                                            <Label Grid.Row="2" Grid.Column="3" Text="{Binding Ice}" />
+                                                            <Label Grid.Row="2" Grid.Column="0" Text="Ice: " FontAttributes="Bold" />
+                                                            <Label Grid.Row="2" Grid.Column="1" Text="{Binding Ice}" />
 
                                                             <!-- Topping -->
-                                                            <Label Grid.Row="3" Text="Topping: " FontAttributes="Bold" />
-                                                            <Label Grid.Row="3" Grid.Column="1" Text="{Binding Topping}" />
+                                                            <Label Grid.Row="2" Grid.Column="2" Text="Topping: " FontAttributes="Bold" />
+                                                            <Label Grid.Row="2" Grid.Column="3" Text="{Binding Topping}" />
                                                         </Grid>
 
                                                     </StackLayout>
