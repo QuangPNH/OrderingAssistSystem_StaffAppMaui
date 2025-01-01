@@ -81,11 +81,11 @@
 
 	<ItemGroup>
 		<!-- App Icon -->
-		<MauiIcon Include="Resources\AppIcon\bellicon.png"  BaseSize="100, 100"/>
-		<MauiIcon Include="Resources\AppIcon\belliconfg.png"  BaseSize="100, 100"/>
+		<MauiIcon Include="Resources\AppIcon\a.png" BaseSize="100, 100" Color="#FFFFFF"/>
+		<MauiIcon Include="Resources\AppIcon\afg.png" BaseSize="100, 100" Color="#FFFFFF"/>
 
 		<!-- Splash Screen -->
-		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#512BD4" BaseSize="128,128" />
+		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#FFFFFF" BaseSize="128,128" />
 
 		<!-- Images -->
 		<MauiImage Include="Resources\Images\*" />
@@ -107,9 +107,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <None Remove="Resources\AppIcon\a.png" />
+	  <None Remove="Resources\AppIcon\afg.png" />
 	  <None Remove="Resources\AppIcon\bell.svg" />
 	  <None Remove="Resources\Images\bell_icon.png" />
-	  <None Remove="Resources\Images\bell_icon_red.png" />
 	</ItemGroup>
 
 	<ItemGroup>

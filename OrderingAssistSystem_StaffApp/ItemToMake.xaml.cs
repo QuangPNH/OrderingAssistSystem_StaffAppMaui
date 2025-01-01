@@ -799,12 +799,9 @@ public class ItemToMakeListViewModel : INotifyPropertyChanged
                         subsequentPendingItems.RemoveAll(od => od.MenuItemId == firstPendingItems[0].MenuItemId && od.Order.OrderDate == firstPendingItems[0].Order.OrderDate && od.Sugar == firstPendingItems[0].Sugar && od.Ice == firstPendingItems[0].Ice && od.Topping == firstPendingItems[0].Topping);
                     }
 
-
                     // Combine the two lists
                     var pendingItems = firstPendingItems.Concat(subsequentPendingItems).ToList();
                     notFinished = pendingItems.Count();
-
-
 
                     if (pendingItems.Count() > 3)
                     {
