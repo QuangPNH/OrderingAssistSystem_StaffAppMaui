@@ -26,7 +26,7 @@ namespace OrderingAssistSystem_StaffApp
             ShowActionAlert(e);
         }
 
-        public async Task<StaffNotiChannel> GetLatestStaffNotiChannelAsync(int managerId)
+        public async Task<StaffNotiChannel?> GetLatestStaffNotiChannelAsync(int managerId)
         {
             ConfigApi configApi = new ConfigApi();
             var url = configApi._apiUrl + $"StaffNotiChannels/latest/{managerId}";
@@ -44,7 +44,19 @@ namespace OrderingAssistSystem_StaffApp
                 Employee emp = JsonConvert.DeserializeObject<Employee>(loginInfo);
                 if (emp != null)
                 {
-                    StaffNotiChannel _latestStaffNoti = await GetLatestStaffNotiChannelAsync(emp.ManagerId.Value);
+                    MainThread.BeginInvokeOnMainThread(() =>
+                    {
+                        var notification = new NotificationRequest
+                        {
+                            Title = "Notice",
+                            Description = "New Message from client !",
+                            ReturningData = "Dummy data",
+                            NotificationId = 1337
+                        };
+                        LocalNotificationCenter.Current.Show(notification);
+                    });
+                    /*
+                    StaffNotiChannel? _latestStaffNoti = await GetLatestStaffNotiChannelAsync(emp.ManagerId.Value);
                     if (_latestStaffNoti != null && _latestStaffNoti.IsSent == false && emp.ManagerId == _latestStaffNoti.ManagerId)
                     {
                         MainThread.BeginInvokeOnMainThread(() =>
@@ -59,6 +71,7 @@ namespace OrderingAssistSystem_StaffApp
                             LocalNotificationCenter.Current.Show(notification);
                         });
                     }
+                    */
                 }
                 _pendingOrderViewModel.LoadOrders();
             }
@@ -69,7 +82,19 @@ namespace OrderingAssistSystem_StaffApp
                 Employee emp = JsonConvert.DeserializeObject<Employee>(loginInfo);
                 if (emp != null && emp.RoleId == 3)
                 {
-                    StaffNotiChannel _latestStaffNoti = await GetLatestStaffNotiChannelAsync(emp.ManagerId.Value);
+                    MainThread.BeginInvokeOnMainThread(() =>
+                    {
+                        var notification = new NotificationRequest
+                        {
+                            Title = "Notice",
+                            Description = "New Message from client !",
+                            ReturningData = "Dummy data",
+                            NotificationId = 1337
+                        };
+                        LocalNotificationCenter.Current.Show(notification);
+                    });
+                    /*
+                    StaffNotiChannel? _latestStaffNoti = await GetLatestStaffNotiChannelAsync(emp.ManagerId.Value);
                     if (_latestStaffNoti != null && _latestStaffNoti.IsSent == false && emp.ManagerId == _latestStaffNoti.ManagerId)
                     {
                         MainThread.BeginInvokeOnMainThread(() =>
@@ -84,6 +109,7 @@ namespace OrderingAssistSystem_StaffApp
                             LocalNotificationCenter.Current.Show(notification);
                         });
                     }
+                    */
                 }
                 itemToMakeListViewModel.LoadOrderDetails();
             }
