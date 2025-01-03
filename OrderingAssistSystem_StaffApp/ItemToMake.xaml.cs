@@ -188,6 +188,7 @@ public partial class ItemToMake : ContentPage
                 {
                     // Update the status of each matching order detail
                     detail.Status = true;
+                    detail.FinishedItem = detail.Quantity;
                     var uri = new Uri(_config.BaseAddress + $"OrderDetail/{detail.OrderDetailId}");
                     var content = new StringContent(JsonConvert.SerializeObject(detail), Encoding.UTF8, "application/json");
                     HttpResponseMessage response = await _client.PutAsync(uri, content);
@@ -200,45 +201,27 @@ public partial class ItemToMake : ContentPage
                 }
 
                 // Check if all order details have status = true
-                var order = matchingOrderDetails.FirstOrDefault()?.Order;
-                if (order != null)
+                foreach (var orderd in matchingOrderDetails)
                 {
-                    var uri = new Uri(_config.BaseAddress + $"Order/{order.OrderId}");
-                    HttpResponseMessage response1 = await _client.GetAsync(uri);
-                    if (response1.IsSuccessStatusCode)
+                    var order = orderd.Order;
+                    if (order != null)
                     {
-                        string data = await response1.Content.ReadAsStringAsync();
-                        order = JsonConvert.DeserializeObject<Order>(data);
-                        order.OrderDate = DateTime.Now;
-                        var orderDetails = order?.OrderDetails;
-                        if (orderDetails != null && orderDetails.All(od => od.Status == true))
+                        var uri = new Uri(_config.BaseAddress + $"Order/{order.OrderId}");
+                        HttpResponseMessage response1 = await _client.GetAsync(uri);
+                        if (response1.IsSuccessStatusCode)
                         {
-                            // Update the status of the order
-                            order.Status = true;
-                            uri = new Uri(_config.BaseAddress + $"Order/{order.OrderId}");
-                            var content = new StringContent(JsonConvert.SerializeObject(order), Encoding.UTF8, "application/json");
-                            response1 = await _client.PutAsync(uri, content);
-                        }
-                    }
-                }
-
-                // Handle the ProcessingItem object here
-                await DisplayAlert("Item Finished", $"Finished item {orderDetail.MenuItem?.ItemName}.", "OK");
-
-
-                if (matchingOrderDetails.Count() != 0)
-                {
-                    var order2 = matchingOrderDetails.FirstOrDefault()?.Order;
-                    var uri1 = new Uri(_config.BaseAddress + $"Order/{order2.OrderId}");
-                    var response2 = await _client.GetAsync(uri1);
-                    if (response2.IsSuccessStatusCode)
-                    {
-                        string data = await response2.Content.ReadAsStringAsync();
-                        var order1 = JsonConvert.DeserializeObject<Order>(data);
-                        //Send to client when order finished
-                        if (matchingOrderDetails.Count > 0)
-                        {
-                            await SendNotificationAsync(order.Table.Qr, $"Finished item {orderDetail.MenuItem?.ItemName}.");
+                            string data = await response1.Content.ReadAsStringAsync();
+                            order = JsonConvert.DeserializeObject<Order>(data);
+                            //order.OrderDate = DateTime.Now;
+                            var orderDetails = order?.OrderDetails;
+                            if (orderDetails != null && orderDetails.All(od => od.Status == true))
+                            {
+                                // Update the status of the order
+                                order.Status = true;
+                                uri = new Uri(_config.BaseAddress + $"Order/{order.OrderId}");
+                                var content = new StringContent(JsonConvert.SerializeObject(order), Encoding.UTF8, "application/json");
+                                response1 = await _client.PutAsync(uri, content);
+                            }
                         }
                     }
                 }
@@ -255,6 +238,7 @@ public partial class ItemToMake : ContentPage
         var button = sender as Button;
         var orderDetail = button?.CommandParameter as OrderDetail;
         int input = 0;
+        int ogInput = 0;
 
         if (button?.Parent is HorizontalStackLayout stackLayout)
         {
@@ -262,21 +246,19 @@ public partial class ItemToMake : ContentPage
             if (entry != null && int.TryParse(entry.Text, out int value))
             {
                 input = value;
+                ogInput = value;
             }
         }
 
         if (orderDetail != null && input > 0)
         {
             var viewModel = BindingContext as ItemToMakeListViewModel;
-
             viewModel.LoadOrderDetails();
-
             var matchingOrderDetails = viewModel?.AllOrderDetails
                 .Where(od => od.MenuItem?.ItemName == orderDetail.MenuItem?.ItemName &&
                              od.Sugar == orderDetail.Sugar &&
                              od.Ice == orderDetail.Ice &&
-                             od.Topping == orderDetail.Topping && !(bool)od.Status)
-                .ToList();
+                             od.Topping == orderDetail.Topping && !(bool)od.Status).ToList();
 
             if (matchingOrderDetails.Count == 0)
             {
@@ -291,7 +273,7 @@ public partial class ItemToMake : ContentPage
                     if (input <= 0)
                         break;
 
-                    if (input >= detail.Quantity)
+                    if (input + detail.FinishedItem >= detail.Quantity)
                     {
                         detail.FinishedItem = detail.Quantity;
                         detail.Status = true;
@@ -346,14 +328,13 @@ public partial class ItemToMake : ContentPage
 
                 if (matchingOrderDetails.Count > 0)
                 {
-                    await SendNotificationAsync(order.Table.Qr, $"{matchingOrderDetails.FirstOrDefault()?.MenuItem?.ItemName} has been finished");
+                    await SendNotificationAsync(order.Table.Qr, ogInput + " " + matchingOrderDetails.FirstOrDefault()?.MenuItem?.ItemName + " has been finished!");
                     SendOrderConfirmationNotificationAsync();
                 }
-
                 viewModel?.LoadOrderDetails();
-
-                await DisplayAlert("Done", input + " item has been finished!", "OK");
-                await SendNotificationAsync(matchingOrderDetails[0].Order.Table.Qr, input + " item has been finished!");
+                await DisplayAlert("Done", ogInput + " " + matchingOrderDetails.FirstOrDefault()?.MenuItem?.ItemName + " has been finished!", "OK");
+                await SendNotificationAsync(matchingOrderDetails.FirstOrDefault()?.Order.Table.Qr, ogInput + " " + matchingOrderDetails.FirstOrDefault()?.MenuItem?.ItemName + " has been finished!");
+                SendOrderConfirmationNotificationAsync();
             }
         }
     }
@@ -398,115 +379,6 @@ public partial class ItemToMake : ContentPage
     {
         return Application.Current.MainPage.DisplayAlert(title, message, cancel);
     }
-
-
-
-    /*private void ClearOrderDetailsPreference()
-    {
-        // Remove the key "OrderDetails" from preferences
-        if (Preferences.ContainsKey("OrderDetails"))
-        {
-            Preferences.Remove("OrderDetails");
-            Console.WriteLine("OrderDetails preference cleared successfully.");
-        }
-        else
-        {
-            Console.WriteLine("No OrderDetails preference found to clear.");
-        }
-    }*/
-
-    /*private void RemoveFromPreference(OrderDetail orderDetail)
-    {
-        var orderDetails = GetOrderDetailsFromPreference();
-        orderDetails.RemoveAll(detail =>
-            detail.Order.OrderDate == orderDetail.Order.OrderDate &&
-            detail.MenuItem.ItemName == orderDetail.MenuItem.ItemName &&
-            detail.Sugar == orderDetail.Sugar &&
-            detail.Ice == orderDetail.Ice &&
-            detail.Topping == orderDetail.Topping);
-        SaveAllToPreference(orderDetails);
-    }
-
-    private void SaveToPreference(OrderDetail orderDetail)
-    {
-        var orderDetails = GetOrderDetailsFromPreference();
-        var existingDetail = orderDetails.FirstOrDefault(detail =>
-            detail.Order.OrderDate == orderDetail.Order.OrderDate &&
-            detail.MenuItem.ItemName == orderDetail.MenuItem.ItemName &&
-            detail.Sugar == orderDetail.Sugar &&
-            detail.Ice == orderDetail.Ice &&
-            detail.Topping == orderDetail.Topping);
-
-        if (existingDetail != null)
-        {
-            orderDetails.Remove(existingDetail);
-        }
-
-        orderDetails.Add(orderDetail);
-        SaveAllToPreference(orderDetails);
-    }
-
-
-    private List<OrderDetail> GetOrderDetailsFromPreference()
-    {
-        var serialized = Preferences.Get("OrderDetails", "[]");
-        var anonymousObjects = JsonConvert.DeserializeObject<List<dynamic>>(serialized);
-
-        var orderDetails = new List<OrderDetail>();
-
-        foreach (var obj in anonymousObjects)
-        {
-            var orderDetail = new OrderDetail
-            {
-                FinishedItem = obj.FinishedItem,
-                Sugar = obj.Sugar,
-                Ice = obj.Ice,
-                Topping = obj.Topping,
-                IsCurrentItem = obj.IsCurrentItem,
-                Quantity = obj.Quantity,
-                Status = obj.Status,
-                Order = new Order { OrderDate = obj.OrderDate },
-                MenuItem = new Models.MenuItem { ItemName = obj.ItemName }
-            };
-
-            orderDetails.Add(orderDetail);
-        }
-
-        return orderDetails;
-    }
-
-    private void SaveAllToPreference(List<OrderDetail> orderDetails)
-    {
-        var settings = new JsonSerializerSettings
-        {
-            ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-            NullValueHandling = NullValueHandling.Ignore,
-            ContractResolver = new DefaultContractResolver
-            {
-                IgnoreSerializableAttribute = false,
-            }
-        };
-
-        // Create a list of anonymous objects for serialization
-        var serializedObjects = orderDetails.Select(detail => new
-        {
-            detail.FinishedItem,
-            detail.Sugar,
-            detail.Ice,
-            detail.Topping,
-            detail.IsCurrentItem,
-            detail.Quantity,
-            detail.Status,
-            OrderDate = detail.Order.OrderDate, // Extract nested property
-            ItemName = detail.MenuItem.ItemName // Extract nested property
-        }).ToList();
-
-        // Serialize the anonymous objects to JSON
-        var serialized = JsonConvert.SerializeObject(serializedObjects, settings);
-
-        // Save the JSON string to preferences
-        Preferences.Set("OrderDetails", serialized);
-    }*/
 
 
     private async Task<NotiChange> GetNotiChangeByTableNameAsync(string tableName)
