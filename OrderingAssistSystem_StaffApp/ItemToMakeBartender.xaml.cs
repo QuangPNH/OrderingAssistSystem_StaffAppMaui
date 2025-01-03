@@ -106,10 +106,10 @@ public partial class ItemToMakeBartender : ContentPage
 		}
 		else if (loginStatus.Equals("null"))
 		{
-			await DisplayAlert("Status", "Login info not found.", "OK");
-			INotificationRegistrationService notificationRegistrationService = DependencyService.Get<INotificationRegistrationService>();
-			Application.Current.MainPage = new NavigationPage(new MainPage(notificationRegistrationService));
-		}
+            await DisplayAlert("Status", "Login info not found or the internet isn't working.", "OK");
+            INotificationRegistrationService notificationRegistrationService = DependencyService.Get<INotificationRegistrationService>();
+            Application.Current.MainPage = new NavigationPage(new MainPage(notificationRegistrationService));
+        }
 		else
 		{
 			//await DisplayAlert("Status", "Something went wrong.", "OK");

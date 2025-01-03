@@ -102,7 +102,7 @@ public partial class ItemToMake : ContentPage
         }
         else if (loginStatus.Equals("null"))
         {
-            await DisplayAlert("Status", "Login info not found.", "OK");
+            await DisplayAlert("Status", "Login info not found or the internet isn't working.", "OK");
             INotificationRegistrationService notificationRegistrationService = DependencyService.Get<INotificationRegistrationService>();
             Application.Current.MainPage = new NavigationPage(new MainPage(notificationRegistrationService));
         }
