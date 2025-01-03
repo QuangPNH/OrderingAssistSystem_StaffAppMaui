@@ -45,10 +45,11 @@
         <!-- Scrollable Content -->
         <ScrollView Grid.Row="1">
             <StackLayout Padding="10">
-                <Label Text="Item To Make List"
+                <Label Text="Items To Make List"
                        FontSize="20"
                        FontAttributes="Bold"
                        HorizontalOptions="Center" />
+                <Label Text="{Binding Role}" FontSize="16" HorizontalOptions="Center" />
 
                 <!-- Menu Item Header -->
                 <Frame BorderColor="Gray" CornerRadius="5" Padding="10">

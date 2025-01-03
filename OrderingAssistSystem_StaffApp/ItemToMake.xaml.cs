@@ -673,7 +673,6 @@ public partial class ItemToMake : ContentPage
             viewModel?.LoadOrderDetails();
         }
     }
-
 }
 
 public class ItemToMakeListViewModel : INotifyPropertyChanged
@@ -683,7 +682,7 @@ public class ItemToMakeListViewModel : INotifyPropertyChanged
         ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => true
     });
     private readonly ConfigApi _config = new ConfigApi();
-
+    public string Role { get; set; }
     public ObservableCollection<GroupedMenuItem> GroupedMenuItems { get; set; } = new ObservableCollection<GroupedMenuItem>();
 
     public ObservableCollection<OrderDetail> FirstItemToMake { get; set; } = new ObservableCollection<OrderDetail>();
@@ -708,6 +707,9 @@ public class ItemToMakeListViewModel : INotifyPropertyChanged
 
     public ItemToMakeListViewModel()
     {
+        string loginInfoJson = Preferences.Get("LoginInfo", string.Empty);
+        Employee emp = JsonConvert.DeserializeObject<Employee>(loginInfoJson);
+        Role = emp.Role.RoleName;
         LoadOrderDetails();
     }
 
@@ -756,7 +758,7 @@ public class ItemToMakeListViewModel : INotifyPropertyChanged
                     // Group only ItemToMake by MenuItemId, Topping, Ice, and Sugar and sum the quantities
                     var firstPendingItems = orderDetails
                         .Where(od => (od.Status == null || od.Status == false) && od.Order.Status == false )
-                        .GroupBy(od => new { od.MenuItemId, od.Topping, od.Ice, od.Sugar, od.FinishedItem }) // Include FinishedItem
+                        .GroupBy(od => new { od.MenuItemId, od.Topping, od.Ice, od.Sugar }) // Include FinishedItem
                         .Select(g => new OrderDetail
                         {
                             MenuItemId = g.Key.MenuItemId,
@@ -767,7 +769,6 @@ public class ItemToMakeListViewModel : INotifyPropertyChanged
                             Topping = g.Key.Topping,
                             Ice = g.Key.Ice,
                             Sugar = g.Key.Sugar,
-                            FinishedItem = g.Key.FinishedItem, // Access FinishedItem
                             Order = new Order
                             {
                                 OrderDate = g.Min(od => od.Order?.OrderDate)
@@ -776,7 +777,7 @@ public class ItemToMakeListViewModel : INotifyPropertyChanged
 
                     var subsequentPendingItems = orderDetails
                         .Where(od => (od.Status == null /*&& !firstPendingItems.Contains(od)*/  && od.Order.Status == false))
-                        .GroupBy(od => new { od.MenuItemId, od.Topping, od.Ice, od.Sugar, od.FinishedItem }) // Include FinishedItem
+                        .GroupBy(od => new { od.MenuItemId, od.Topping, od.Ice, od.Sugar }) // Include FinishedItem
                         .Select(g => new OrderDetail
                         {
                             MenuItemId = g.Key.MenuItemId,
@@ -787,7 +788,6 @@ public class ItemToMakeListViewModel : INotifyPropertyChanged
                             Topping = g.Key.Topping,
                             Ice = g.Key.Ice,
                             Sugar = g.Key.Sugar,
-                            FinishedItem = g.Key.FinishedItem, // Access FinishedItem
                             Order = new Order
                             {
                                 OrderDate = g.Min(od => od.Order?.OrderDate)
@@ -801,7 +801,7 @@ public class ItemToMakeListViewModel : INotifyPropertyChanged
 
                     // Combine the two lists
                     var pendingItems = firstPendingItems.Concat(subsequentPendingItems).ToList();
-                    notFinished = pendingItems.Count();
+                    notFinished = pendingItems.Count;
 
                     if (pendingItems.Count() > 3)
                     {
@@ -981,6 +981,7 @@ public class ItemToMakeListViewModel : INotifyPropertyChanged
                     {
                         DoneItems.Add(doneItem);
                     }
+                    notFinished = notFinished + processingItems.Count;
                 }
             }
         }
@@ -1017,7 +1018,7 @@ public class ItemToMakeListViewModel : INotifyPropertyChanged
         orderDetail.Sugar = string.IsNullOrEmpty(orderDetail.Sugar) ? "normal" : orderDetail.Sugar;
         orderDetail.Topping = string.IsNullOrEmpty(orderDetail.Topping) ? "none" : orderDetail.Topping;
 
-        var orderDetails = GetOrderDetailsFromPreference();
+        /*var orderDetails = GetOrderDetailsFromPreference();
 
         if (orderDetail != null && orderDetail.Order != null)
         {
@@ -1041,7 +1042,7 @@ public class ItemToMakeListViewModel : INotifyPropertyChanged
         {
             // Handle the case where orderDetail or orderDetail.Order is null
             orderDetail.FinishedItem = 0;
-        }
+        }*/
     }
 
     private List<OrderDetail> GetOrderDetailsFromPreference()

@@ -15,7 +15,6 @@ namespace OrderingAssistSystem_StaffApp.Models
 		public int? OrderId { get; set; }
 		public bool? Status { get; set; }
 		public string? Description { get; set; }
-		[JsonIgnore]
 		public int? FinishedItem { get; set; }
 		[JsonIgnore]
 		public string? Sugar { get; set; }

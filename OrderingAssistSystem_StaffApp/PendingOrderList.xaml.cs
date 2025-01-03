@@ -377,9 +377,12 @@ public class CombinedViewModel : INotifyPropertyChanged
 {
     public PendingOrderViewModel PendingOrder { get; set; }
     public ItemToMakeListViewModel ItemToMake { get; set; }
-
+    public string Role {get; set;}
     public CombinedViewModel()
     {
+        string loginInfoJson = Preferences.Get("LoginInfo", string.Empty);
+        Employee emp = JsonConvert.DeserializeObject<Employee>(loginInfoJson);
+        Role = emp.Role.RoleName;
         PendingOrder = new PendingOrderViewModel();
         ItemToMake = new ItemToMakeListViewModel();
         CalculateRemainingDays();

@@ -671,9 +671,9 @@ public class MenuItemListViewModel : INotifyPropertyChanged
 	public ObservableCollection<MenuItem> FilteredMenuItems { get; set; }
 	public ICommand AddToCartCommand { get; set; }
 	private CancellationTokenSource _debounceCts;
+	public string Role { get; set; }
 
-
-	public string SearchText
+    public string SearchText
 	{
 		get => _searchText;
 		set
@@ -695,7 +695,10 @@ public class MenuItemListViewModel : INotifyPropertyChanged
 
 	public MenuItemListViewModel()
 	{
-		MenuItems = new ObservableCollection<MenuItem>();
+        string loginInfoJson = Preferences.Get("LoginInfo", string.Empty);
+        Employee emp = JsonConvert.DeserializeObject<Employee>(loginInfoJson);
+        Role = emp.Role.RoleName;
+        MenuItems = new ObservableCollection<MenuItem>();
 		FilteredMenuItems = new ObservableCollection<MenuItem>();
 		Categories = new ObservableCollection<ItemCategory>();
 		LoadCategories();

@@ -48,6 +48,7 @@
                        FontSize="20"
                        FontAttributes="Bold"
                        HorizontalOptions="Center" />
+                <Label Text="{Binding Role}" FontSize="16" HorizontalOptions="Center" />
                 <Label Text="Processing" FontAttributes="Bold"  FontSize="18"  Margin="10,20,10,5" />
                 <CollectionView ItemsSource="{Binding GroupedMenuItems}">
                     <CollectionView.ItemTemplate>

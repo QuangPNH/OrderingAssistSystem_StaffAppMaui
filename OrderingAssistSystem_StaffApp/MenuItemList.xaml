@@ -54,6 +54,8 @@
         <ScrollView Grid.Row="1">
             <StackLayout Padding="10" Spacing="10">
 
+                <Label Text="{Binding Role}" FontSize="16" HorizontalOptions="Center" />
+                
                 <!-- Button to show the cart list -->
                 <Button Text="Show Cart" 
                     HorizontalOptions="Center" 

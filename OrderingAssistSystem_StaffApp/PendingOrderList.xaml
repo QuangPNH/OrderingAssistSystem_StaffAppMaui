@@ -57,6 +57,8 @@
                FontSize="20"
                FontAttributes="Bold"
                HorizontalOptions="Center" />
+
+                <Label Text="{Binding Role}" FontSize="16" HorizontalOptions="Center" />
                 <Label Text="{Binding RemainingDaysMessage}" />
                 <CollectionView ItemsSource="{Binding PendingOrder.Orders}">
                     <CollectionView.ItemTemplate>
