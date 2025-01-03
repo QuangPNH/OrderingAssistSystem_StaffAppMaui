@@ -272,8 +272,7 @@ public partial class ItemToMake : ContentPage
             viewModel.LoadOrderDetails();
 
             var matchingOrderDetails = viewModel?.AllOrderDetails
-                .Where(od => od.Order?.OrderDate == orderDetail.Order?.OrderDate &&
-                             od.MenuItem?.ItemName == orderDetail.MenuItem?.ItemName &&
+                .Where(od => od.MenuItem?.ItemName == orderDetail.MenuItem?.ItemName &&
                              od.Sugar == orderDetail.Sugar &&
                              od.Ice == orderDetail.Ice &&
                              od.Topping == orderDetail.Topping && !(bool)od.Status)
@@ -289,22 +288,14 @@ public partial class ItemToMake : ContentPage
             {
                 foreach (var detail in matchingOrderDetails)
                 {
-                    detail.FinishedItem += input;
+                    if (input <= 0)
+                        break;
 
-                    if (detail.FinishedItem < detail.Quantity)
+                    if (input >= detail.Quantity)
                     {
-                        SaveToPreference(detail);
-                    }
-                    else
-                    {
+                        detail.FinishedItem = detail.Quantity;
                         detail.Status = true;
-                        int remainder = (int)(detail.FinishedItem - detail.Quantity);
-                        RemoveFromPreference(detail);
-
-                        if (remainder > 0)
-                        {
-                            DistributeRemainder(matchingOrderDetails, detail, remainder);
-                        }
+                        input = (int)(input - detail.Quantity);
 
                         var uri = new Uri(_config.BaseAddress + $"OrderDetail/{detail.OrderDetailId}");
                         var content = new StringContent(JsonConvert.SerializeObject(detail), Encoding.UTF8, "application/json");
@@ -314,18 +305,18 @@ public partial class ItemToMake : ContentPage
                             await DisplayAlert("Error", $"Failed to update item {detail.MenuItem?.ItemName}.", "OK");
                             return;
                         }
-                        else
+                    }
+                    else
+                    {
+                        detail.FinishedItem += input;
+                        detail.Status = false;
+                        var uri = new Uri(_config.BaseAddress + $"OrderDetail/{detail.OrderDetailId}");
+                        var content = new StringContent(JsonConvert.SerializeObject(detail), Encoding.UTF8, "application/json");
+                        HttpResponseMessage response = await _client.PutAsync(uri, content);
+                        if (!response.IsSuccessStatusCode)
                         {
-                            await DisplayAlert("Item Updated", $"Finished item " + detail.MenuItem.ItemName, "OK");
-                            var order2 = matchingOrderDetails.FirstOrDefault()?.Order;
-                            uri = new Uri(_config.BaseAddress + $"Order/{order2.OrderId}");
-                            response = await _client.GetAsync(uri);
-                            if (response.IsSuccessStatusCode)
-                            {
-                                string data = await response.Content.ReadAsStringAsync();
-                                var order1 = JsonConvert.DeserializeObject<Order>(data);
-                                await SendNotificationAsync(order1.Table.Qr, "Order has been finished !");
-                            }
+                            await DisplayAlert("Error", $"Failed to update item {detail.MenuItem?.ItemName}.", "OK");
+                            return;
                         }
                     }
                 }
@@ -340,7 +331,7 @@ public partial class ItemToMake : ContentPage
                     {
                         string data = await response.Content.ReadAsStringAsync();
                         order = JsonConvert.DeserializeObject<Order>(data);
-                        order.OrderDate = DateTime.Now;
+                        //order.OrderDate = DateTime.Now;
                         var orderDetails = order?.OrderDetails;
                         if (orderDetails != null && orderDetails.All(od => od.Status == true))
                         {
@@ -358,7 +349,11 @@ public partial class ItemToMake : ContentPage
                     await SendNotificationAsync(order.Table.Qr, $"{matchingOrderDetails.FirstOrDefault()?.MenuItem?.ItemName} has been finished");
                     SendOrderConfirmationNotificationAsync();
                 }
+
                 viewModel?.LoadOrderDetails();
+
+                await DisplayAlert("Done", input + " item has been finished!", "OK");
+                await SendNotificationAsync(matchingOrderDetails[0].Order.Table.Qr, input + " item has been finished!");
             }
         }
     }
@@ -400,46 +395,13 @@ public partial class ItemToMake : ContentPage
     }
     // Method to display alerts
     private Task DisplayAlert(string title, string message, string cancel)
-	{
-		return Application.Current.MainPage.DisplayAlert(title, message, cancel);
-	}
-
-    private async void DistributeRemainder(List<OrderDetail> orderDetails, OrderDetail currentDetail, int remainder)
     {
-        foreach (var detail in orderDetails)
-        {
-            if (remainder <= 0)
-                break;
-
-            if (detail.Order.OrderDate == currentDetail.Order.OrderDate &&
-                detail.MenuItem.ItemName == currentDetail.MenuItem.ItemName &&
-                detail.Sugar == currentDetail.Sugar &&
-                detail.Ice == currentDetail.Ice &&
-                detail.Topping == currentDetail.Topping &&
-                !(bool)detail.Status)
-            {
-                int available = (int)(detail.Quantity - detail.FinishedItem);
-
-                if (available >= remainder)
-                {
-                    detail.FinishedItem += remainder;
-                    if (detail.FinishedItem == detail.Quantity)
-                    {
-                        detail.Status = true;
-                    }
-                    remainder = 0;
-                }
-                else
-                {
-                    detail.FinishedItem += available;
-                    detail.Status = true;
-                    remainder -= available;
-                }
-            }
-        }
+        return Application.Current.MainPage.DisplayAlert(title, message, cancel);
     }
 
-    private void ClearOrderDetailsPreference()
+
+
+    /*private void ClearOrderDetailsPreference()
     {
         // Remove the key "OrderDetails" from preferences
         if (Preferences.ContainsKey("OrderDetails"))
@@ -451,9 +413,9 @@ public partial class ItemToMake : ContentPage
         {
             Console.WriteLine("No OrderDetails preference found to clear.");
         }
-    }
+    }*/
 
-    private void RemoveFromPreference(OrderDetail orderDetail)
+    /*private void RemoveFromPreference(OrderDetail orderDetail)
     {
         var orderDetails = GetOrderDetailsFromPreference();
         orderDetails.RemoveAll(detail =>
@@ -544,7 +506,7 @@ public partial class ItemToMake : ContentPage
 
         // Save the JSON string to preferences
         Preferences.Set("OrderDetails", serialized);
-    }
+    }*/
 
 
     private async Task<NotiChange> GetNotiChangeByTableNameAsync(string tableName)
@@ -757,7 +719,7 @@ public class ItemToMakeListViewModel : INotifyPropertyChanged
 
                     // Group only ItemToMake by MenuItemId, Topping, Ice, and Sugar and sum the quantities
                     var firstPendingItems = orderDetails
-                        .Where(od => (od.Status == null || od.Status == false) && od.Order.Status == false )
+                        .Where(od => (od.Status == null || od.Status == false) && od.Order.Status == false)
                         .GroupBy(od => new { od.MenuItemId, od.Topping, od.Ice, od.Sugar }) // Include FinishedItem
                         .Select(g => new OrderDetail
                         {
