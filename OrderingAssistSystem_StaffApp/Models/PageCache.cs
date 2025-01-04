@@ -28,6 +28,11 @@ namespace OrderingAssistSystem_StaffApp.Models
         {
             return _pages.ContainsKey(key) ? _pages[key] : null;
         }
+
+        public void ClearCache()
+        {
+            _pages.Clear();
+        }
     }
 
 }
