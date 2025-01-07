@@ -11,6 +11,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Windows.Input;
 using Twilio.TwiML.Voice;
+using Twilio.Types;
 using Application = Microsoft.Maui.Controls.Application;
 using MenuItem = OrderingAssistSystem_StaffApp.Models.MenuItem;
 using Task = System.Threading.Tasks.Task;
@@ -256,10 +257,6 @@ public partial class MenuItemList : ContentPage
 
 				// If it exists, increase the quantity
 				existingCartItem.Quantity = (int)menuItem.Quantity;
-
-
-
-
 				CartItems.Remove(existingCartItem);
                 CartItems.Add(new CartItem
                 {
@@ -299,11 +296,12 @@ public partial class MenuItemList : ContentPage
 	private async void OnCreateOrderClicked(object sender, EventArgs e)
 	{
 		Member member = null;
+		string phoneNumber = "";
 
 		if (!string.IsNullOrEmpty(PhoneNumberEntry.Text?.Trim()))
 		{
 			// Check if phone number format is correct
-			var phoneNumber = PhoneNumberEntry.Text.Trim();
+			phoneNumber = PhoneNumberEntry.Text.Trim();
 			if (!System.Text.RegularExpressions.Regex.IsMatch(phoneNumber, @"^0[1-9]\d{8,14}$"))
 			{
 				await DisplayAlert("Error", "Invalid phone number format.", "OK");
@@ -333,7 +331,7 @@ public partial class MenuItemList : ContentPage
 					var memberData = await memberResponse.Content.ReadAsStringAsync();
 					member = JsonConvert.DeserializeObject<Member>(memberData);
 				}
-			}
+                }
 			catch (Exception ex)
 			{
 				await DisplayAlert("Error", $"An error occurred while fetching or registering the member: {ex.Message}", "OK");
@@ -392,8 +390,18 @@ public partial class MenuItemList : ContentPage
 				return;
 			}
 
-			// Update member points if member exists
-			if (member != null)
+			if (member.MemberId == 0 || member.MemberId == null)
+			{
+				var memberResponse = await _client.GetAsync($"{_config.BaseAddress}Member/Phone/{phoneNumber}");
+				if (memberResponse.IsSuccessStatusCode)
+				{
+                    var memberJson = await memberResponse.Content.ReadAsStringAsync();
+                    member = JsonConvert.DeserializeObject<Member>(memberJson);
+				}
+			}
+
+            // Update member points if member exists
+            if (member != null)
 			{
 				var points = newOrder.Cost / 1000;
 				var updatePointsResponse = await _client.GetAsync($"{_config.BaseAddress}Member/UpdatePoints/memberId/point?memberId={member.MemberId}&point={points}");
