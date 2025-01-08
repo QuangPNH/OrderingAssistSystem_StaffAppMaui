@@ -171,12 +171,11 @@ public partial class ItemToMake : ContentPage
             viewModel.LoadOrderDetails();
 
             var matchingOrderDetails = viewModel?.AllOrderDetails
-                .Where(od => od.Order?.OrderDate == orderDetail.Order?.OrderDate &&
-                             od.MenuItem?.ItemName == orderDetail.MenuItem?.ItemName &&
+                .Where(od => od.MenuItem.ItemName == orderDetail.MenuItem.ItemName &&
                              od.Sugar == orderDetail.Sugar &&
                              od.Ice == orderDetail.Ice &&
                              od.Topping == orderDetail.Topping &&
-                             (bool)od.Status == false).ToList();
+                             od.Status == false).ToList();
 
             if (matchingOrderDetails.Count == 0)
             {
@@ -228,6 +227,7 @@ public partial class ItemToMake : ContentPage
                     }
                 }
                 SendOrderConfirmationNotificationAsync();
+                await DisplayAlert("Ok", "Finished " + orderDetail.Quantity + " " + orderDetail.MenuItem.ItemName + ".", "OK");
                 viewModel?.LoadOrderDetails();
             }
         }
@@ -251,16 +251,14 @@ public partial class ItemToMake : ContentPage
                 ogInput = value;
             }
         }
-
         if (orderDetail != null && input > 0)
         {
             var viewModel = BindingContext as ItemToMakeListViewModel;
-            viewModel.LoadOrderDetails();
-            var matchingOrderDetails = viewModel?.AllOrderDetails
-                .Where(od => od.MenuItem?.ItemName == orderDetail.MenuItem?.ItemName &&
-                             od.Sugar == orderDetail.Sugar &&
-                             od.Ice == orderDetail.Ice &&
-                             od.Topping == orderDetail.Topping && !(bool)od.Status).ToList();
+            List<OrderDetail> all = viewModel?.AllOrderDetails;
+            List<OrderDetail> matchingOrderDetails = all.Where(od => od.MenuItem.ItemName.Equals(orderDetail.MenuItem.ItemName) &&
+                             od.Sugar.Equals(orderDetail.Sugar) &&
+                             od.Ice.Equals(orderDetail.Ice) &&
+                             od.Topping.Equals(orderDetail.Topping) && od.Status == false).ToList();
 
             if (matchingOrderDetails.Count == 0)
             {
@@ -640,7 +638,6 @@ public class ItemToMakeListViewModel : INotifyPropertyChanged
 
                     // Combine the two lists
                     var pendingItems = firstPendingItems.Concat(subsequentPendingItems).ToList();
-                    notFinished = pendingItems.Count;
 
                     if (pendingItems.Count() > 3)
                     {
@@ -820,7 +817,9 @@ public class ItemToMakeListViewModel : INotifyPropertyChanged
                     {
                         DoneItems.Add(doneItem);
                     }
-                    notFinished = notFinished + processingItems.Count;
+                    notFinished = AllOrderDetails
+             .Where(orderDetail => orderDetail.Status != true)
+             .Sum(orderDetail => orderDetail.Quantity ?? 0);
                 }
             }
         }

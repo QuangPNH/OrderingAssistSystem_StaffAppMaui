@@ -172,7 +172,7 @@ public partial class PendingOrderList : ContentPage
         // Get the Order object from the CommandParameter
         var button = sender as Button;
         var order = button?.CommandParameter as Order; // Cast to your Order type
-
+        var viewModel = BindingContext as CombinedViewModel;
         if (order != null)
         {
             try
@@ -187,9 +187,6 @@ public partial class PendingOrderList : ContentPage
                     // Update the order status locally if needed
                     order.Status = false;
                     // Refresh the pending order list and item to make list
-                    var viewModel = BindingContext as CombinedViewModel;
-                    viewModel?.PendingOrder.LoadOrders();
-                    viewModel?.ItemToMake.LoadOrderDetails();
                     DisplayAlert("Confirmed", $"Order {order.OrderId} has been confirmed paid.", "OK");
 
 
@@ -200,8 +197,12 @@ public partial class PendingOrderList : ContentPage
             }
             catch (Exception ex)
             {
+                viewModel?.PendingOrder.Orders.Remove(order);
+                viewModel?.PendingOrder.LoadOrders();
+                viewModel?.ItemToMake.LoadOrderDetails();
                 // Handle exceptions
                 Console.WriteLine($"Error updating order status: {ex.Message}");
+                DisplayAlert("Confirmed", $"Order {order.OrderId} may has already been confirmed.", "OK");
             }
         }
         CheckEmptyLists();
@@ -212,7 +213,7 @@ public partial class PendingOrderList : ContentPage
         // Get the Order object from the CommandParameter
         var button = sender as Button;
         var order = button?.CommandParameter as Order; // Cast to your Order type
-
+        var viewModel = BindingContext as CombinedViewModel;
         if (order != null)
         {
             try
@@ -223,7 +224,6 @@ public partial class PendingOrderList : ContentPage
                 if (response.IsSuccessStatusCode)
                 {
                     // Remove the order from the local collection if needed
-                    var viewModel = BindingContext as CombinedViewModel;
                     viewModel?.PendingOrder.Orders.Remove(order);
                     // Refresh the pending order list and item to make list
                     viewModel?.PendingOrder.LoadOrders();
@@ -236,8 +236,13 @@ public partial class PendingOrderList : ContentPage
             }
             catch (Exception ex)
             {
-                // Handle exceptions
+                // Remove the order from the local collection if needed
+                viewModel?.PendingOrder.Orders.Remove(order);
+                // Refresh the pending order list and item to make list
+                viewModel?.PendingOrder.LoadOrders();
+                viewModel?.ItemToMake.LoadOrderDetails();
                 Console.WriteLine($"Error deleting order: {ex.Message}");
+                DisplayAlert("Cancelled", $"Order: {order.OrderId} may has already been cancelled.", "OK");
             }
         }
 		CheckEmptyLists();
