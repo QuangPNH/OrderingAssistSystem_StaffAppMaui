@@ -412,7 +412,10 @@ public partial class MenuItemList : ContentPage
 				}
 			}
 
-			ClearCartPreferences();
+            var viewModel = BindingContext as CombinedViewModel;
+            viewModel?.PendingOrder.LoadOrders();
+
+            ClearCartPreferences();
 			await DisplayAlert("Success", "Order created successfully.", "OK");
 			SendOrderConfirmationNotificationAsync();
 

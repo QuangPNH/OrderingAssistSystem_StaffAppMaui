@@ -297,7 +297,6 @@ public partial class PendingOrderList : ContentPage
 
     private void OnPendingOrdersClicked(object sender, EventArgs e)
     {
-        
         var viewModel = BindingContext as CombinedViewModel;
         viewModel?.CalculateRemainingDays();
         viewModel?.PendingOrder.LoadOrders();
