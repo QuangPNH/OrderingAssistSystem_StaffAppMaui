@@ -8,7 +8,9 @@ namespace OrderingAssistSystem_StaffApp.Models
         public int Feedbackid { get; set; }
         public string? Content { get; set; }
         public int? MemberId { get; set; }
+        public int? EmployeeId { get; set; }
 
         public virtual Member? Member { get; set; }
+        public virtual Employee? Employee { get; set; }
     }
 }
