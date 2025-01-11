@@ -184,6 +184,10 @@ namespace OrderingAssistSystem_StaffApp
                 {
                     string content = await response.Content.ReadAsStringAsync();
                     emp = JsonConvert.DeserializeObject<Employee>(content);
+                    if(emp.IsDelete == true)
+                    {
+                        emp = null;
+                    }
                 }
             }
             catch (Exception ex)
