@@ -485,15 +485,22 @@ public partial class ItemToMake : ContentPage
         SwitchToPage("MenuItems", () => new MenuItemList());
     }
 
-    private void OnItemToMakeClicked(object sender, EventArgs e)
-    {
-        CalculateRemainingDays();
-        var viewModel = BindingContext as ItemToMakeListViewModel;
-        viewModel?.LoadOrderDetails();
-        Application.Current.MainPage.DisplayAlert("Loaded", "Items to make reloaded.", "OK");
-    }
+	private void OnItemToMakeClicked(object sender, EventArgs e)
+	{
+		var viewModel = BindingContext as CombinedViewModel;
+		viewModel?.CalculateRemainingDays();
+		SwitchToPage("ItemToMakeBartender", () => new ItemToMakeBartender());
+	}
 
-    private async void OnLogOutClicked(object sender, EventArgs e)
+	private void OnProcessingClicked(object sender, EventArgs e)
+	{
+		CalculateRemainingDays();
+		var viewModel = BindingContext as ItemToMakeListViewModel;
+		viewModel?.LoadOrderDetails();
+		Application.Current.MainPage.DisplayAlert("Loaded", "Items to make reloaded.", "OK");
+	}
+
+	private async void OnLogOutClicked(object sender, EventArgs e)
     {
         LogOut();
     }

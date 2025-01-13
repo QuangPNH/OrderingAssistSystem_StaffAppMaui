@@ -576,15 +576,18 @@ public partial class MenuItemList : ContentPage
 
 	private void OnItemToMakeClicked(object sender, EventArgs e)
 	{
-		CalculateRemainingDays();
-		if (role.Equals("bartender"))
-		{
-			SwitchToPage("ItemToMakeBartender", () => new ItemToMakeBartender());
-		}
-		else if (role.Equals("staff"))
-		{
-			SwitchToPage("ItemsToMake", () => new ItemToMake());
-		}
+		
+
+		var viewModel = BindingContext as CombinedViewModel;
+		viewModel?.CalculateRemainingDays();
+		SwitchToPage("ItemToMakeBartender", () => new ItemToMakeBartender());
+	}
+
+	private void OnProcessingClicked(object sender, EventArgs e)
+	{
+		var viewModel = BindingContext as CombinedViewModel;
+		viewModel?.CalculateRemainingDays();
+		SwitchToPage("ItemsToMake", () => new ItemToMake());
 	}
 
 	private async void OnLogOutClicked(object sender, EventArgs e)

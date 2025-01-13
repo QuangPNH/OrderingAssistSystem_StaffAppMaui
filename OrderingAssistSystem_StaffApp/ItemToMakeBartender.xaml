@@ -13,23 +13,31 @@
         <!-- Navigation Bar -->
         <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto" Padding="10,5" BackgroundColor="LightGray">
             <!-- Navigation Links -->
-            <StackLayout Orientation="Horizontal" HorizontalOptions="Start" VerticalOptions="Center">
-                <Button Text="Pending"
-                    Clicked="OnPendingOrdersClicked"
-                    HeightRequest="40" />
-                <Button Text="To Make"
-                    Clicked="OnItemToMakeClicked"
-                    HeightRequest="40" 
-                    Margin="10,0,0,0" />
-                <Button Text="Menu"
-                    Clicked="OnMenuItemsClicked"
-                    HeightRequest="40" 
-                    Margin="10,0,0,0" />
-                <Button Text="Log Out"
-                    Clicked="OnLogOutClicked"
-                    HeightRequest="40" 
-                    Margin="10,0,0,0" />
-            </StackLayout>
+            <ScrollView Orientation="Horizontal">
+                <StackLayout Orientation="Horizontal" HorizontalOptions="Start" VerticalOptions="Center">
+                    <Button Text="Pending"
+                Clicked="OnPendingOrdersClicked"
+                HeightRequest="40" />
+                    <Button Text="To Make"
+                Clicked="OnItemToMakeClicked"
+                HeightRequest="40" 
+                Margin="10,0,0,0" />
+                    <Button Text="Processing"
+                Clicked="OnProcessingClicked"
+                HeightRequest="40" 
+                Margin="10,0,0,0" />
+                    <Button Text="Menu"
+                Clicked="OnMenuItemsClicked"
+                HeightRequest="40" 
+                Margin="10,0,0,0" />
+                    <Button Text="Log Out"
+                Clicked="OnLogOutClicked"
+                HeightRequest="40" 
+                Margin="10,0,0,0" />
+                </StackLayout>
+            </ScrollView>
+
+
 
             <!-- Notification Bell Icon -->
             <ImageButton Source="bell_icon.png"
