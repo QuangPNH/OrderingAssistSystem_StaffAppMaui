@@ -54,6 +54,7 @@ namespace OrderingAssistSystem_StaffApp
                             NotificationId = 1337
                         };
                         LocalNotificationCenter.Current.Show(notification);
+                        ReloadCurrentScreen();
                     });
                     /*
                     StaffNotiChannel? _latestStaffNoti = await GetLatestStaffNotiChannelAsync(emp.ManagerId.Value);
@@ -92,6 +93,7 @@ namespace OrderingAssistSystem_StaffApp
                             NotificationId = 1337
                         };
                         LocalNotificationCenter.Current.Show(notification);
+                        ReloadCurrentScreen();
                     });
                     /*
                     StaffNotiChannel? _latestStaffNoti = await GetLatestStaffNotiChannelAsync(emp.ManagerId.Value);
@@ -130,6 +132,7 @@ namespace OrderingAssistSystem_StaffApp
                             NotificationId = 1337
                         };
                         LocalNotificationCenter.Current.Show(notification);
+                        ReloadCurrentScreen();
                     });
                 }
             }
@@ -150,6 +153,7 @@ namespace OrderingAssistSystem_StaffApp
                             NotificationId = 1337
                         };
                         LocalNotificationCenter.Current.Show(notification);
+                        ReloadCurrentScreen();
                     });
                 }
             }
@@ -167,6 +171,20 @@ namespace OrderingAssistSystem_StaffApp
                     LocalNotificationCenter.Current.Show(notification);
                 });
             }*/
+        }
+        public void ReloadCurrentScreen()
+        {
+            if (MainPage is NavigationPage navigationPage)
+            {
+                var currentPage = navigationPage.CurrentPage;
+                var pageType = currentPage.GetType();
+                var newPage = (Page)Activator.CreateInstance(pageType);
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    navigationPage.Navigation.InsertPageBefore(newPage, currentPage);
+                    navigationPage.Navigation.RemovePage(currentPage);
+                });
+            }
         }
     }
 }

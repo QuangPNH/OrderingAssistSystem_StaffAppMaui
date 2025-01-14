@@ -40,7 +40,7 @@ public partial class ItemToMakeBartender : ContentPage
         var newnotiChange = new NotiChange
         {
             id = notiChange.id,
-            tableName = tableName, // Replace with actual table name if available
+            tableName = tableName,
             message = message,
             isSent = true,
             DateCreated = DateTime.Now
