@@ -132,9 +132,9 @@ public partial class MenuItemList : ContentPage
 		DateTime? subscribeEndDate = emp?.Owner?.SubscribeEndDate;
 		if (subscribeEndDate.HasValue)
 		{
-			DateTime endDateWithGracePeriod = subscribeEndDate.Value.AddDays(7);
+			DateTime endDateWithGracePeriod = subscribeEndDate.Value.AddDays(8);
 			TimeSpan remainingTime = endDateWithGracePeriod - DateTime.Now;
-			if (remainingTime.Days <= 0)
+			if (remainingTime.Days <= 0 && !(remainingTime.Days == 0))
 			{
 				INotificationRegistrationService notificationRegistrationService = DependencyService.Get<INotificationRegistrationService>();
 				Application.Current.MainPage = new NavigationPage(new MainPage(notificationRegistrationService));
@@ -343,7 +343,7 @@ public partial class MenuItemList : ContentPage
 		{
 			var loginInfoJson = Preferences.Get("LoginInfo", string.Empty);
 			var employee = JsonConvert.DeserializeObject<Employee>(loginInfoJson);
-			var managerId = employee?.ManagerId ?? 0;
+			var managerId = employee?.ManagerId ?? employee.EmployeeId;
 			var tablesResponse = await _client.GetAsync($"{_config.BaseAddress}Table/GetTablesByManagerId/" + managerId);
 			if (!tablesResponse.IsSuccessStatusCode)
 			{
@@ -504,7 +504,7 @@ public partial class MenuItemList : ContentPage
 		{
 			var loginInfoJson = Preferences.Get("LoginInfo", string.Empty);
 			var employee = JsonConvert.DeserializeObject<Employee>(loginInfoJson);
-			var managerId = employee?.ManagerId ?? 0;
+			var managerId = employee?.ManagerId ?? employee.EmployeeId;
 			var uri = new Uri(_config.BaseAddress + "Notification/Employee/" + managerId);
 			HttpResponseMessage response = await _client.GetAsync(uri);
 
@@ -759,7 +759,7 @@ public class MenuItemListViewModel : INotifyPropertyChanged
 		{
 			var loginInfoJson = Preferences.Get("LoginInfo", string.Empty);
 			var employee = JsonConvert.DeserializeObject<Employee>(loginInfoJson);
-			var managerId = employee?.ManagerId ?? 0;
+			var managerId = employee?.ManagerId ?? employee.EmployeeId;
 			var uri = new Uri(_config.BaseAddress + "MenuItem/GetAllMenuItem?employeeId=" + managerId);
 			HttpResponseMessage response = await _client.GetAsync(uri);
 

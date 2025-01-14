@@ -105,7 +105,11 @@ namespace OrderingAssistSystem_StaffApp
             var loginInfoJson = Preferences.Get("LoginInfo", string.Empty);
             var employee = JsonConvert.DeserializeObject<Employee>(loginInfoJson);
 
-			if(employee != null && employee.RoleId == 1)
+			if (employee != null && employee.Owner.SubscribeEndDate.AddDays(7) < DateTime.Now)
+			{
+				await DisplayAlert("Status", "The owner's subscription may have been over for over a week. Contact for more info.", "OK");
+			}
+			else if (employee != null && employee.RoleId == 1)
 			{
 				//Application.Current.MainPage = new NavigationPage(new ContentPage());
 				await Navigation.PushAsync(new PendingOrderList());
@@ -197,26 +201,52 @@ namespace OrderingAssistSystem_StaffApp
             }
             catch (Exception ex)
             {
-                await DisplayAlert("Error", $"Failed to retrieve employee. Exception: {ex.Message}", "OK");
             }
 
-            if (emp == null)
+            if(emp ==null)
+			try
+			{
+				var uri = new Uri($"{config.BaseAddress}Employee/Manager/Phone/{phoneNumber}");
+				HttpResponseMessage response = await _client.GetAsync(uri);
+				if (response.IsSuccessStatusCode)
+				{
+					string content = await response.Content.ReadAsStringAsync();
+					emp = JsonConvert.DeserializeObject<Employee>(content);
+					if (emp.IsDelete == true)
+					{
+						emp = null;
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+			}
+
+			if (emp == null)
             {
                 await DisplayAlert("Error", phoneNumber + " is not found. Please enter an existing number.\n", "OK");
-            }
+                
+			}
             else
             {
-                string otp = new Random().Next(000000, 999999).ToString();
-                otp = "123456";
-                Preferences.Set("otp", otp);
-                //SendSms(phoneNumber);
+                if (emp.Owner.SubscribeEndDate.AddDays(7) < DateTime.Now)
+                {
+                    await DisplayAlert("Error", "The owner's subscription may have been over for over a week. Contact for more info.", "OK");
+                }
+                else
+                {
+                    string otp = new Random().Next(000000, 999999).ToString();
+                    otp = "123456";
+                    Preferences.Set("otp", otp);
+                    //SendSms(phoneNumber);
 
-                // Redirect to the OTP input page
-                emp.Image = null;
-                var empJson = JsonConvert.SerializeObject(emp);
-                Preferences.Set("TempLoginInfo", empJson);
+                    // Redirect to the OTP input page
+                    emp.Image = null;
+                    var empJson = JsonConvert.SerializeObject(emp);
+                    Preferences.Set("TempLoginInfo", empJson);
 
-                await Navigation.PushAsync(new OTPPage(phoneNumber, emp/*, _twilioSettings*/));
+                    await Navigation.PushAsync(new OTPPage(phoneNumber, emp/*, _twilioSettings*/));
+                }
             }
         }
 

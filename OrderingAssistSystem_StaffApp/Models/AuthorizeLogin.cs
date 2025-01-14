@@ -33,6 +33,27 @@ namespace OrderingAssistSystem_StaffApp.Models
                 var uri = new Uri($"{config.BaseAddress}Employee/Staff/Phone/{emp.Phone}");
                 HttpResponseMessage response = await _client.GetAsync(uri);
 
+                if (!response.IsSuccessStatusCode)
+                {
+					uri = new Uri($"{config.BaseAddress}Employee/Manager/Phone/{emp.Phone}");
+				    response = await _client.GetAsync(uri);
+					string data = await response.Content.ReadAsStringAsync();
+					emp = JsonConvert.DeserializeObject<Employee>(data);
+					Preferences.Set("LoginInfo", JsonConvert.SerializeObject(emp));
+					if (emp.Phone != null)
+					{
+						if (emp.Owner.SubscribeEndDate.AddDays(7) < DateTime.Now)
+						{
+							return "employee expired";
+						}
+						if (emp.Role.RoleName.ToLower() == "manager")
+						{
+							return "manager";
+						}
+					}
+					
+				}
+
                 if (response.IsSuccessStatusCode)
                 {
                     string data = await response.Content.ReadAsStringAsync();
@@ -40,7 +61,11 @@ namespace OrderingAssistSystem_StaffApp.Models
                     Preferences.Set("LoginInfo", JsonConvert.SerializeObject(emp));
                     if (emp.Phone != null)
                     {
-                        if (emp.Role.RoleName.ToLower() == "staff")
+						if (emp.Owner.SubscribeEndDate.AddDays(7) < DateTime.Now)
+						{
+							return "employee expired";
+						}
+						if (emp.Role.RoleName.ToLower() == "staff")
                         {
                             return "staff";
                         }
@@ -48,10 +73,6 @@ namespace OrderingAssistSystem_StaffApp.Models
                         {
                             return "bartender";
                         }
-                    }
-                    if (emp.Owner.SubscribeEndDate < DateTime.Now.AddDays(7))
-                    {
-                        return "employee expired";
                     }
                 }
                 else { return "null"; }

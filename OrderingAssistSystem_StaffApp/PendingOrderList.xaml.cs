@@ -25,7 +25,6 @@ public partial class PendingOrderList : ContentPage
 		ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => true
 	});
 	string role = "";
-	bool isWelcome = false;
 	ConfigApi _config = new ConfigApi();
 	public PendingOrderList()
 	{
@@ -103,13 +102,9 @@ public partial class PendingOrderList : ContentPage
 		var employee = JsonConvert.DeserializeObject<Employee>(loginInfoJson);
 
 		var loginStatus = await authorizeLogin.CheckLogin();
-		if (loginStatus.Equals("staff") || loginStatus.Equals("bartender"))
+		if (loginStatus.Equals("staff") || loginStatus.Equals("bartender") || loginStatus.Equals("manager"))
 		{
-			if(isWelcome == false)
-			{
 				DisplayAlert("Hi", "Welcome " + employee.EmployeeName + "!", "OK");
-				isWelcome = true;
-			}
 			role = loginStatus;
 		}
 		else if (loginStatus.Equals("employee expired"))
@@ -279,7 +274,7 @@ public partial class PendingOrderList : ContentPage
 		{
 			var loginInfoJson = Preferences.Get("LoginInfo", string.Empty);
 			var employee = JsonConvert.DeserializeObject<Employee>(loginInfoJson);
-			var managerId = employee?.ManagerId ?? 0;
+			var managerId = employee?.ManagerId ?? employee.EmployeeId;
 
 			var uri = new Uri(_config.BaseAddress + $"Notification/Employee/{managerId}");
 			HttpResponseMessage response = await _client.GetAsync(uri);
@@ -436,15 +431,15 @@ public class CombinedViewModel : INotifyPropertyChanged
 		DateTime? subscribeEndDate = emp?.Owner?.SubscribeEndDate;
 		if (subscribeEndDate.HasValue)
 		{
-			DateTime endDateWithGracePeriod = subscribeEndDate.Value.AddDays(7);
+			DateTime endDateWithGracePeriod = subscribeEndDate.Value.AddDays(8);
 			TimeSpan remainingTime = endDateWithGracePeriod - DateTime.Now;
-			if (remainingTime.Days <= 7)
+			if (remainingTime.Days <= 7 && !(remainingTime.Days == 0))
 			{
 				RemainingDaysMessage = $"Your owner's subscription to the service has expired.\nYou can still use the system for {remainingTime.Days} day(s).";
 			}
 			else if (remainingTime.Days <= 0)
 			{
-				Application.Current.MainPage.DisplayAlert("Expired", $"Your owner's subscription to the service has expired for over a week.", "Ok");
+				Application.Current.MainPage.DisplayAlert("Expired", "Your owner's subscription to the service has expired for over a week.", "Ok");
 			}
 			else
 			{
@@ -515,7 +510,7 @@ public class PendingOrderViewModel
 		{
 			var employeeInfoJson = Preferences.Get("LoginInfo", string.Empty);
 			var employee = JsonConvert.DeserializeObject<Employee>(employeeInfoJson);
-			var managerId = employee?.ManagerId ?? 0;
+			var managerId = employee?.ManagerId ?? employee.EmployeeId;
 			var uri = new Uri(_config.BaseAddress + $"Order/Employee/{managerId}");
 			HttpResponseMessage response = await _client.GetAsync(uri);
 			if (response.IsSuccessStatusCode)
