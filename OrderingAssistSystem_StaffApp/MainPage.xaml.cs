@@ -105,7 +105,12 @@ namespace OrderingAssistSystem_StaffApp
             var loginInfoJson = Preferences.Get("LoginInfo", string.Empty);
             var employee = JsonConvert.DeserializeObject<Employee>(loginInfoJson);
 
-            if (employee != null && employee.RoleId == 2)
+			if(employee != null && employee.RoleId == 1)
+			{
+				//Application.Current.MainPage = new NavigationPage(new ContentPage());
+				await Navigation.PushAsync(new PendingOrderList());
+			}
+			else if (employee != null && employee.RoleId == 2)
             {
 				//Application.Current.MainPage = new NavigationPage(new ContentPage());
 				await Navigation.PushAsync(new PendingOrderList());
