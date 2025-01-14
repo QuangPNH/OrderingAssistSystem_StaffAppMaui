@@ -36,7 +36,7 @@ public partial class OTPPage : ContentPage
             Preferences.Remove("TempLoginInfo");
 
             await Navigation.PushAsync(new PendingOrderList());
-            await DisplayAlert("Success", "Welcome " + _emp.EmployeeName + "!", "OK");
+            //await DisplayAlert("Success", "Welcome " + _emp.EmployeeName + "!", "OK");
         }
         else
         {

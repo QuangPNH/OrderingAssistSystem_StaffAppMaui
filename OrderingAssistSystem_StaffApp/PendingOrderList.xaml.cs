@@ -25,6 +25,7 @@ public partial class PendingOrderList : ContentPage
 		ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => true
 	});
 	string role = "";
+	bool isWelcome = false;
 	ConfigApi _config = new ConfigApi();
 	public PendingOrderList()
 	{
@@ -104,7 +105,11 @@ public partial class PendingOrderList : ContentPage
 		var loginStatus = await authorizeLogin.CheckLogin();
 		if (loginStatus.Equals("staff") || loginStatus.Equals("bartender"))
 		{
-			DisplayAlert("Hi", "Welcome " + employee.EmployeeName + "!", "OK");
+			if(isWelcome == false)
+			{
+				DisplayAlert("Hi", "Welcome " + employee.EmployeeName + "!", "OK");
+				isWelcome = true;
+			}
 			role = loginStatus;
 		}
 		else if (loginStatus.Equals("employee expired"))
@@ -209,6 +214,10 @@ public partial class PendingOrderList : ContentPage
 						return;
 					}
 				}
+
+				viewModel?.PendingOrder.Orders.Remove(order);
+				viewModel?.PendingOrder.LoadOrders();
+				viewModel?.ItemToMake.LoadOrderDetails();
 			}
 			catch (Exception ex)
 			{
