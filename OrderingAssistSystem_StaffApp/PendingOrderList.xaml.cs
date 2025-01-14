@@ -198,6 +198,17 @@ public partial class PendingOrderList : ContentPage
 					//Sent Noti to client
 					await SendNotificationAsync(order.Table.Qr, $"Order {order.OrderId} has been confirmed paid.");
 				}
+				// Update member points if member exists
+				if (order.Member != null)
+				{
+					var points = order.Cost / 1000;
+					var updatePointsResponse = await _client.GetAsync($"{_config.BaseAddress}Member/UpdatePoints/memberId/point?memberId={order.Member.MemberId}&point={points}");
+					if (!updatePointsResponse.IsSuccessStatusCode)
+					{
+						await DisplayAlert("Error", "Failed to update member points.", "OK");
+						return;
+					}
+				}
 			}
 			catch (Exception ex)
 			{

@@ -28,7 +28,7 @@ public partial class MenuItemList : ContentPage
 	});
 	ConfigApi _config = new ConfigApi();
 	string role = "";
-    public ObservableCollection<CartItem> CartItems { get; set; } = new ObservableCollection<CartItem>();
+	public ObservableCollection<CartItem> CartItems { get; set; } = new ObservableCollection<CartItem>();
 
 	private int _currentPage = 1;
 	private const int _itemsPerPage = 5;
@@ -55,8 +55,8 @@ public partial class MenuItemList : ContentPage
 
 	public MenuItemList()
 	{
-        Authoriz();
-        InitializeComponent();
+		Authoriz();
+		InitializeComponent();
 		LoadNotifications();
 		CalculateRemainingDays();
 		BindingContext = new MenuItemListViewModel();
@@ -160,10 +160,10 @@ public partial class MenuItemList : ContentPage
 		}
 		else if (loginStatus.Equals("null"))
 		{
-            await DisplayAlert("Status", "Login info not found or the internet isn't working.", "OK");
-            INotificationRegistrationService notificationRegistrationService = DependencyService.Get<INotificationRegistrationService>();
-            Application.Current.MainPage = new NavigationPage(new MainPage(notificationRegistrationService));
-        }
+			await DisplayAlert("Status", "Login info not found or the internet isn't working.", "OK");
+			INotificationRegistrationService notificationRegistrationService = DependencyService.Get<INotificationRegistrationService>();
+			Application.Current.MainPage = new NavigationPage(new MainPage(notificationRegistrationService));
+		}
 		else
 		{
 			await DisplayAlert("Status", "Something went wrong.", "OK");
@@ -211,10 +211,10 @@ public partial class MenuItemList : ContentPage
 	{
 		Preferences.Remove("LoginInfo");
 		INotificationRegistrationService notificationRegistrationService = DependencyService.Get<INotificationRegistrationService>();
-        // Clear the page cache
-        PageCache.Instance.ClearCache();
-        // Reset the MainPage to the login page
-        Application.Current.MainPage = new NavigationPage(new MainPage(notificationRegistrationService));
+		// Clear the page cache
+		PageCache.Instance.ClearCache();
+		// Reset the MainPage to the login page
+		Application.Current.MainPage = new NavigationPage(new MainPage(notificationRegistrationService));
 		await Task.CompletedTask; // Ensure the method is still async.
 	}
 
@@ -252,27 +252,27 @@ public partial class MenuItemList : ContentPage
 
 			if (existingCartItem != null)
 			{
-                string cartJson = Preferences.Get("Cart", "[]");
-                var cartItems = JsonConvert.DeserializeObject<ObservableCollection<CartItem>>(cartJson);
+				string cartJson = Preferences.Get("Cart", "[]");
+				var cartItems = JsonConvert.DeserializeObject<ObservableCollection<CartItem>>(cartJson);
 
 				// If it exists, increase the quantity
 				existingCartItem.Quantity = (int)menuItem.Quantity;
 				CartItems.Remove(existingCartItem);
-                CartItems.Add(new CartItem
-                {
-                    id = menuItem.MenuItemId,
-                    ItemName = menuItem.ItemName,
-                    Quantity = (int)menuItem.Quantity,
-                    Sugar = menuItem.Sugar,
-                    Ice = menuItem.Ice,
-                    Topping = toppingsList,
-                    Description = combinedPreferences,
-                    Price = menuItem.Price ?? 0
-                });
-                RemoveCartItem(existingCartItem);
-                UpdateTotalPrice();
-                SaveCartToPreferences();
-            }
+				CartItems.Add(new CartItem
+				{
+					id = menuItem.MenuItemId,
+					ItemName = menuItem.ItemName,
+					Quantity = (int)menuItem.Quantity,
+					Sugar = menuItem.Sugar,
+					Ice = menuItem.Ice,
+					Topping = toppingsList,
+					Description = combinedPreferences,
+					Price = menuItem.Price ?? 0
+				});
+				RemoveCartItem(existingCartItem);
+				UpdateTotalPrice();
+				SaveCartToPreferences();
+			}
 			else
 			{
 				// If it doesn't exist, add a new item to the cart
@@ -331,7 +331,7 @@ public partial class MenuItemList : ContentPage
 					var memberData = await memberResponse.Content.ReadAsStringAsync();
 					member = JsonConvert.DeserializeObject<Member>(memberData);
 				}
-                }
+			}
 			catch (Exception ex)
 			{
 				await DisplayAlert("Error", $"An error occurred while fetching or registering the member: {ex.Message}", "OK");
@@ -395,13 +395,13 @@ public partial class MenuItemList : ContentPage
 				var memberResponse = await _client.GetAsync($"{_config.BaseAddress}Member/Phone/{phoneNumber}");
 				if (memberResponse.IsSuccessStatusCode)
 				{
-                    var memberJson = await memberResponse.Content.ReadAsStringAsync();
-                    member = JsonConvert.DeserializeObject<Member>(memberJson);
+					var memberJson = await memberResponse.Content.ReadAsStringAsync();
+					member = JsonConvert.DeserializeObject<Member>(memberJson);
 				}
 			}
 
-            // Update member points if member exists
-            if (member != null)
+			// Update member points if member exists
+			if (member != null)
 			{
 				var points = newOrder.Cost / 1000;
 				var updatePointsResponse = await _client.GetAsync($"{_config.BaseAddress}Member/UpdatePoints/memberId/point?memberId={member.MemberId}&point={points}");
@@ -412,58 +412,58 @@ public partial class MenuItemList : ContentPage
 				}
 			}
 
-            var viewModel = BindingContext as CombinedViewModel;
-            viewModel?.PendingOrder.LoadOrders();
+			var viewModel = BindingContext as CombinedViewModel;
+			viewModel?.PendingOrder.LoadOrders();
 
-            ClearCartPreferences();
+			ClearCartPreferences();
 			await DisplayAlert("Success", "Order created successfully.", "OK");
 			SendOrderConfirmationNotificationAsync();
 
 
-        }
+		}
 		catch (Exception ex)
 		{
 			// Handle exceptions
 			await DisplayAlert("Error", $"Exception: {ex.Message}", "OK");
 		}
 	}
-    //Send from staff to bartend
-    private async Task SendOrderConfirmationNotificationAsync()
-    {
-        var requestBody = new
-        {
-            text = "New Order Created Manually by staff !",
-            action = "OrderSuccessesSToBartendFinished"
-        };
+	//Send from staff to bartend
+	private async Task SendOrderConfirmationNotificationAsync()
+	{
+		var requestBody = new
+		{
+			text = "New Order Created Manually by staff !",
+			action = "OrderSuccessesSToBartendFinished"
+		};
 
-        var json = JsonConvert.SerializeObject(requestBody);
-        var content = new StringContent(json, Encoding.UTF8, "application/json");
+		var json = JsonConvert.SerializeObject(requestBody);
+		var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-        _client.DefaultRequestHeaders.Clear();
-        _client.DefaultRequestHeaders.Add("apikey", "0624d820-6616-430d-92a5-e68265a08593");
+		_client.DefaultRequestHeaders.Clear();
+		_client.DefaultRequestHeaders.Add("apikey", "0624d820-6616-430d-92a5-e68265a08593");
 
-        var uri = new Uri("https://push-noti-api-amg8fwasfebchtf2.southeastasia-01.azurewebsites.net/api/notifications/requests");
+		var uri = new Uri("https://push-noti-api-amg8fwasfebchtf2.southeastasia-01.azurewebsites.net/api/notifications/requests");
 
-        try
-        {
-            HttpResponseMessage response = await _client.PostAsync(uri, content);
+		try
+		{
+			HttpResponseMessage response = await _client.PostAsync(uri, content);
 
-            if (response.IsSuccessStatusCode)
-            {
-                Console.WriteLine("Notification sent successfully.");
-            }
-            else
-            {
-                Console.WriteLine($"Failed to send notification. Status code: {response.StatusCode}");
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error sending notification: {ex.Message}");
-        }
-    }
+			if (response.IsSuccessStatusCode)
+			{
+				Console.WriteLine("Notification sent successfully.");
+			}
+			else
+			{
+				Console.WriteLine($"Failed to send notification. Status code: {response.StatusCode}");
+			}
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine($"Error sending notification: {ex.Message}");
+		}
+	}
 
-    private void ClearCartPreferences()
+	private void ClearCartPreferences()
 	{
 		Preferences.Remove("Cart");
 		CartItems.Clear();
@@ -576,7 +576,7 @@ public partial class MenuItemList : ContentPage
 
 	private void OnItemToMakeClicked(object sender, EventArgs e)
 	{
-		
+
 
 		var viewModel = BindingContext as CombinedViewModel;
 		viewModel?.CalculateRemainingDays();
@@ -676,8 +676,8 @@ public class MenuItemListViewModel : INotifyPropertyChanged
 	private string _searchText;
 	private ItemCategory _selectedCategory;
 	public ObservableCollection<MenuItem> AvailableDrinkToppings { get; set; } = new ObservableCollection<MenuItem>();
-    public ObservableCollection<MenuItem> AvailableFoodToppings { get; set; } = new ObservableCollection<MenuItem>();
-    private readonly Models.ConfigApi _config = new Models.ConfigApi();
+	public ObservableCollection<MenuItem> AvailableFoodToppings { get; set; } = new ObservableCollection<MenuItem>();
+	private readonly Models.ConfigApi _config = new Models.ConfigApi();
 	private readonly HttpClient _client = new HttpClient(new HttpClientHandler
 	{
 		ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => true
@@ -689,7 +689,7 @@ public class MenuItemListViewModel : INotifyPropertyChanged
 	private CancellationTokenSource _debounceCts;
 	public string Role { get; set; }
 
-    public string SearchText
+	public string SearchText
 	{
 		get => _searchText;
 		set
@@ -711,10 +711,10 @@ public class MenuItemListViewModel : INotifyPropertyChanged
 
 	public MenuItemListViewModel()
 	{
-        string loginInfoJson = Preferences.Get("LoginInfo", string.Empty);
-        Employee emp = JsonConvert.DeserializeObject<Employee>(loginInfoJson);
-        Role = emp.Role.RoleName;
-        MenuItems = new ObservableCollection<MenuItem>();
+		string loginInfoJson = Preferences.Get("LoginInfo", string.Empty);
+		Employee emp = JsonConvert.DeserializeObject<Employee>(loginInfoJson);
+		Role = emp.Role.RoleName;
+		MenuItems = new ObservableCollection<MenuItem>();
 		FilteredMenuItems = new ObservableCollection<MenuItem>();
 		Categories = new ObservableCollection<ItemCategory>();
 		LoadCategories();
@@ -771,9 +771,9 @@ public class MenuItemListViewModel : INotifyPropertyChanged
 
 				MenuItems.Clear();
 				AvailableDrinkToppings.Clear();
-                AvailableFoodToppings.Clear();
+				AvailableFoodToppings.Clear();
 
-                if (menuItems != null)
+				if (menuItems != null)
 				{
 					foreach (var menuItem in menuItems)
 					{
@@ -781,20 +781,20 @@ public class MenuItemListViewModel : INotifyPropertyChanged
 						{
 							if (!menuItem.MenuCategories.Any(mc => mc.ItemCategory.Description == "TOPPING" || mc.ItemCategory.ItemCategoryName == "L?P PH?"))
 							{
-								
-                                if (menuItem.Description.Contains("food/"))
-                                    menuItem.isDrink = false;
-                                else
-                                    menuItem.isDrink = true;
-                                MenuItems.Add(menuItem);
-                            }
+
+								if (menuItem.Description.Contains("food/"))
+									menuItem.isDrink = false;
+								else
+									menuItem.isDrink = true;
+								MenuItems.Add(menuItem);
+							}
 							else
 							{
-                                if (menuItem.Description.Contains("food/"))
-                                    AvailableFoodToppings.Add(menuItem);
-                                else
-                                    AvailableDrinkToppings.Add(menuItem);
-                            }
+								if (menuItem.Description.Contains("food/"))
+									AvailableFoodToppings.Add(menuItem);
+								else
+									AvailableDrinkToppings.Add(menuItem);
+							}
 						}
 					}
 				}
@@ -802,11 +802,11 @@ public class MenuItemListViewModel : INotifyPropertyChanged
 				{
 					if (menuItem != null)
 					{
-                        if (menuItem.Description.Contains("food/"))
-                            menuItem.AvailableFoodToppings = AvailableFoodToppings;
-                        else
-                            menuItem.AvailableDrinkToppings = AvailableDrinkToppings;
-                    }
+						if (menuItem.Description.Contains("food/"))
+							menuItem.AvailableFoodToppings = AvailableFoodToppings;
+						else
+							menuItem.AvailableDrinkToppings = AvailableDrinkToppings;
+					}
 				}
 			}
 			FilterMenuItems();
