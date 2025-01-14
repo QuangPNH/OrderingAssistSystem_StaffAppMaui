@@ -60,24 +60,32 @@ public partial class OTPPage : ContentPage
 
     private bool VerifySms(string code, string phone)
     {
-        ConfigApi config = new ConfigApi();
-        string[] parts = phone.Split(new char[] { '0' }, 2);
-        string result = parts[1];
-        /*var accountSid = nameof(settings.AccountSid);
-        var authToken = nameof(settings.AuthToken);*/
-        var accountSid = config.accId;
-        var authToken = config.accToken;
-        TwilioClient.Init(accountSid, authToken);
-
-        var verificationCheck = VerificationCheckResource.Create(
-            to: "+84" + result,
-            code: code,
-            pathServiceSid: "VA3c15cbc73df12d2ada324b4b96781ba7"
-        );
-        if (verificationCheck.Valid != true)
+        try
         {
-            return false;
+            ConfigApi config = new ConfigApi();
+            string[] parts = phone.Split(new char[] { '0' }, 2);
+            string result = parts[1];
+            /*var accountSid = nameof(settings.AccountSid);
+            var authToken = nameof(settings.AuthToken);*/
+            var accountSid = config.accId;
+            var authToken = config.accToken;
+            TwilioClient.Init(accountSid, authToken);
+
+            var verificationCheck = VerificationCheckResource.Create(
+                to: "+84" + result,
+                code: code,
+                pathServiceSid: "VA3c15cbc73df12d2ada324b4b96781ba7"
+            );
+            if (verificationCheck.Valid != true)
+            {
+                return false;
+            }
         }
-        return true;
+		catch (Exception e)
+		{
+			DisplayAlert("Error", "Failed to verify OTP: " + e, "OK");
+			return false;
+		}
+		return true;
     }
 }

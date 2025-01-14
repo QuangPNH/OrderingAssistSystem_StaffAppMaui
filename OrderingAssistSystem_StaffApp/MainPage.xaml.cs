@@ -245,7 +245,7 @@ namespace OrderingAssistSystem_StaffApp
                     var empJson = JsonConvert.SerializeObject(emp);
                     Preferences.Set("TempLoginInfo", empJson);
 
-                    await Navigation.PushAsync(new OTPPage(phoneNumber, emp/*, _twilioSettings*/));
+                    await Navigation.PushAsync(new OTPPage(phoneNumber, emp));
                 }
             }
         }
@@ -254,19 +254,26 @@ namespace OrderingAssistSystem_StaffApp
 
         private void SendSms(string phone)
         {
-            ConfigApi config = new ConfigApi();
-            string[] parts = phone.Split(new char[] { '0' }, 2);
-            string result = parts[1];
-            /*var accountSid = nameof(settings.AccountSid);
-            var authToken = nameof(settings.AuthToken);*/
-            var accountSid = config.accId;
-            var authToken = config.accToken;
-            TwilioClient.Init(accountSid, authToken);
-            var verification = VerificationResource.Create(
-                to: "+84" + result,
-                channel: "sms",
-                pathServiceSid: "VA3c15cbc73df12d2ada324b4b96781ba7"
-            );
+            try
+            {
+                ConfigApi config = new ConfigApi();
+                string[] parts = phone.Split(new char[] { '0' }, 2);
+                string result = parts[1];
+                /*var accountSid = nameof(settings.AccountSid);
+                var authToken = nameof(settings.AuthToken);*/
+                var accountSid = config.accId;
+                var authToken = config.accToken;
+                TwilioClient.Init(accountSid, authToken);
+                var verification = VerificationResource.Create(
+                    to: "+84" + result,
+                    channel: "sms",
+                    pathServiceSid: "VA3c15cbc73df12d2ada324b4b96781ba7"
+                );
+            }
+            catch(Exception e)
+            {
+				DisplayAlert("Error", "Failed to send OTP: "+e, "OK");
+			}
         }
     }
 }

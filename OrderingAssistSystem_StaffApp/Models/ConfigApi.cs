@@ -18,6 +18,6 @@ namespace OrderingAssistSystem_StaffApp.Models
         public string BaseAddress = DeviceInfo.Platform == DevicePlatform.Android ? "https://oas-main-api-cwf5hnd9apbhgnhn.southeastasia-01.azurewebsites.net/api/" : "https://oas-main-api-cwf5hnd9apbhgnhn.southeastasia-01.azurewebsites.net/api/";
 
         public string accId = "AC4f52abeaebacc8995cdd7c274fedf7ab";
-        public string accToken = "72c203b036e03395ff66566740745cf6";
+        public string accToken = "b8c7f1343764b51e6753f99bcce7bfc4";
     }
 }
