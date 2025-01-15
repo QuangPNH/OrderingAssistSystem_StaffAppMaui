@@ -176,6 +176,7 @@ namespace OrderingAssistSystem_StaffApp
         {
             if (MainPage is NavigationPage navigationPage)
             {
+				PageCache.Instance.ClearCache();
 				var viewModel = BindingContext as CombinedViewModel;
 				viewModel?.PendingOrder.LoadOrders();
 				viewModel?.ItemToMake.LoadOrderDetails();
