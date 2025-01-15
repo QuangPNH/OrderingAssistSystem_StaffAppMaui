@@ -176,7 +176,10 @@ namespace OrderingAssistSystem_StaffApp
         {
             if (MainPage is NavigationPage navigationPage)
             {
-                var currentPage = navigationPage.CurrentPage;
+				var viewModel = BindingContext as CombinedViewModel;
+				viewModel?.PendingOrder.LoadOrders();
+				viewModel?.ItemToMake.LoadOrderDetails();
+				var currentPage = navigationPage.CurrentPage;
                 var pageType = currentPage.GetType();
                 var newPage = (Page)Activator.CreateInstance(pageType);
                 MainThread.BeginInvokeOnMainThread(() =>
