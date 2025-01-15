@@ -218,8 +218,9 @@ public partial class ItemToMakeBartender : ContentPage
             await DisplayAlert("Item Started", $"Starting item {itemToMake.MenuItem?.ItemName}.", "OK");
             await SendNotificationAsync(matchingOrderDetails.FirstOrDefault().Order.Table.Qr, $"Starting item {itemToMake.MenuItem?.ItemName}.");
             await SendOrderConfirmationNotificationAsync();
-            // Reload the to-make list
-            viewModel.LoadOrderDetails();
+			// Reload the to-make list
+			PageCache.Instance.ClearCache();
+			viewModel.LoadOrderDetails();
         }
     }
 

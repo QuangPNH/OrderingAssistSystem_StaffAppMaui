@@ -228,7 +228,8 @@ public partial class ItemToMake : ContentPage
                 }
                 SendOrderConfirmationNotificationAsync();
                 await DisplayAlert("Ok", "Finished " + orderDetail.Quantity + " " + orderDetail.MenuItem.ItemName + ".", "OK");
-                viewModel?.LoadOrderDetails();
+				PageCache.Instance.ClearCache();
+				viewModel?.LoadOrderDetails();
             }
         }
     }
@@ -334,7 +335,8 @@ public partial class ItemToMake : ContentPage
                     await SendNotificationAsync(order.Table.Qr, ogInput + " " + matchingOrderDetails.FirstOrDefault()?.MenuItem?.ItemName + " has been finished!");
                     SendOrderConfirmationNotificationAsync();
                 }
-                viewModel?.LoadOrderDetails();
+				PageCache.Instance.ClearCache();
+				viewModel?.LoadOrderDetails();
                 await DisplayAlert("Done", ogInput + " " + matchingOrderDetails.FirstOrDefault()?.MenuItem?.ItemName + " has been finished!", "OK");
                 await SendNotificationAsync(matchingOrderDetails.FirstOrDefault()?.Order.Table.Qr, ogInput + " " + matchingOrderDetails.FirstOrDefault()?.MenuItem?.ItemName + " has been finished!");
                 SendOrderConfirmationNotificationAsync();
@@ -726,23 +728,6 @@ public class ItemToMakeListViewModel : INotifyPropertyChanged
                             pendingItems.RemoveAt(1);
                         }
                     }
-
-                    /*foreach (var pendingItem in pendingItems)
-                    {
-                        var oldestOrderDetail = AllOrderDetails
-                            .Where(od => od.MenuItemId == pendingItem.MenuItemId &&
-                                         od.Sugar == pendingItem.Sugar &&
-                                         od.Ice == pendingItem.Ice &&
-                                         od.Topping == pendingItem.Topping &&
-                                         od.Status == pendingItem.Status)
-                            .OrderBy(od => od.Order.OrderDate)
-                            .FirstOrDefault();
-
-                        if (oldestOrderDetail != null)
-                        {
-                            pendingItem.Order.OrderDate = oldestOrderDetail.Order.OrderDate;
-                        }
-                    }*/
 
 
                     // Set IsCurrentItem property

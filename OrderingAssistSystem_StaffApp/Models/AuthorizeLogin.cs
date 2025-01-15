@@ -51,7 +51,6 @@ namespace OrderingAssistSystem_StaffApp.Models
 							return "manager";
 						}
 					}
-					
 				}
 
                 if (response.IsSuccessStatusCode)

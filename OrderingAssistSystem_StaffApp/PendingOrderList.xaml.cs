@@ -102,9 +102,13 @@ public partial class PendingOrderList : ContentPage
 		var employee = JsonConvert.DeserializeObject<Employee>(loginInfoJson);
 
 		var loginStatus = await authorizeLogin.CheckLogin();
+		string welcome = Preferences.Get("isWelcome", string.Empty);
 		if (loginStatus.Equals("staff") || loginStatus.Equals("bartender") || loginStatus.Equals("manager"))
 		{
-				DisplayAlert("Hi", "Welcome " + employee.EmployeeName + "!", "OK");
+			if (welcome.Equals("false")) {
+				Preferences.Set("isWelcome", "true");
+				DisplayAlert("Hi", "Welcome " + employee.EmployeeName + "!", "OK"); 
+			}
 			role = loginStatus;
 		}
 		else if (loginStatus.Equals("employee expired"))
@@ -210,12 +214,14 @@ public partial class PendingOrderList : ContentPage
 					}
 				}
 
+				PageCache.Instance.ClearCache();
 				viewModel?.PendingOrder.Orders.Remove(order);
 				viewModel?.PendingOrder.LoadOrders();
 				viewModel?.ItemToMake.LoadOrderDetails();
 			}
 			catch (Exception ex)
 			{
+				PageCache.Instance.ClearCache();
 				viewModel?.PendingOrder.Orders.Remove(order);
 				viewModel?.PendingOrder.LoadOrders();
 				viewModel?.ItemToMake.LoadOrderDetails();
@@ -518,7 +524,7 @@ public class PendingOrderViewModel
 				string data = await response.Content.ReadAsStringAsync();
 				var orders = JsonConvert.DeserializeObject<List<Order>>(data)
 					?.Where(o => o.Status == null)
-					.OrderByDescending(o => o.OrderDate)
+					.OrderBy(o => o.OrderDate)
 					.ToList();
 				Orders.Clear();
 				if (orders != null)

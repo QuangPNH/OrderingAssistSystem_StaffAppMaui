@@ -33,6 +33,7 @@ namespace OrderingAssistSystem_StaffApp
             _notificationRegistrationService = service;
             CalculateRemainingDays();
             InitializeFirebaseToken();
+            Preferences.Set("isWelcome", "false");
         }
 
         private void InitializeFirebaseToken()
