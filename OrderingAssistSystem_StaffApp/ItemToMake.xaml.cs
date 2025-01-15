@@ -797,11 +797,13 @@ public class ItemToMakeListViewModel : INotifyPropertyChanged
 
                     if (pendingItems.Count > 0)
                     {
+                        pendingItems[0].Quantity = pendingItems[0].Quantity - pendingItems[0].FinishedItem;
                         FirstItemToMake.Add(pendingItems[0]);
                     }
                     if (pendingItems.Count > 1)
                     {
-                        SecondItemToMake.Add(pendingItems[1]);
+						pendingItems[1].Quantity = pendingItems[1].Quantity - pendingItems[1].FinishedItem;
+						SecondItemToMake.Add(pendingItems[1]);
                     }
 
                     DoneItems.Clear();
