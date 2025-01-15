@@ -615,7 +615,8 @@ public class ItemToMakeListViewModel : INotifyPropertyChanged
                             Topping = g.Key.Topping,
                             Ice = g.Key.Ice,
                             Sugar = g.Key.Sugar,
-                            Order = new Order
+							FinishedItem = g.Sum(od => od.FinishedItem ?? 0),
+							Order = new Order
                             {
                                 OrderDate = g.Min(od => od.Order?.OrderDate)
                             }
@@ -634,7 +635,8 @@ public class ItemToMakeListViewModel : INotifyPropertyChanged
                             Topping = g.Key.Topping,
                             Ice = g.Key.Ice,
                             Sugar = g.Key.Sugar,
-                            Order = new Order
+							FinishedItem = g.Sum(od => od.FinishedItem ?? 0),
+							Order = new Order
                             {
                                 OrderDate = g.Min(od => od.Order?.OrderDate)
                             }
@@ -693,8 +695,8 @@ public class ItemToMakeListViewModel : INotifyPropertyChanged
                                 Topping = g.Key.Topping,
                                 Ice = g.Key.Ice,
                                 Sugar = g.Key.Sugar,
-                                FinishedItem = g.Key.FinishedItem,
-                                Order = new Order
+								FinishedItem = g.Sum(od => od.FinishedItem ?? 0),
+								Order = new Order
                                 {
                                     OrderDate = g.Min(od => od.Order?.OrderDate)
                                 }

@@ -93,7 +93,7 @@
                                             <Label Grid.Row="2" Grid.Column="1" Text="{Binding Cost, StringFormat='{}{0:#,##0₫}'}" />
 
                                             <Label Grid.Row="1" Grid.Column="2" Text="Order Date:" FontAttributes="Bold" />
-                                            <Label Grid.Row="1" Grid.Column="3" Text="{Binding OrderDate, StringFormat='{}{0:MM/dd/yyyy}'}" />
+                                            <Label Grid.Row="1" Grid.Column="3" Text="{Binding OrderDate, StringFormat='{}{0:dd/MM/yyyy HH:mm}'}" />
                                         </Grid>
 
                                         <!-- Buttons -->
