@@ -238,7 +238,7 @@ public partial class ItemToMakeBartender : ContentPage
         _client.DefaultRequestHeaders.Clear();
         _client.DefaultRequestHeaders.Add("apikey", "0624d820-6616-430d-92a5-e68265a08593");
 
-        var uri = new Uri("https://oas-noti-api-handling-hqb2gxavecakdtey.southeastasia-01.azurewebsites.net/api/notifications/requests");
+        var uri = new Uri("https://pushnotiapis-arhzeqchhrg6adem.southeastasia-01.azurewebsites.net/api/notifications/requests");
 
         try
         {
