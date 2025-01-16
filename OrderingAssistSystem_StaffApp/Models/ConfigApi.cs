@@ -14,8 +14,8 @@ namespace OrderingAssistSystem_StaffApp.Models
         /*public readonly string _apiUrl = "https://oas-api-main-cxhua5dqh7dueqhz.southeastasia-01.azurewebsites.net/api/";
         public string BaseAddress = DeviceInfo.Platform == DevicePlatform.Android ? "https://oas-api-main-cxhua5dqh7dueqhz.southeastasia-01.azurewebsites.net/api/" : "https://oas-api-main-cxhua5dqh7dueqhz.southeastasia-01.azurewebsites.net/api/";
 */
-        public readonly string _apiUrl = "https://oas-main-api-cwf5hnd9apbhgnhn.southeastasia-01.azurewebsites.net/api/";
-        public string BaseAddress = DeviceInfo.Platform == DevicePlatform.Android ? "https://oas-main-api-cwf5hnd9apbhgnhn.southeastasia-01.azurewebsites.net/api/" : "https://oas-main-api-cwf5hnd9apbhgnhn.southeastasia-01.azurewebsites.net/api/";
+        public readonly string _apiUrl = "https://oasmainapi-g7e8fwarcsb0f2ff.southeastasia-01.azurewebsites.net/api/";
+        public string BaseAddress = DeviceInfo.Platform == DevicePlatform.Android ? "https://oasmainapi-g7e8fwarcsb0f2ff.southeastasia-01.azurewebsites.net/api/" : "https://oasmainapi-g7e8fwarcsb0f2ff.southeastasia-01.azurewebsites.net/api/";
 
         public string accId = "AC4f52abeaebacc8995cdd7c274fedf7ab";
         public string accToken = "b8c7f1343764b51e6753f99bcce7bfc4";
