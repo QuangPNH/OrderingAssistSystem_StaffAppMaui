@@ -49,7 +49,7 @@ namespace OrderingAssistSystem_StaffApp
                         var notification = new NotificationRequest
                         {
                             Title = "Notice",
-                            Description = "New Message from client !",
+                            Description = "New Message !",
                             ReturningData = "Dummy data",
                             NotificationId = 1337
                         };

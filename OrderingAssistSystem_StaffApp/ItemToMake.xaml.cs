@@ -352,7 +352,7 @@ public partial class ItemToMake : ContentPage
 		var requestBody = new
 		{
 			text = "Order Finished !",
-			action = "OrderSuccessesStaff"
+			action = "Confirm"
 		};
 
 		var json = JsonConvert.SerializeObject(requestBody);

@@ -14,6 +14,7 @@ using OrderingAssistSystem_StaffApp.Services;
 using System.Windows.Input;
 using System.Text;
 using AzzanOrder.Data.Models;
+using static Android.Renderscripts.ScriptGroup;
 
 namespace OrderingAssistSystem_StaffApp;
 
@@ -215,6 +216,9 @@ public partial class PendingOrderList : ContentPage
 				}
 
                 //notihere send to employee and client
+				SendOrderConfirmationNotificationAsync();
+                await DisplayAlert("Done", "Order confirmed paid by cash!", "OK");
+                await SendNotificationAsync(order.Table.Qr, "Order confirmed paid by cash!");
                 PageCache.Instance.ClearCache();
 				viewModel?.PendingOrder.Orders.Remove(order);
 				viewModel?.PendingOrder.LoadOrders();
@@ -362,7 +366,7 @@ public partial class PendingOrderList : ContentPage
 		var requestBody = new
 		{
 			text = "Order Confirmed !",
-			action = "OrderSuccessesSToBartend"
+			action = "Confirm"
 		};
 
 		var json = JsonConvert.SerializeObject(requestBody);
