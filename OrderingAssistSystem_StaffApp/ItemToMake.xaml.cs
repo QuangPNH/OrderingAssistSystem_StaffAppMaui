@@ -226,7 +226,8 @@ public partial class ItemToMake : ContentPage
 						}
 					}
 				}
-				SendOrderConfirmationNotificationAsync();
+                //notihere send to employee and client
+                SendOrderConfirmationNotificationAsync();
 				await DisplayAlert("Ok", "Finished " + orderDetail.Quantity + " " + orderDetail.MenuItem.ItemName + ".", "OK");
 				PageCache.Instance.ClearCache();
 				viewModel?.LoadOrderDetails();
@@ -330,12 +331,13 @@ public partial class ItemToMake : ContentPage
 					}
 				}
 
-				if (matchingOrderDetails.Count > 0)
+                /*if (matchingOrderDetails.Count > 0)
 				{
 					await SendNotificationAsync(order.Table.Qr, ogInput + " " + matchingOrderDetails.FirstOrDefault()?.MenuItem?.ItemName + " has been finished!");
 					SendOrderConfirmationNotificationAsync();
-				}
-				PageCache.Instance.ClearCache();
+				}*/
+                //notihere send to employee and client
+                PageCache.Instance.ClearCache();
 				viewModel?.LoadOrderDetails();
 				await DisplayAlert("Done", ogInput + " " + matchingOrderDetails.FirstOrDefault()?.MenuItem?.ItemName + " has been finished!", "OK");
 				await SendNotificationAsync(matchingOrderDetails.FirstOrDefault()?.Order.Table.Qr, ogInput + " " + matchingOrderDetails.FirstOrDefault()?.MenuItem?.ItemName + " has been finished!");

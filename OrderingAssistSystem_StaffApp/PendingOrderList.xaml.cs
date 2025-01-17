@@ -214,7 +214,8 @@ public partial class PendingOrderList : ContentPage
 					}
 				}
 
-				PageCache.Instance.ClearCache();
+                //notihere send to employee and client
+                PageCache.Instance.ClearCache();
 				viewModel?.PendingOrder.Orders.Remove(order);
 				viewModel?.PendingOrder.LoadOrders();
 				viewModel?.ItemToMake.LoadOrderDetails();

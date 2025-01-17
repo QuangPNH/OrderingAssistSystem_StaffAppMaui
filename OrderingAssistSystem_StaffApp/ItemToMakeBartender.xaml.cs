@@ -234,8 +234,9 @@ public partial class ItemToMakeBartender : ContentPage
 
 			Preferences.Set("IStartedThis", jsonStartedItems);
 
-			// Handle the PendingItem object here
-			await DisplayAlert("Item Started", $"Starting item {itemToMake.MenuItem?.ItemName}.", "OK");
+            //notihere send to employee and client
+            // Handle the PendingItem object here
+            await DisplayAlert("Item Started", $"Starting item {itemToMake.MenuItem?.ItemName}.", "OK");
             await SendNotificationAsync(matchingOrderDetails.FirstOrDefault().Order.Table.Qr, $"Starting item {itemToMake.MenuItem?.ItemName}.");
             await SendOrderConfirmationNotificationAsync();
 			// Reload the to-make list
