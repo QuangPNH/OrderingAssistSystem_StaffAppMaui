@@ -114,21 +114,30 @@ namespace OrderingAssistSystem_StaffApp
 			{
 				//Application.Current.MainPage = new NavigationPage(new ContentPage());
 				await Navigation.PushAsync(new PendingOrderList());
-			}
+                //SwitchToPage("PendingOrders", () => new PendingOrderList());
+            }
 			else if (employee != null && employee.RoleId == 2)
             {
 				//Application.Current.MainPage = new NavigationPage(new ContentPage());
 				await Navigation.PushAsync(new PendingOrderList());
-			}
+                //SwitchToPage("PendingOrders", () => new PendingOrderList());
+            }
             else if (employee != null && employee.RoleId == 3)
             {
 				//Application.Current.MainPage = new NavigationPage(new ContentPage());
 				await Navigation.PushAsync(new PendingOrderList());
-			}
+                //SwitchToPage("PendingOrders", () => new PendingOrderList());
+            }
             else
             {
                 //await DisplayAlert("Status", "Something went wrong. The owner's subscription may have been over for over a week. Contact for more info.", "OK");
             }
+        }
+
+        private void SwitchToPage(string pageKey, Func<Page> createPage)
+        {
+            var page = PageCache.Instance.GetOrCreatePage(pageKey, createPage);
+            Application.Current.MainPage = new NavigationPage(page);
         }
 
         void OnRegisterButtonClicked(object sender, EventArgs e)

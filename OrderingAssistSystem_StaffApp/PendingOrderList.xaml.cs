@@ -108,8 +108,9 @@ public partial class PendingOrderList : ContentPage
 		{
 			if (welcome.Equals("false")) {
 				Preferences.Set("isWelcome", "true");
-				DisplayAlert("Hi", "Welcome " + employee.EmployeeName + "!", "OK"); 
-			}
+				DisplayAlert("Hi", "Welcome " + employee.EmployeeName + "!", "OK");
+                SwitchToPage("PendingOrders", () => new PendingOrderList());
+            }
 			role = loginStatus;
 		}
 		else if (loginStatus.Equals("employee expired"))
@@ -260,8 +261,9 @@ public partial class PendingOrderList : ContentPage
 					viewModel?.ItemToMake.LoadOrderDetails();
 					DisplayAlert("Cancelled", $"Order: {order.OrderId} has been cancelled.", "OK");
 
-					//Sent Noti to client
-					await SendNotificationAsync(order.Table.Qr, $"Order: {order.OrderId} has been cancelled.");
+                    //notihere send to employee and client
+                    //Sent Noti to client
+                    await SendNotificationAsync(order.Table.Qr, $"Order: {order.OrderId} has been cancelled.");
 				}
 			}
 			catch (Exception ex)
