@@ -211,11 +211,31 @@ public partial class ItemToMakeBartender : ContentPage
                 await _client.PutAsync(uri, content);
             }
 
-            string jsonStartedItems = JsonConvert.SerializeObject(itemToMake);
-            Preferences.Set("IStartedThis", jsonStartedItems);
+			var jsonStartedItems = JsonConvert.SerializeObject(new
+			{
+                itemToMake.MenuItem,
+                itemToMake.Order,
+				itemToMake.OrderDetailId,
+				itemToMake.Quantity,
+				itemToMake.MenuItemId,
+				itemToMake.OrderId,
+				itemToMake.Status,
+				itemToMake.Description,
+				itemToMake.FinishedItem,
+				Sugar = itemToMake.Sugar, // Include ignored property
+				Ice = itemToMake.Ice,     // Include ignored property
+				Topping = itemToMake.Topping, // Include ignored property
+				IsCurrentItem = itemToMake.IsCurrentItem, // Include ignored property
+				IsStartEnabled = itemToMake.IsStartEnabled, // Include ignored property
+				StatusText = itemToMake.StatusText, // Include ignored property
+				EarliestTime = itemToMake.EarliestTime, // Include ignored property
+				LatestTime = itemToMake.LatestTime // Include ignored property
+			});
 
-            // Handle the PendingItem object here
-            await DisplayAlert("Item Started", $"Starting item {itemToMake.MenuItem?.ItemName}.", "OK");
+			Preferences.Set("IStartedThis", jsonStartedItems);
+
+			// Handle the PendingItem object here
+			await DisplayAlert("Item Started", $"Starting item {itemToMake.MenuItem?.ItemName}.", "OK");
             await SendNotificationAsync(matchingOrderDetails.FirstOrDefault().Order.Table.Qr, $"Starting item {itemToMake.MenuItem?.ItemName}.");
             await SendOrderConfirmationNotificationAsync();
 			// Reload the to-make list

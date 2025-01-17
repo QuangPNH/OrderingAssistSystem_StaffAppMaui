@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 
 namespace OrderingAssistSystem_StaffApp.Models
@@ -19,7 +20,7 @@ namespace OrderingAssistSystem_StaffApp.Models
         public int? MemberId { get; set; }
         public bool? Status { get; set; }
 
-        public virtual Member? Member { get; set; }
+		public virtual Member? Member { get; set; }
         public virtual Table? Table { get; set; }
         public virtual ICollection<MemberVoucher> MemberVouchers { get; set; }
         public virtual ICollection<OrderDetail> OrderDetails { get; set; }

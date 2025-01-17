@@ -54,6 +54,10 @@ namespace OrderingAssistSystem_StaffApp.Models
 				}
 			}
 		}
+		[JsonIgnore]
+		public DateTime? EarliestTime { get; set; }
+		[JsonIgnore]
+		public DateTime? LatestTime { get; set; }
 		public virtual MenuItem? MenuItem { get; set; }
 		public virtual Order? Order { get; set; }
 
