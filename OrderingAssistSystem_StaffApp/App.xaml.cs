@@ -34,143 +34,151 @@ namespace OrderingAssistSystem_StaffApp
         }
         async void ShowActionAlert(OasStaffAppAction action)
         {
-            PendingOrderViewModel _pendingOrderViewModel = new PendingOrderViewModel();
-            ItemToMakeListViewModel itemToMakeListViewModel = new ItemToMakeListViewModel();
-            var a = action.ToString();
-            //Channel from client to both
-            if (action.ToString().Equals("Confirm"))
+            try
             {
-                var loginInfo = Preferences.Get("LoginInfo", string.Empty);
-                Employee emp = JsonConvert.DeserializeObject<Employee>(loginInfo);
-                if (emp != null)
+                PendingOrderViewModel _pendingOrderViewModel = new PendingOrderViewModel();
+                ItemToMakeListViewModel itemToMakeListViewModel = new ItemToMakeListViewModel();
+                var a = action.ToString();
+                //Channel from client to both
+                if (action.ToString().Equals("Confirm"))
                 {
-                    MainThread.BeginInvokeOnMainThread(() =>
-                    {
-                        var notification = new NotificationRequest
-                        {
-                            Title = "Notice",
-                            Description = "New Message !",
-                            ReturningData = "Dummy data",
-                            NotificationId = 1337
-                        };
-                        LocalNotificationCenter.Current.Show(notification);
-                        ReloadCurrentScreen();
-                    });
-                    /*
-                    StaffNotiChannel? _latestStaffNoti = await GetLatestStaffNotiChannelAsync(emp.ManagerId.Value);
-                    if (_latestStaffNoti != null && _latestStaffNoti.IsSent == false && emp.ManagerId == _latestStaffNoti.ManagerId)
+                    var loginInfo = Preferences.Get("LoginInfo", string.Empty);
+                    Employee? emp = JsonConvert.DeserializeObject<Employee>(loginInfo);
+                    if (emp != null)
                     {
                         MainThread.BeginInvokeOnMainThread(() =>
                         {
                             var notification = new NotificationRequest
                             {
                                 Title = "Notice",
-                                Description = _latestStaffNoti.Message,
+                                Description = "New Message !",
                                 ReturningData = "Dummy data",
                                 NotificationId = 1337
                             };
                             LocalNotificationCenter.Current.Show(notification);
+                            ReloadCurrentScreen();
                         });
-                    }
-                    */
-                }
-                _pendingOrderViewModel.LoadOrders();
-            }
-            //channel from client to bartend
-            else if (action.ToString().Equals("OrderSuccesses"))
-            {
-                var loginInfo = Preferences.Get("LoginInfo", string.Empty);
-                Employee emp = JsonConvert.DeserializeObject<Employee>(loginInfo);
-                if (emp != null && emp.RoleId == 3)
-                {
-                    MainThread.BeginInvokeOnMainThread(() =>
-                    {
-                        var notification = new NotificationRequest
+                        /*
+                        StaffNotiChannel? _latestStaffNoti = await GetLatestStaffNotiChannelAsync(emp.ManagerId.Value);
+                        if (_latestStaffNoti != null && _latestStaffNoti.IsSent == false && emp.ManagerId == _latestStaffNoti.ManagerId)
                         {
-                            Title = "Notice",
-                            Description = "New Message from client !",
-                            ReturningData = "Dummy data",
-                            NotificationId = 1337
-                        };
-                        LocalNotificationCenter.Current.Show(notification);
-                        ReloadCurrentScreen();
-                    });
-                    /*
-                    StaffNotiChannel? _latestStaffNoti = await GetLatestStaffNotiChannelAsync(emp.ManagerId.Value);
-                    if (_latestStaffNoti != null && _latestStaffNoti.IsSent == false && emp.ManagerId == _latestStaffNoti.ManagerId)
+                            MainThread.BeginInvokeOnMainThread(() =>
+                            {
+                                var notification = new NotificationRequest
+                                {
+                                    Title = "Notice",
+                                    Description = _latestStaffNoti.Message,
+                                    ReturningData = "Dummy data",
+                                    NotificationId = 1337
+                                };
+                                LocalNotificationCenter.Current.Show(notification);
+                            });
+                        }
+                        */
+                    }
+                    _pendingOrderViewModel.LoadOrders();
+                }
+                //channel from client to bartend
+                else if (action.ToString().Equals("OrderSuccesses"))
+                {
+                    var loginInfo = Preferences.Get("LoginInfo", string.Empty);
+                    Employee? emp = JsonConvert.DeserializeObject<Employee>(loginInfo);
+                    if (emp != null && emp.RoleId == 3)
                     {
                         MainThread.BeginInvokeOnMainThread(() =>
                         {
                             var notification = new NotificationRequest
                             {
                                 Title = "Notice",
-                                Description = _latestStaffNoti.Message,
+                                Description = "New Message from client !",
                                 ReturningData = "Dummy data",
                                 NotificationId = 1337
                             };
                             LocalNotificationCenter.Current.Show(notification);
+                            ReloadCurrentScreen();
+                        });
+                        /*
+                        StaffNotiChannel? _latestStaffNoti = await GetLatestStaffNotiChannelAsync(emp.ManagerId.Value);
+                        if (_latestStaffNoti != null && _latestStaffNoti.IsSent == false && emp.ManagerId == _latestStaffNoti.ManagerId)
+                        {
+                            MainThread.BeginInvokeOnMainThread(() =>
+                            {
+                                var notification = new NotificationRequest
+                                {
+                                    Title = "Notice",
+                                    Description = _latestStaffNoti.Message,
+                                    ReturningData = "Dummy data",
+                                    NotificationId = 1337
+                                };
+                                LocalNotificationCenter.Current.Show(notification);
+                            });
+                        }
+                        */
+                    }
+                    itemToMakeListViewModel.LoadOrderDetails();
+                }
+                //From bartend to staff
+                else if (action.ToString().Equals("OrderSuccessesStaff"))
+                {
+                    var loginInfo = Preferences.Get("LoginInfo", string.Empty);
+                    Employee? emp = JsonConvert.DeserializeObject<Employee>(loginInfo);
+                    if (emp != null && emp.RoleId == 2)
+                    {
+                        MainThread.BeginInvokeOnMainThread(() =>
+                        {
+                            var notification = new NotificationRequest
+                            {
+                                Title = "Notice",
+                                Description = "",
+                                ReturningData = "Dummy data",
+                                NotificationId = 1337
+                            };
+                            LocalNotificationCenter.Current.Show(notification);
+                            ReloadCurrentScreen();
                         });
                     }
-                    */
                 }
-                itemToMakeListViewModel.LoadOrderDetails();
-            }
-            //From bartend to staff
-            else if (action.ToString().Equals("OrderSuccessesStaff"))
-            {
-                var loginInfo = Preferences.Get("LoginInfo", string.Empty);
-                Employee emp = JsonConvert.DeserializeObject<Employee>(loginInfo);
-                if (emp != null && emp.RoleId == 2)
+                //From staff to bartend (note: call to this to find where staff create order)
+                else if (action.ToString().Equals("OrderSuccessesSToBartendFinished"))
+                {
+                    var loginInfo = Preferences.Get("LoginInfo", string.Empty);
+                    Employee? emp = JsonConvert.DeserializeObject<Employee>(loginInfo);
+                    if (emp != null && emp.RoleId == 3)
+                    {
+                        MainThread.BeginInvokeOnMainThread(() =>
+                        {
+                            var notification = new NotificationRequest
+                            {
+                                Title = "Notice",
+                                Description = "New Order being added by Staff Manually",
+                                ReturningData = "Dummy data",
+                                NotificationId = 1337
+                            };
+                            LocalNotificationCenter.Current.Show(notification);
+                            ReloadCurrentScreen();
+                        });
+                    }
+                }
+                /*else
                 {
                     MainThread.BeginInvokeOnMainThread(() =>
                     {
                         var notification = new NotificationRequest
                         {
                             Title = "Notice",
-                            Description = "",
+                            Description = "Unspecified.",
                             ReturningData = "Dummy data",
                             NotificationId = 1337
                         };
                         LocalNotificationCenter.Current.Show(notification);
-                        ReloadCurrentScreen();
                     });
-                }
+                }*/
             }
-            //From staff to bartend (note: call to this to find where staff create order)
-            else if (action.ToString().Equals("OrderSuccessesSToBartendFinished"))
+            catch (Exception ex)
             {
-                var loginInfo = Preferences.Get("LoginInfo", string.Empty);
-                Employee emp = JsonConvert.DeserializeObject<Employee>(loginInfo);
-                if (emp != null && emp.RoleId == 3)
-                {
-                    MainThread.BeginInvokeOnMainThread(() =>
-                    {
-                        var notification = new NotificationRequest
-                        {
-                            Title = "Notice",
-                            Description = "New Order being added by Staff Manually",
-                            ReturningData = "Dummy data",
-                            NotificationId = 1337
-                        };
-                        LocalNotificationCenter.Current.Show(notification);
-                        ReloadCurrentScreen();
-                    });
-                }
+                Console.WriteLine(ex.Message);
             }
-            /*else
-            {
-                MainThread.BeginInvokeOnMainThread(() =>
-                {
-                    var notification = new NotificationRequest
-                    {
-                        Title = "Notice",
-                        Description = "Unspecified.",
-                        ReturningData = "Dummy data",
-                        NotificationId = 1337
-                    };
-                    LocalNotificationCenter.Current.Show(notification);
-                });
-            }*/
+           
         }
         public void ReloadCurrentScreen()
         {
