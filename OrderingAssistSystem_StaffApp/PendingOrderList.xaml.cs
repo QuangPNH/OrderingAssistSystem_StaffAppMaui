@@ -78,7 +78,7 @@ public partial class PendingOrderList : ContentPage
 			DateCreated = DateTime.Now
 		};
 
-		var json = JsonConvert.SerializeObject(notiChange);
+		var json = JsonConvert.SerializeObject(newnotiChange);
 		var content = new StringContent(json, Encoding.UTF8, "application/json");
 
 		var response = await _client.PutAsync(_config._apiUrl + $"NotiChanges/{notiChange.id}", content);
