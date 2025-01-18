@@ -30,7 +30,7 @@ public partial class OTPPage : ContentPage
             return;
         }
 
-        if (otp.Equals(otpInput))
+        /*if (otp.Equals(otpInput))
         {
             Preferences.Set("LoginInfo", Preferences.Get("TempLoginInfo", string.Empty));
             Preferences.Remove("TempLoginInfo");
@@ -41,10 +41,10 @@ public partial class OTPPage : ContentPage
         else
         {
             await DisplayAlert("Error", "Invalid OTP. Please try again.", "OK");
-        }
+        }*/
 
 
-        /*if (VerifySms(otpInput, _phoneNumber))
+        if (VerifySms(otpInput, _phoneNumber))
         {
             Preferences.Set("LoginInfo", Preferences.Get("TempLoginInfo", string.Empty));
             Preferences.Remove("TempLoginInfo");
@@ -55,7 +55,7 @@ public partial class OTPPage : ContentPage
         else
         {
             await DisplayAlert("Error", "Invalid OTP. Please try again.", "OK");
-        }*/
+        }
     }
 
     private bool VerifySms(string code, string phone)

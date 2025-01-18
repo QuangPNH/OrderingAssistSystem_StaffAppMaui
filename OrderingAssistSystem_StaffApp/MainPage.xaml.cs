@@ -248,7 +248,7 @@ namespace OrderingAssistSystem_StaffApp
                     string otp = new Random().Next(000000, 999999).ToString();
                     otp = "123456";
                     Preferences.Set("otp", otp);
-                    //SendSms(phoneNumber);
+                    SendSms(phoneNumber);
 
                     // Redirect to the OTP input page
                     emp.Image = null;
