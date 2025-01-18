@@ -260,7 +260,7 @@ public partial class PendingOrderList : ContentPage
                     //notihere send to employee and client
                     //Sent Noti to client
                     await SendNotificationAsync(order.Table.Qr, $"Order: {order.OrderId} has been cancelled.");
-					SendOrderConfirmationNotificationAsync();
+					await SendOrderConfirmationNotificationAsync();
 
                 }
 			}
