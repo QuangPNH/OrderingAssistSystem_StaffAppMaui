@@ -216,10 +216,6 @@ public partial class PendingOrderList : ContentPage
 					}
 				}
 
-                //notihere send to employee and client
-				SendOrderConfirmationNotificationAsync();
-                await DisplayAlert("Done", "Order confirmed paid by cash!", "OK");
-                await SendNotificationAsync(order.Table.Qr, "Order confirmed paid by cash!");
                 PageCache.Instance.ClearCache();
 				viewModel?.PendingOrder.Orders.Remove(order);
 				viewModel?.PendingOrder.LoadOrders();
